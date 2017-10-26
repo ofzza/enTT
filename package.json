@@ -1,0 +1,38 @@
+{
+  "name": "boilerplate-node",
+  "version": "1.0.0",
+  "description": "NodeJS project boilerplate",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "gulp test && node ./tests",
+    "start": "gulp default && node ./dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ofzza/boilerplate-node.git"
+  },
+  "keywords": [
+    "boilerplate",
+    "node",
+    "nodejs"
+  ],
+  "author": "ofzza",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ofzza/boilerplate-node/issues"
+  },
+  "homepage": "https://github.com/ofzza/boilerplate-node#readme",
+  "devDependencies": {
+    "babel-core": "*",
+    "babel-preset-esnext": "*",
+    "gulp": "github:gulpjs/gulp#4.0",
+    "gulp-babel": "^7.0.0",
+    "gulp-clean": "^0.3.2",
+    "gulp-eslint": "^4.0.0",
+    "gulp-jscs": "^4.0.0"
+  },
+  "dependencies": {
+    "colors": "^1.1.2",
+    "lodash": "^4.17.4"
+  }
+}

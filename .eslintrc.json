@@ -1,0 +1,28 @@
+{
+  "extends"           : "eslint:recommended",
+  "env": {
+    "es6"             : true,
+    "browser"         : true,
+    "node"            : true
+  },
+  "globals": {
+    "angular"         : true,
+    "console"         : true,
+    "describe"        : true,
+    "it"              : true
+  },
+  "rules": {
+    "no-console"      : 0,
+    "no-unused-vars"  : 1,
+    "semi"            : ["error", "always"],
+    "require-jsdoc"   : 1,
+    "valid-jsdoc"     : [2, { 
+      "requireReturn": false,
+      "requireParamDescription": true,
+      "requireReturnDescription": true 
+    }]
+  },
+  "parserOptions": {
+    "sourceType": "module"
+  }
+}

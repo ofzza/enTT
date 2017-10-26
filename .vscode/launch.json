@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "configurations": [
+      {
+          "name": "Launch: Src Test",
+          "type": "node",
+          "request": "launch",
+
+          "cwd": "${workspaceRoot}",
+          "program": "${workspaceRoot}/src/index.js",
+          "sourceMaps": false,
+          "args": [ ],
+          "preLaunchTask": null,
+          "runtimeExecutable": null,
+          "runtimeArgs": [ "--nolazy" ],
+          "env": {
+              "NODE_ENV": "development"
+          },
+          "console": "internalConsole"
+      },
+      {
+          "name": "Launch: Dist Test",
+          "type": "node",
+          "request": "launch",
+
+          "cwd": "${workspaceRoot}",
+          "program": "${workspaceRoot}/dist/index.js",
+          "sourceMaps": false,
+          "args": [ ],
+          "preLaunchTask": null,
+          "runtimeExecutable": null,
+          "runtimeArgs": [ "--nolazy" ],
+          "env": {
+              "NODE_ENV": "development"
+          },
+          "console": "internalConsole"
+      }
+  ]
+}
