@@ -23,7 +23,7 @@ module.exports = (gulp) => {
   // Return registered tasks
   return {
     test: ['test@mocha'],
-    watch: './src/**/*.js'
+    watch: ['./src/**/*.js', './tests/**/*.js']
   };
 
 };
