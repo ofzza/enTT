@@ -32,7 +32,8 @@ module.exports = (gulp) => {
 
   // Return registered tasks
   return {
-    test: ['test@codestyle-jscs', 'test@codestyle-eslint']
+    test: ['test@codestyle-jscs', 'test@codestyle-eslint'],
+    watch: ['./src/**/*.js', './tasks/**/*.js', './tests/**/*.js']
   };
 
 };
