@@ -1,7 +1,7 @@
 {
-  "name": "boilerplate-node",
+  "name": "entt",
   "version": "1.0.0",
-  "description": "NodeJS project boilerplate",
+  "description": "Modular JS data-model base class, implementing often used functionality",
   "main": "./dist/index.js",
   "scripts": {
     "test": "gulp test && node ./tests",
@@ -9,19 +9,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ofzza/boilerplate-node.git"
+    "url": "git+https://github.com/ofzza/enTT.git"
   },
   "keywords": [
-    "boilerplate",
-    "node",
-    "nodejs"
+    "enTT",
+    "entity",
+    "data model"
   ],
   "author": "ofzza",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ofzza/boilerplate-node/issues"
+    "url": "https://github.com/ofzza/enTT/issues"
   },
-  "homepage": "https://github.com/ofzza/boilerplate-node#readme",
+  "homepage": "https://github.com/ofzza/enTT#readme",
   "devDependencies": {
     "babel-core": "*",
     "babel-preset-esnext": "*",
