@@ -30,7 +30,7 @@
     "gulp-clean": "^0.3.2",
     "gulp-eslint": "^4.0.0",
     "gulp-jscs": "^4.0.0",
-    "gulp-spawn-mocha": "^4.0.1"
+    "gulp-mocha": "^4.0.1"
   },
   "dependencies": {
     "colors": "^1.1.2",
