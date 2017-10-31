@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "configurations": [
       {
-          "name": "Launch: Src Test",
+          "name": "Launch: Source",
           "type": "node",
           "request": "launch",
 
@@ -19,14 +19,34 @@
           "console": "internalConsole"
       },
       {
-          "name": "Launch: Dist Test",
+          "name": "Launch: Distributable",
           "type": "node",
           "request": "launch",
 
           "cwd": "${workspaceRoot}",
           "program": "${workspaceRoot}/dist/index.js",
-          "sourceMaps": false,
+          "sourceMaps": true,
           "args": [ ],
+          "preLaunchTask": null,
+          "runtimeExecutable": null,
+          "runtimeArgs": [ "--nolazy" ],
+          "env": {
+              "NODE_ENV": "development"
+          },
+          "console": "internalConsole"
+      },
+      {
+          "name": "Launch: Tests",
+          "type": "node",
+          "request": "launch",
+
+          "cwd": "${workspaceRoot}",
+          "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+          "sourceMaps": true,
+          "args": [
+            "tests/**/*.js",
+            "--no-timeouts"
+          ],
           "preLaunchTask": null,
           "runtimeExecutable": null,
           "runtimeArgs": [ "--nolazy" ],
