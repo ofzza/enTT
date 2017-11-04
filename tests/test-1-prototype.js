@@ -1,15 +1,26 @@
 // =====================================================================================================================
-// Tests Entity prototype fundamentals
+// Tests Entity Prototype
 // =====================================================================================================================
-let assert = require('assert');
+let Entity  = require('../dist').default;
 
-describe('Entity Prototype', () => {
-  describe('#indexOf()', () => {
-    it('should return -1 when the value is not present', () => {
-      assert.equal(-1, [1, 2, 3].indexOf(4));
-    });
-    it('should return -1 when the value is not present', () => {
-      assert.notEqual(-1, [1, 2, 3].indexOf(3));
-    });
+// Entity Prototype
+describe('Base Class', () => {
+  Entity.debug = true;
+
+  it('Entity should not be instantiable', (done) => {
+    try {
+      new Entity();
+      done(new Error('Entity Base Class shouldn\'t itself be instantiable!'));
+    } catch (err) {
+      done();
+    }
+  });
+  it('EntityPrototype should not be instantiable', (done) => {
+    try {
+      new (Entity.constructor.prototype)();
+      done(new Error('EntityPrototype Class shouldn\'t itself be instantiable!'));
+    } catch (err) {
+      done();
+    }
   });
 });

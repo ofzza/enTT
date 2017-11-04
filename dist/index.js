@@ -3,54 +3,29 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = undefined;
+exports.Module = undefined;
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // =====================================================================================================================
-// TEST SCRIPT: Dummy script, testing GULP tasks
-// =====================================================================================================================
+var _modules = require('./modules');
 
-// Test module importing
+Object.defineProperty(exports, 'Module', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_modules).default;
+  }
+});
 
+var _entity = require('./entity');
 
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
+var _entity2 = _interopRequireDefault(_entity);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+exports.default = _entity2.default;
 
-/**
- * Testing class definition
- * @export
- * @class Test
- */
-var Test = function () {
-  function Test() {
-    _classCallCheck(this, Test);
-  }
+// Export Entity Custom Module base class
+// =====================================================================================================================
+// ENTITY
+// =====================================================================================================================
 
-  _createClass(Test, null, [{
-    key: 'run',
-
-    /**
-     * Outputs to console
-     * @static
-     * @memberof Test
-     */
-    value: function run() {
-      console.log('Test: [' + _lodash2.default.map(Array(10), function (value, i) {
-        return i;
-      }).join(', ') + ']');
-    }
-  }]);
-
-  return Test;
-}();
-
-// Run test statuc method
-
-
-exports.default = Test;
-Test.run();
+// Export Entity class as default
 //# sourceMappingURL=index.js.map

@@ -1,23 +1,10 @@
 // =====================================================================================================================
-// TEST SCRIPT: Dummy script, testing GULP tasks
+// ENTITY
 // =====================================================================================================================
 
-// Test module importing
-import _ from 'lodash';
+// Export Entity class as default
+import Entity from './entity';
+export default Entity;
 
-/**
- * Testing class definition
- * @export
- * @class Test
- */
-export default class Test {
-  /**
-   * Outputs to console
-   * @static
-   * @memberof Test
-   */
-  static run () { console.log(`Test: [${ _.map(Array(10), (value, i) => i).join(', ') }]`); }
-}
-
-// Run test statuc method
-Test.run();
+// Export Entity Custom Module base class
+export { default as Module } from './modules';
