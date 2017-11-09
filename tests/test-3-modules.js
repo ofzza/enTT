@@ -11,7 +11,7 @@ describe('Modules', () => {
 
   describe('Default value module', () => {
     class ExtendedEntity extends Entity {
-      static get schema () {
+      static get propertyDefinitions () {
         return {
           prop: { value: 'default' }
         };
@@ -19,7 +19,7 @@ describe('Modules', () => {
     }
     let extended = new ExtendedEntity();
     it('Should accept default value property configuration', () => {
-      assert.ok(extended.schema.prop);
+      assert.ok(extended.propertyDefinitions.prop);
     });
     it('Should use default values until value set', () => {
       assert.equal(extended.prop, 'default');
@@ -32,7 +32,7 @@ describe('Modules', () => {
 
   describe('Dynamic value module', () => {
     class ExtendedEntity extends Entity {
-      static get schema () {
+      static get propertyDefinitions () {
         return {
           x: { value: (100 + Math.round(100 * Math.random())) },
           squareEx: { dynamic: function () { return (this.x * this.x); } },
@@ -50,9 +50,9 @@ describe('Modules', () => {
   });
 
   describe('Casting value module', () => {
-    class ExtendedEntity extends Entity { static get schema () { return { prop: true }; } }
+    class ExtendedEntity extends Entity { static get propertyDefinitions () { return { prop: true }; } }
     class CastingEntity extends ExtendedEntity {
-      static get schema () {
+      static get propertyDefinitions () {
         return {
           castSingleEx:         { castAs: ExtendedEntity, collection: false },
           castCollectionEx:     { castAs: ExtendedEntity, collection: true },

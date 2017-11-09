@@ -32,11 +32,20 @@ export default class Entity extends EntityPrototype {
    * Casts value as entity by copying content of all properties found on both
    * @static
    * @param {any} value Value to cast
-   * @param {any} entityClass Target casting Entity class
+   * @param {any} EntityClass Target casting Entity class
    * @returns {any} Cast instance of required Entity class
-   * @memberof Watchers
+   * @memberof Entity
    */
-  static cast (value, entityClass) { return EntityPrototype.cast.bind(this)(value, entityClass); }
+  static cast (value, EntityClass) { return EntityPrototype.cast.bind(this)(value, EntityClass); }
+  /**
+   * Casts collection of values as a collection of entities by casting each mamber of the collection
+   * @static
+   * @param {any} collection Collection to cast
+   * @param {any} EntityClass Target casting Entity class
+   * @returns {any} Cast collection
+   * @memberof Entity
+   */
+  static castCollection (collection, EntityClass) { return EntityPrototype.castCollectionAsEntity.bind(this)(collection, EntityClass); }
 
   /**
    * Entity modules included by default

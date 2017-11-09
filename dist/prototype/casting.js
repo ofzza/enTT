@@ -3,7 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = castAsEntity;
+exports.castAsEntity = castAsEntity;
+exports.castCollectionAsEntity = castCollectionAsEntity;
 
 var _lodash = require('lodash');
 
@@ -48,5 +49,17 @@ function castAsEntity(value, EntityClass) {
 
   // Return cast entity
   return entity;
+}
+
+/**
+ * Casts collection of values as a collection of entities by casting each mamber of the collection
+ * @param {any} collection Collection to cast
+ * @param {any} EntityClass Target casting Entity class
+ * @returns {any} Cast collection
+ */
+function castCollectionAsEntity(collection, EntityClass) {
+  // TODO: ...
+  collection;EntityClass;
+  return [];
 }
 //# sourceMappingURL=casting.js.map

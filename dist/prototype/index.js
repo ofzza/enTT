@@ -15,8 +15,6 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _casting = require('./casting');
 
-var _casting2 = _interopRequireDefault(_casting);
-
 var _initialization = require('./initialization');
 
 var _initialization2 = _interopRequireDefault(_initialization);
@@ -51,14 +49,27 @@ var EntityPrototype = function () {
      * Casts value as entity by copying content of all properties found on both
      * @static
      * @param {any} value Value to cast
-     * @param {any} entityClass Target casting Entity class
+     * @param {any} EntityClass Target casting Entity class
      * @returns {any} Cast instance of required Entity class
      * @memberof Watchers
      */
-    value: function cast(value, entityClass) {
-      return _casting2.default.bind(this)(value, entityClass);
+    value: function cast(value, EntityClass) {
+      return _casting.castAsEntity.bind(this)(value, EntityClass);
     }
+    /**
+     * Casts collection of values as a collection of entities by casting each mamber of the collection
+     * @static
+     * @param {any} collection Collection to cast
+     * @param {any} EntityClass Target casting Entity class
+     * @returns {any} Cast collection
+     * @memberof Entity
+     */
 
+  }, {
+    key: 'castCollection',
+    value: function castCollection(collection, EntityClass) {
+      return _casting.castCollectionAsEntity.bind(this)(collection, EntityClass);
+    }
     /**
      * Creates an instance of EntityPrototype.
      * @memberof EntityPrototype
@@ -93,7 +104,7 @@ var EntityPrototype = function () {
 
     var _fetchAllFromPrototyp = _initialization2.default.bind(this)(),
         modules = _fetchAllFromPrototyp.modules,
-        schema = _fetchAllFromPrototyp.schema;
+        propertyDefinitions = _fetchAllFromPrototyp.propertyDefinitions;
 
     // Initialize watchers repository
 
@@ -139,8 +150,8 @@ var EntityPrototype = function () {
       }
     });
 
-    // Initialize managed properties based on schema definition
-    _properties2.default.bind(this)(modules, schema, watchers);
+    // Initialize managed properties based on definitions
+    _properties2.default.bind(this)(modules, propertyDefinitions, watchers);
   }
 
   return EntityPrototype;

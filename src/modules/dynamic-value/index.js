@@ -36,9 +36,4 @@ export default class DynamicValueEntityModule extends EntityModule {
     if (formal.dynamic) { return formal.dynamic.bind(this)(); }
   }
 
-  set (value, formal) {
-    // If defined as dynamic property, block setting a value
-    if (formal.dynamic) { return null; }
-  }
-
 }

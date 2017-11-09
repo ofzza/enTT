@@ -12,7 +12,7 @@ import EntityPrototype from './';
  * @param {any} EntityClass Target casting Entity class
  * @returns {any} Cast instance of required Entity class
  */
-export default function castAsEntity (value, EntityClass) {
+export function castAsEntity (value, EntityClass) {
 
   // Verify target entity class
   if (!EntityClass || !(EntityClass.prototype instanceof EntityPrototype)) {
@@ -33,4 +33,16 @@ export default function castAsEntity (value, EntityClass) {
   // Return cast entity
   return entity;
 
+}
+
+/**
+ * Casts collection of values as a collection of entities by casting each mamber of the collection
+ * @param {any} collection Collection to cast
+ * @param {any} EntityClass Target casting Entity class
+ * @returns {any} Cast collection
+ */
+export function castCollectionAsEntity (collection, EntityClass) {
+  // TODO: ...
+  collection; EntityClass;
+  return [];
 }

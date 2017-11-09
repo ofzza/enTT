@@ -41,18 +41,18 @@ export default function fetchAllFromPrototypeChain () {
     });
   }
 
-  // Process schema (or get already processed from class' cache)
-  let schema = Cache.fetch(this, 'schema');
-  if (!schema) { Cache.store(this, 'schema', (schema = processPrototypeChainForSchema.bind(this)(prototypes, modules))); }
-  // Expose schema (read-only, returns a cloned object to prevent tampering) if debugging
+  // Process property definitions (or get already processed from class' cache)
+  let propertyDefinitions = Cache.fetch(this, 'propertyDefinitions');
+  if (!propertyDefinitions) { Cache.store(this, 'propertyDefinitions', (propertyDefinitions = processPrototypeChainForPropertyDefinitions.bind(this)(prototypes, modules))); }
+  // Expose property definitions (read-only, returns a cloned object to prevent tampering) if debugging
   if (EntityPrototype.debug) {
-    Object.defineProperty(this, 'schema', {
+    Object.defineProperty(this, 'propertyDefinitions', {
       configurable: false,
       enumerable: false,
       get: () => {
         // Allow only if debug mode
         if (EntityPrototype.debug) {
-          return _.clone(schema);
+          return _.clone(propertyDefinitions);
         } else {
           throw new Error('Access denied!');
         }
@@ -61,7 +61,7 @@ export default function fetchAllFromPrototypeChain () {
   }
 
   // Return everything collected from the prototype chain
-  return { modules, schema };
+  return { modules, propertyDefinitions };
 
 }
 
@@ -101,20 +101,20 @@ function processPrototypeChainForModules (prototypes) {
 }
 
 /**
- * Extracts all schema property definitions from the prototype chain
+ * Extracts all property definitions from the prototype chain
  * @param {any} prototypes Array of prototypes from the class' prototy chain
  * @param {any} modules Array of modules applied to this class
  * @returns {any} Collection of formalized property definitions for this class (property names used as keys)
  */
-function processPrototypeChainForSchema (prototypes, modules) {
+function processPrototypeChainForPropertyDefinitions (prototypes, modules) {
 
   // Collect definitions of all properties from the prototype chain
   const definitions = _.reduce(prototypes, (definitions, proto) => {
-    if (!_.isUndefined(proto.schema)) {
-      // If schema defined by array, transform into object with empty definitions for further processing
-      let schema = (_.isArray(proto.schema) ? _.reduce(proto.schema, (schema, name) => { schema[name] = {}; return schema; }, {}) : proto.schema);
+    if (!_.isUndefined(proto.propertyDefinitions)) {
+      // If property definitions defined by array, transform into object with empty definitions for further processing
+      let propertyDefinitions = (_.isArray(proto.propertyDefinitions) ? _.reduce(proto.propertyDefinitions, (r, name) => { r[name] = {}; return r; }, {}) : proto.propertyDefinitions);
       // Process all property definitions
-      _.forEach(schema, (def, name) => {
+      _.forEach(propertyDefinitions, (def, name) => {
         // Check if property already has a definition
         if (!definitions[name]) { definitions[name] = []; }
         // Add definition (deeper nested definitions to the front of the array, to allow for proper overriding when merging difinitions)
@@ -125,7 +125,7 @@ function processPrototypeChainForSchema (prototypes, modules) {
   }, {});
 
   // Allow all modules to formalize all properties' definitions
-  return _.reduce(definitions, (schema, def, name) => {
+  return _.reduce(definitions, (propertyDefinitions, def, name) => {
     // Merge definitions from the prototype chain
     if (!def || !def.length) {
       // If no definitions, assume empty definition
@@ -137,15 +137,15 @@ function processPrototypeChainForSchema (prototypes, modules) {
       // Merge all object definitions
       def = _.merge(..._.filter(def, (d) => { return _.isObject(d); }));
     }
-    // Initialize property namespace on the schema object
-    schema[name] = {};
+    // Initialize property namespace on the property definitions object
+    propertyDefinitions[name] = {};
     // Allow all modules to process property definition
     _.reduce(modules, (property, module) => {
       // Initialize module namespace on property
       property[module.constructor.name] = module.processProperty(def);
       return property;
-    }, schema[name]);
-    return schema;
+    }, propertyDefinitions[name]);
+    return propertyDefinitions;
   }, {});
 
 }

@@ -58,12 +58,26 @@ var Entity = function (_EntityPrototype) {
      * Casts value as entity by copying content of all properties found on both
      * @static
      * @param {any} value Value to cast
-     * @param {any} entityClass Target casting Entity class
+     * @param {any} EntityClass Target casting Entity class
      * @returns {any} Cast instance of required Entity class
-     * @memberof Watchers
+     * @memberof Entity
      */
-    value: function cast(value, entityClass) {
-      return _prototype2.default.cast.bind(this)(value, entityClass);
+    value: function cast(value, EntityClass) {
+      return _prototype2.default.cast.bind(this)(value, EntityClass);
+    }
+    /**
+     * Casts collection of values as a collection of entities by casting each mamber of the collection
+     * @static
+     * @param {any} collection Collection to cast
+     * @param {any} EntityClass Target casting Entity class
+     * @returns {any} Cast collection
+     * @memberof Entity
+     */
+
+  }, {
+    key: 'castCollection',
+    value: function castCollection(collection, EntityClass) {
+      return _prototype2.default.castCollectionAsEntity.bind(this)(collection, EntityClass);
     }
 
     /**

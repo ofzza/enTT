@@ -27,7 +27,7 @@ var EntityModule = function () {
 
 
     /**
-     * Called on every property definition in the schema, method should formalize and return relevant parts of the property definition. This
+     * Called on every property definition, method should formalize and return relevant parts of the property definition. This
      * formalized definition will be passed to all other methods of the module when they get called.
      * @param {any} def User property definition
      * @returns {any} Formalized property definition
@@ -35,7 +35,7 @@ var EntityModule = function () {
      */
     value: function processProperty(def) {
       return function () {
-        def;throw new Error('Not implemented!');
+        def;throw new Error('not-implemented');
       }();
     }
 
@@ -50,7 +50,9 @@ var EntityModule = function () {
   }, {
     key: 'initialize',
     value: function initialize(value, formal) {
-      formal;value;return undefined;
+      return function () {
+        value;formal;throw new Error('not-implemented');
+      }();
     }
 
     /**
@@ -64,7 +66,9 @@ var EntityModule = function () {
   }, {
     key: 'get',
     value: function get(value, formal) {
-      formal;value;return undefined;
+      return function () {
+        value;formal;throw new Error('not-implemented');
+      }();
     }
 
     /**
@@ -78,7 +82,9 @@ var EntityModule = function () {
   }, {
     key: 'set',
     value: function set(value, formal) {
-      formal;value;return undefined;
+      return function () {
+        value;formal;throw new Error('not-implemented');
+      }();
     }
   }]);
 

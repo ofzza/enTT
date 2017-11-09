@@ -4,7 +4,7 @@
 // =====================================================================================================================
 
 // Import dependencies
-import castAsEntity from './casting';
+import { castAsEntity, castCollectionAsEntity } from './casting';
 import fetchAllFromPrototypeChain from './initialization';
 import initializeManagedProperties from './properties';
 import Debug from './debug';
@@ -29,12 +29,20 @@ export default class EntityPrototype {
    * Casts value as entity by copying content of all properties found on both
    * @static
    * @param {any} value Value to cast
-   * @param {any} entityClass Target casting Entity class
+   * @param {any} EntityClass Target casting Entity class
    * @returns {any} Cast instance of required Entity class
    * @memberof Watchers
    */
-  static cast (value, entityClass) { return castAsEntity.bind(this)(value, entityClass); }
-
+  static cast (value, EntityClass) { return castAsEntity.bind(this)(value, EntityClass); }
+  /**
+   * Casts collection of values as a collection of entities by casting each mamber of the collection
+   * @static
+   * @param {any} collection Collection to cast
+   * @param {any} EntityClass Target casting Entity class
+   * @returns {any} Cast collection
+   * @memberof Entity
+   */
+  static castCollection (collection, EntityClass) { return castCollectionAsEntity.bind(this)(collection, EntityClass); }
   /**
    * Creates an instance of EntityPrototype.
    * @memberof EntityPrototype
@@ -47,7 +55,7 @@ export default class EntityPrototype {
     }
 
     // Check if prototype contains static definition property - if so validate and process it
-    let { modules, schema } = fetchAllFromPrototypeChain.bind(this)();
+    let { modules, propertyDefinitions } = fetchAllFromPrototypeChain.bind(this)();
 
     // Initialize watchers repository
     const watchers = new Watchers(this);
@@ -88,8 +96,8 @@ export default class EntityPrototype {
       }
     });
 
-    // Initialize managed properties based on schema definition
-    initializeManagedProperties.bind(this)(modules, schema, watchers);
+    // Initialize managed properties based on definitions
+    initializeManagedProperties.bind(this)(modules, propertyDefinitions, watchers);
 
   }
 

@@ -9,7 +9,7 @@ let  _      = require('lodash'),
 describe('Change Detection', () => {
   Entity.debug = true;
 
-  class ExtendedEntity extends Entity { static get schema () { return ['propA', 'propB', 'propC']; } }
+  class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['propA', 'propB', 'propC']; } }
   let extended = new ExtendedEntity();
   let propertyChangeEvents = [],
       propertyWatchers = [],
@@ -191,7 +191,7 @@ describe('Change Detection', () => {
   describe('Gets notified of changes to child Entities stored in casting properties', () => {
 
     class CastingEntity extends Entity {
-      static get schema () {
+      static get propertyDefinitions () {
         return {
           child: ExtendedEntity,
           children: [ ExtendedEntity ]

@@ -10,13 +10,13 @@
 export default class EntityModule {
 
   /**
-   * Called on every property definition in the schema, method should formalize and return relevant parts of the property definition. This
+   * Called on every property definition, method should formalize and return relevant parts of the property definition. This
    * formalized definition will be passed to all other methods of the module when they get called.
    * @param {any} def User property definition
    * @returns {any} Formalized property definition
    * @memberof EntityModule
    */
-  processProperty (def) { return (() => { def; throw new Error('Not implemented!'); })(); }
+  processProperty (def) { return (() => { def; throw new Error('not-implemented'); })(); }
 
   /**
    * Initializes entity instance right after instantiation; If returning undefined, value will be ignored
@@ -25,7 +25,7 @@ export default class EntityModule {
    * @returns {any} Initialized property value
    * @memberof EntityModule
    */
-  initialize (value, formal) { formal; value; return undefined; }
+  initialize (value, formal) { return (() => { value; formal; throw new Error('not-implemented'); })(); }
 
   /**
    * Processes value being fetched from storage via a managed property; If returning undefined, value will be ignored
@@ -34,7 +34,7 @@ export default class EntityModule {
    * @returns {any} Processed value
    * @memberof EntityModule
    */
-  get (value, formal) { formal; value; return undefined; }
+  get (value, formal) { return (() => { value; formal; throw new Error('not-implemented'); })(); }
 
   /**
    * Processes value being stored via a managed property; If returning undefined, value will be ignored
@@ -43,6 +43,6 @@ export default class EntityModule {
    * @returns {any} Processed value
    * @memberof EntityModule
    */
-  set (value, formal) { formal; value; return undefined; }
+  set (value, formal) { return (() => { value; formal; throw new Error('not-implemented'); })(); }
 
 }

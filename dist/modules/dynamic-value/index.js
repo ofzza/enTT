@@ -72,14 +72,6 @@ var DynamicValueEntityModule = function (_EntityModule) {
         return formal.dynamic.bind(this)();
       }
     }
-  }, {
-    key: 'set',
-    value: function set(value, formal) {
-      // If defined as dynamic property, block setting a value
-      if (formal.dynamic) {
-        return null;
-      }
-    }
   }]);
 
   return DynamicValueEntityModule;

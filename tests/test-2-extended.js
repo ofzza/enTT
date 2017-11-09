@@ -64,27 +64,27 @@ describe('Extended Class', () => {
   describe('Should accept and apply property definitions', () => {
     describe('Vanilla properties', () => {
       it('Should accept vanilla property definitions via array', () => {
-        class ExtendedEntity extends Entity { static get schema () { return ['prop']; } }
+        class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['prop']; } }
         let extended = new ExtendedEntity();
-        assert.ok(extended.schema.prop);
+        assert.ok(extended.propertyDefinitions.prop);
       });
       it('Should accept vanilla property definitions via object', () => {
-        class ExtendedEntity extends Entity { static get schema () { return { prop: true }; } }
+        class ExtendedEntity extends Entity { static get propertyDefinitions () { return { prop: true }; } }
         let extended = new ExtendedEntity();
-        assert.ok(extended.schema.prop);
+        assert.ok(extended.propertyDefinitions.prop);
       });
     });
   });
 
   describe('Casting should work', () => {
     it('From a non-entity', () => {
-      class ExtendedEntity extends Entity { static get schema () { return ['propA', 'propB']; } }
+      class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['propA', 'propB']; } }
       let cast = Entity.cast({ propA: 'valueA', propB: 'valueB', junkA: 'something', junkB: 'somethingElse' }, ExtendedEntity);
       assert.equal(cast.propA, 'valueA');
       assert.equal(cast.propB, 'valueB');
     });
     it('From a same-type entity', () => {
-      class ExtendedEntity extends Entity { static get schema () { return ['propA', 'propB']; } }
+      class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['propA', 'propB']; } }
       let extended = new ExtendedEntity();
       extended.propA = 'valueA';
       extended.propB = 'valueB';
@@ -93,8 +93,8 @@ describe('Extended Class', () => {
       assert.equal(cast.propB, 'valueB');
     });
     it('Between different type entities', () => {
-      class ExtendedEntity extends Entity { static get schema () { return ['propA', 'propB']; } }
-      class ExtraExtendedEntity extends ExtendedEntity { static get schema () { return ['propC', 'propD']; } }
+      class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['propA', 'propB']; } }
+      class ExtraExtendedEntity extends ExtendedEntity { static get propertyDefinitions () { return ['propC', 'propD']; } }
       // Cast from fewer to more properties
       let extended = new ExtendedEntity();
       extended.propA = 'valueA';

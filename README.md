@@ -11,7 +11,7 @@ TODO: ... how to get, install, include into your project ...
 
 The Entity class is not meant to be instantiated directly; instead it is supposed to be extended into your own, custom data-model classes. When extending the Entity class, there are static properties that can be set to configure the behavior of the extended class:
 
-- **schema** static property can return a Schema definition for your extended class. The schema definition defines properties that will be created and handles by each instance of the class.
+- **propertyDefinitions** static property can return property definition for your extended class. These definitions define managed properties that will be created and handled by each instance of the class.
 
 ```js
   // Import Entity base class
@@ -20,12 +20,12 @@ The Entity class is not meant to be instantiated directly; instead it is suppose
   // Define a model class with vanilla, unconfigured properties
   class MyBase extends enTT {
     // Define two vanilla properties
-    static get schema () { return ['propVanillaA', 'propVanillaB']; }
+    static get propertyDefinitions () { return ['propVanillaA', 'propVanillaB']; }
   }
   // Extend your model class with additional, configured properties
   class MyModel extends MyBase {
     // Define additional, configured properties
-    static get schema () {
+    static get propertyDefinitions () {
       return {
         configuredProperty: { /*... property configuration ...*/ }
       };
@@ -63,9 +63,9 @@ The Entity class is not meant to be instantiated directly; instead it is suppose
 
 > You can also create your own, custom Modules - more on that, and all the prepackaged modules a bit later ...
 
-### Schema: Property types and configuration
+### Property types and configuration
 
-When defining your data-model class' managed properties using the **schema** static property on your class, there are different proeprty types you can define:
+When defining your data-model class' managed properties using the **propertyDefinitions** static property on your class, there are different proeprty types you can define:
 
 ##### Value property
 
@@ -252,7 +252,7 @@ Entity class has an exposed static `.clone(value, EntityClass)` method which you
 ```js
 // Define an entity class
 class MyModel extends Entity {
-  static get schema () { return ['propA', 'propB']; }
+  static get propertyDefinitions () { return ['propA', 'propB']; }
 }
 
 // Cast any data as that entity class

@@ -66,20 +66,20 @@ function fetchAllFromPrototypeChain() {
     });
   }
 
-  // Process schema (or get already processed from class' cache)
-  var schema = _cache2.default.fetch(this, 'schema');
-  if (!schema) {
-    _cache2.default.store(this, 'schema', schema = processPrototypeChainForSchema.bind(this)(prototypes, modules));
+  // Process property definitions (or get already processed from class' cache)
+  var propertyDefinitions = _cache2.default.fetch(this, 'propertyDefinitions');
+  if (!propertyDefinitions) {
+    _cache2.default.store(this, 'propertyDefinitions', propertyDefinitions = processPrototypeChainForPropertyDefinitions.bind(this)(prototypes, modules));
   }
-  // Expose schema (read-only, returns a cloned object to prevent tampering) if debugging
+  // Expose property definitions (read-only, returns a cloned object to prevent tampering) if debugging
   if (_prototype2.default.debug) {
-    Object.defineProperty(this, 'schema', {
+    Object.defineProperty(this, 'propertyDefinitions', {
       configurable: false,
       enumerable: false,
       get: function get() {
         // Allow only if debug mode
         if (_prototype2.default.debug) {
-          return _lodash2.default.clone(schema);
+          return _lodash2.default.clone(propertyDefinitions);
         } else {
           throw new Error('Access denied!');
         }
@@ -88,7 +88,7 @@ function fetchAllFromPrototypeChain() {
   }
 
   // Return everything collected from the prototype chain
-  return { modules: modules, schema: schema };
+  return { modules: modules, propertyDefinitions: propertyDefinitions };
 }
 
 /**
@@ -129,22 +129,22 @@ function processPrototypeChainForModules(prototypes) {
 }
 
 /**
- * Extracts all schema property definitions from the prototype chain
+ * Extracts all property definitions from the prototype chain
  * @param {any} prototypes Array of prototypes from the class' prototy chain
  * @param {any} modules Array of modules applied to this class
  * @returns {any} Collection of formalized property definitions for this class (property names used as keys)
  */
-function processPrototypeChainForSchema(prototypes, modules) {
+function processPrototypeChainForPropertyDefinitions(prototypes, modules) {
 
   // Collect definitions of all properties from the prototype chain
   var definitions = _lodash2.default.reduce(prototypes, function (definitions, proto) {
-    if (!_lodash2.default.isUndefined(proto.schema)) {
-      // If schema defined by array, transform into object with empty definitions for further processing
-      var schema = _lodash2.default.isArray(proto.schema) ? _lodash2.default.reduce(proto.schema, function (schema, name) {
-        schema[name] = {};return schema;
-      }, {}) : proto.schema;
+    if (!_lodash2.default.isUndefined(proto.propertyDefinitions)) {
+      // If property definitions defined by array, transform into object with empty definitions for further processing
+      var propertyDefinitions = _lodash2.default.isArray(proto.propertyDefinitions) ? _lodash2.default.reduce(proto.propertyDefinitions, function (r, name) {
+        r[name] = {};return r;
+      }, {}) : proto.propertyDefinitions;
       // Process all property definitions
-      _lodash2.default.forEach(schema, function (def, name) {
+      _lodash2.default.forEach(propertyDefinitions, function (def, name) {
         // Check if property already has a definition
         if (!definitions[name]) {
           definitions[name] = [];
@@ -157,7 +157,7 @@ function processPrototypeChainForSchema(prototypes, modules) {
   }, {});
 
   // Allow all modules to formalize all properties' definitions
-  return _lodash2.default.reduce(definitions, function (schema, def, name) {
+  return _lodash2.default.reduce(definitions, function (propertyDefinitions, def, name) {
     // Merge definitions from the prototype chain
     if (!def || !def.length) {
       // If no definitions, assume empty definition
@@ -171,15 +171,15 @@ function processPrototypeChainForSchema(prototypes, modules) {
         return _lodash2.default.isObject(d);
       })));
     }
-    // Initialize property namespace on the schema object
-    schema[name] = {};
+    // Initialize property namespace on the property definitions object
+    propertyDefinitions[name] = {};
     // Allow all modules to process property definition
     _lodash2.default.reduce(modules, function (property, module) {
       // Initialize module namespace on property
       property[module.constructor.name] = module.processProperty(def);
       return property;
-    }, schema[name]);
-    return schema;
+    }, propertyDefinitions[name]);
+    return propertyDefinitions;
   }, {});
 }
 //# sourceMappingURL=initialization.js.map
