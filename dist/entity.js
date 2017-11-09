@@ -77,7 +77,7 @@ var Entity = function (_EntityPrototype) {
   }, {
     key: 'castCollection',
     value: function castCollection(collection, EntityClass) {
-      return _prototype2.default.castCollectionAsEntity.bind(this)(collection, EntityClass);
+      return _prototype2.default.castCollection.bind(this)(collection, EntityClass);
     }
 
     /**

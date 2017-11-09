@@ -45,7 +45,7 @@ export default class Entity extends EntityPrototype {
    * @returns {any} Cast collection
    * @memberof Entity
    */
-  static castCollection (collection, EntityClass) { return EntityPrototype.castCollectionAsEntity.bind(this)(collection, EntityClass); }
+  static castCollection (collection, EntityClass) { return EntityPrototype.castCollection.bind(this)(collection, EntityClass); }
 
   /**
    * Entity modules included by default

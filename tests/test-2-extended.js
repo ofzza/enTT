@@ -77,13 +77,15 @@ describe('Extended Class', () => {
   });
 
   describe('Casting should work', () => {
-    it('From a non-entity', () => {
+    it('Cast to Entity from a non-entity', () => {
       class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['propA', 'propB']; } }
       let cast = Entity.cast({ propA: 'valueA', propB: 'valueB', junkA: 'something', junkB: 'somethingElse' }, ExtendedEntity);
       assert.equal(cast.propA, 'valueA');
       assert.equal(cast.propB, 'valueB');
+      assert.equal(cast.junkA, undefined);
+      assert.equal(cast.junkB, undefined);
     });
-    it('From a same-type entity', () => {
+    it('Cast to Entity from a same type entity', () => {
       class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['propA', 'propB']; } }
       let extended = new ExtendedEntity();
       extended.propA = 'valueA';
@@ -92,7 +94,7 @@ describe('Extended Class', () => {
       assert.equal(cast.propA, 'valueA');
       assert.equal(cast.propB, 'valueB');
     });
-    it('Between different type entities', () => {
+    it('Cast to Entity from a different type entity', () => {
       class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['propA', 'propB']; } }
       class ExtraExtendedEntity extends ExtendedEntity { static get propertyDefinitions () { return ['propC', 'propD']; } }
       // Cast from fewer to more properties
@@ -110,6 +112,66 @@ describe('Extended Class', () => {
       let recast = Entity.cast(cast, ExtendedEntity);
       assert.equal(recast.propA, 'valueA');
       assert.equal(recast.propB, 'valueB');
+      assert.equal(recast.propC, undefined);
+      assert.equal(recast.propD, undefined);
+    });
+    it('Cast to Entity collection from a non-entity collection', () => {
+      class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['propA', 'propB']; } }
+      let cast = Entity.castCollection(_.map([0, 1, 2], (i) => {
+        return { propA: `valueA #${i}`, propB: `valueB #${i}`, junkA: `something #${i}`, junkB: `somethingElse #${i}` };
+      }), ExtendedEntity);
+      assert.equal(cast.length, 3);
+      _.forEach(cast, (cast, i) => {
+        assert.equal(cast.propA, `valueA #${i}`);
+        assert.equal(cast.propB, `valueB #${i}`);
+        assert.equal(cast.junkA, undefined);
+        assert.equal(cast.junkB, undefined);
+      });
+    });
+    it('Cast to Entity collection from a same type entity collection', () => {
+      class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['propA', 'propB']; } }
+      let cast = Entity.castCollection(_.map([0, 1, 2], (i) => {
+        let extended = new ExtendedEntity();
+        extended.propA = `valueA #${i}`;
+        extended.propB = `valueB #${i}`;
+        return extended;
+      }), ExtendedEntity);
+      assert.equal(cast.length, 3);
+      _.forEach(cast, (cast, i) => {
+        assert.equal(cast.propA, `valueA #${i}`);
+        assert.equal(cast.propB, `valueB #${i}`);
+      });
+    });
+    it('Cast to Entity collection from a different type entity collection', () => {
+      class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['propA', 'propB']; } }
+      class ExtraExtendedEntity extends ExtendedEntity { static get propertyDefinitions () { return ['propC', 'propD']; } }
+      // Cast from fewer to more properties
+      let cast = Entity.castCollection(_.map([0, 1, 2], (i) => {
+        let extended = new ExtendedEntity();
+        extended.propA = `valueA #${i}`;
+        extended.propB = `valueB #${i}`;
+        return extended;
+      }), ExtraExtendedEntity);
+      assert.equal(cast.length, 3);
+      _.forEach(cast, (cast, i) => {
+        assert.equal(cast.propA, `valueA #${i}`);
+        assert.equal(cast.propB, `valueB #${i}`);
+        assert.equal(cast.propC, null);
+        assert.equal(cast.propD, null);
+      });
+      // Cast from more to fewer properties
+      _.forEach(cast, (cast, i) => {
+        cast.propC = `valueC #${i}`;
+        cast.propD = `valueD #${i}`;
+      });
+      let recast = Entity.castCollection(cast, ExtendedEntity);
+      assert.equal(recast.length, 3);
+      _.forEach(recast, (cast, i) => {
+        assert.equal(cast.propA, `valueA #${i}`);
+        assert.equal(cast.propB, `valueB #${i}`);
+        assert.equal(cast.propC, undefined);
+        assert.equal(cast.propD, undefined);
+      });
     });
   });
 

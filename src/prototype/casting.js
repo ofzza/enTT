@@ -42,7 +42,22 @@ export function castAsEntity (value, EntityClass) {
  * @returns {any} Cast collection
  */
 export function castCollectionAsEntity (collection, EntityClass) {
-  // TODO: ...
-  collection; EntityClass;
-  return [];
+
+  // Verify target entity class
+  if (!EntityClass || !(EntityClass.prototype instanceof EntityPrototype)) {
+    throw new Error('Only casting to classes extending the Entity base class is allowed!');
+  }
+
+  // Check collection type (array/hashtable)
+  if (_.isArray(collection)) {
+    // Cast as array
+    return _.map(collection, (value) => { return castAsEntity(value, EntityClass); });
+  } else {
+    // Cast as hashtable
+    return _.reduce(collection, (collection, value, key) => {
+      collection[key] = castAsEntity(value, EntityClass);
+      return collection;
+    }, {});
+  }
+
 }

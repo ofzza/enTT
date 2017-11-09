@@ -247,7 +247,7 @@ entity.update(
 
 ##### Casting between entitiy types
 
-Entity class has an exposed static `.clone(value, EntityClass)` method which you can use to cast anything as an Entity type:
+Entity class has an exposed static `.cast(value, EntityClass)` method which you can use to cast anything as an Entity type:
 
 ```js
 // Define an entity class
@@ -271,6 +271,45 @@ console.log(                              // Outputs:
   (castEntity.propA),                     //  "Aa1"
   (castEntity.propB),                     //  "Bb2"
   (castEntity.propC)                      //  undefined
+);
+```
+
+To cast arrays or other collections use .castCollection(collection, EntityClass) method:
+
+```js
+// Define an entity class
+class MyModel extends Entity {
+  static get propertyDefinitions () { return ['propA', 'propB']; }
+}
+
+// Cast any data as that entity class
+let castEntityCollection = Entity.castCollection(
+  [
+    {
+      propA: 'Aa1',
+      propB: 'Bb1'
+      propC: 'Extra property not defined for MyModel class!'
+    },
+    {
+      propA: 'Aa2',
+      propB: 'Bb2'
+      propC: 'Extra property not defined for MyModel class!'
+    },
+    {
+      propA: 'Aa3',
+      propB: 'Bb3'
+      propC: 'Extra property not defined for MyModel class!'
+    },
+  ]
+  MyModel
+);
+
+// Result of the cast is an instance of the requsted class with all properties copied over
+console.log(                              // Outputs:
+  (castEntityCollection[1] instanceof castEntity),     //  true
+  (castEntityCollection[1].propA),                     //  "Aa2"
+  (castEntityCollection[1].propB),                     //  "Bb2"
+  (castEntityCollection[1].propC)                      //  undefined
 );
 ```
 

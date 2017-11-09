@@ -58,8 +58,24 @@ function castAsEntity(value, EntityClass) {
  * @returns {any} Cast collection
  */
 function castCollectionAsEntity(collection, EntityClass) {
-  // TODO: ...
-  collection;EntityClass;
-  return [];
+
+  // Verify target entity class
+  if (!EntityClass || !(EntityClass.prototype instanceof _3.default)) {
+    throw new Error('Only casting to classes extending the Entity base class is allowed!');
+  }
+
+  // Check collection type (array/hashtable)
+  if (_lodash2.default.isArray(collection)) {
+    // Cast as array
+    return _lodash2.default.map(collection, function (value) {
+      return castAsEntity(value, EntityClass);
+    });
+  } else {
+    // Cast as hashtable
+    return _lodash2.default.reduce(collection, function (collection, value, key) {
+      collection[key] = castAsEntity(value, EntityClass);
+      return collection;
+    }, {});
+  }
 }
 //# sourceMappingURL=casting.js.map
