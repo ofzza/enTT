@@ -3,7 +3,8 @@
 // =====================================================================================================================
 
 // Require dependencies
-const util        = require('gulp-util'),
+const path        = require('path'),
+      util        = require('gulp-util'),
       babel       = require('gulp-babel'),
       sourcemaps  = require('gulp-sourcemaps');
 
@@ -21,7 +22,7 @@ module.exports = (gulp) => {
         ],
         filenameRelative: true
       }))
-      .pipe(!util.env.production ? sourcemaps.write('.', { includeContent: true }) : util.noop())
+      .pipe(!util.env.production ? sourcemaps.write('.', {includeContent: false, sourceRoot: sourceRootFn }) : util.noop())
       .pipe(gulp.dest('./dist'));
   });
 
@@ -32,3 +33,15 @@ module.exports = (gulp) => {
   };
 
 };
+
+/**
+ * Composes source-maps' sourceRoot property for a file
+ * @param {any} file File being processed
+ * @returns sourceRoot value
+ */
+function sourceRootFn (file) {
+  let sourcePath    = file.history[0],
+      targetPath    = path.join(__dirname, '../src/'),
+      relativePath  = path.join(path.relative(sourcePath, targetPath), './src');
+  return relativePath;
+}

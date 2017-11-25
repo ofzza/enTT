@@ -12,9 +12,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 // Test module importing
 
 
-var _lodash = require('lodash');
+var _child_process = require('child_process');
 
-var _lodash2 = _interopRequireDefault(_lodash);
+var _inner = require('./inner');
+
+var _inner2 = _interopRequireDefault(_inner);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -39,9 +41,27 @@ var Test = function () {
      * @memberof Test
      */
     value: function run() {
-      console.log('Test: [' + _lodash2.default.map(Array(10), function (value, i) {
-        return i;
-      }).join(', ') + ']');
+      // Get system information
+      var windowsVersion = null;
+      try {
+        windowsVersion = ('' + (0, _child_process.execSync)('ver')).replace(/\r/g, '').replace(/\n/g, '');
+      } catch (err) {
+        err;
+      }
+
+      var linuxVersion = null;
+      try {
+        linuxVersion = ('' + (0, _child_process.execSync)('uname -mrs')).replace(/\r/g, '').replace(/\n/g, '');
+      } catch (err) {
+        err;
+      }
+
+      // Prompt system info
+      console.log('OS version:   ' + (windowsVersion || linuxVersion || 'Detection failed!'));
+      console.log('Node version: ' + process.version);
+
+      // Execute inner script file
+      _inner2.default.run();
     }
   }]);
 
