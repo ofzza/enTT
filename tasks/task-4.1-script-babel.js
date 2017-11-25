@@ -12,7 +12,7 @@ const path        = require('path'),
 module.exports = (gulp) => {
 
   // Define ES6 transcompilation task
-  gulp.task('build@babel', () => {
+  gulp.task('build@script-babel', () => {
     return gulp
       .src('./src/**/*.js')
       .pipe(!util.env.production ? sourcemaps.init({ loadMaps: true }) : util.noop())
@@ -22,13 +22,13 @@ module.exports = (gulp) => {
         ],
         filenameRelative: true
       }))
-      .pipe(!util.env.production ? sourcemaps.write('.', {includeContent: false, sourceRoot: sourceRootFn }) : util.noop())
+      .pipe(!util.env.production ? sourcemaps.write('.', { includeContent: false, sourceRoot: sourceRootFn }) : util.noop())
       .pipe(gulp.dest('./dist'));
   });
 
   // Return registered tasks
   return {
-    build: 'build@babel',
+    build: 'build@script-babel',
     watch: './src/**/*.js'
   };
 
@@ -37,7 +37,7 @@ module.exports = (gulp) => {
 /**
  * Composes source-maps' sourceRoot property for a file
  * @param {any} file File being processed
- * @returns sourceRoot value
+ * @returns {any} sourceRoot value
  */
 function sourceRootFn (file) {
   let sourcePath    = file.history[0],

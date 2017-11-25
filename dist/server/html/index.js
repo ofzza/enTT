@@ -6,33 +6,35 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // =====================================================================================================================
-// TEST SCRIPT: Dummy script, testing GULP tasks
+// TEST HTML SCRIPT: Dummy script, testing HTML tasks
 // =====================================================================================================================
 
 // Test module importing
 
 
-var _child_process = require('child_process');
+var _fs = require('fs');
 
-var _html = require('./server/html');
+var _fs2 = _interopRequireDefault(_fs);
 
-var _html2 = _interopRequireDefault(_html);
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
- * Testing class definition
+ * Testing HTML class definition
  * @export
  * @class Test
  */
-var Test = function () {
-  function Test() {
-    _classCallCheck(this, Test);
+var TestHTML = function () {
+  function TestHTML() {
+    _classCallCheck(this, TestHTML);
   }
 
-  _createClass(Test, null, [{
+  _createClass(TestHTML, null, [{
     key: 'run',
 
     /**
@@ -41,36 +43,20 @@ var Test = function () {
      * @memberof Test
      */
     value: function run() {
-      // Get system information
-      var windowsVersion = null;
-      try {
-        windowsVersion = ('' + (0, _child_process.execSync)('ver')).replace(/\r/g, '').replace(/\n/g, '');
-      } catch (err) {
-        err;
-      }
 
-      var linuxVersion = null;
-      try {
-        linuxVersion = ('' + (0, _child_process.execSync)('uname -mrs')).replace(/\r/g, '').replace(/\n/g, '');
-      } catch (err) {
-        err;
-      }
-
-      // Prompt system info
-      console.log('OS version:   ' + (windowsVersion || linuxVersion || 'Detection failed!'));
-      console.log('Node version: ' + process.version);
-
-      // Execute inner script file
-      _html2.default.run();
+      // Fetch HTML template and styling
+      var html = _fs2.default.readFileSync(_path2.default.join(__dirname, '../../client/index.html')).toString(),
+          css = _fs2.default.readFileSync(_path2.default.join(__dirname, '../../client/style/css/style.css')).toString(),
+          less = _fs2.default.readFileSync(_path2.default.join(__dirname, '../../client/style/less/style.css')).toString(),
+          scss = _fs2.default.readFileSync(_path2.default.join(__dirname, '../../client/style/scss/style.css')).toString(),
+          output = html.replace('</head>', '<style>\n' + css.replace(/\n/g, '') + '\n' + less.replace(/\n/g, '') + '\n' + scss.replace(/\n/g, '') + '\n\t</style></head>');
+      console.log();
+      console.log(output);
     }
   }]);
 
-  return Test;
+  return TestHTML;
 }();
 
-// Run test statuc method
-
-
-exports.default = Test;
-Test.run();
+exports.default = TestHTML;
 //# sourceMappingURL=index.js.map

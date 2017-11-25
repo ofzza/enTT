@@ -1,0 +1,4 @@
+body .dummy-less-class {
+  display: block;
+  width: 3px;
+}

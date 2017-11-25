@@ -4,7 +4,7 @@
 
 // Test module importing
 import { execSync } from 'child_process';
-import TestInner from './inner';
+import TestHTML from './server/html';
 
 /**
  * Testing class definition
@@ -30,7 +30,7 @@ export default class Test {
     console.log(`Node version: ${ process.version }`);
 
     // Execute inner script file
-    TestInner.run();
+    TestHTML.run();
   }
 }
 
