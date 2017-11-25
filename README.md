@@ -76,4 +76,15 @@ $ gulp watch
 
 ## Tests
 
-... TODO: ...
+Tests are to be placed in `./tests` directory and are to be written as [Mocha](https://mochajs.org/#getting-started) tests.
+
+All tests can be executed by running:
+```
+> gulp test
+``` 
+
+or will be executed on code change if running a watcher task:
+
+```
+> gulp watch
+```
