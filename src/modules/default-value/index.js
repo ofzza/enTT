@@ -15,7 +15,7 @@ import EntityModule from '../';
  */
 export default class DefaultValueEntityModule extends EntityModule {
 
-  processProperty (def) {
+  processProperty (name, def) {
     // Initialize formal definition
     const formal = {};
     // Check for default value
@@ -24,7 +24,7 @@ export default class DefaultValueEntityModule extends EntityModule {
     return formal;
   }
 
-  initialize (value, formal) {
+  initialize (name, value, formal) {
     // If not initialized already, initialize to default value
     if (_.isUndefined(value)) { return formal.value; }
   }

@@ -50,7 +50,7 @@ var CastingValueEntityModule = function (_EntityModule) {
 
   _createClass(CastingValueEntityModule, [{
     key: 'processProperty',
-    value: function processProperty(def) {
+    value: function processProperty(name, def) {
       // Initialize formal definition
       var formal = {};
       // Check for casting definition
@@ -76,7 +76,7 @@ var CastingValueEntityModule = function (_EntityModule) {
     }
   }, {
     key: 'set',
-    value: function set(value, formal) {
+    value: function set(name, value, formal) {
       if (formal.castAs) {
         if (_lodash2.default.isNil(value)) {
           // If setting null, allow null value

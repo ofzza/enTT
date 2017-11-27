@@ -27,19 +27,19 @@ describe('Extended Class', () => {
       class ExtendedEntity extends Entity { static get modules () { return null; } }
       let extended;
       assert.doesNotThrow(() => { extended = new ExtendedEntity(); });
-      assert.equal(extended.modules.length, Entity.modules.length);
+      assert.equal(extended.__modules.length, Entity.modules.length);
     });
     it('Should silently ignore an empty array as module definition', () => {
       class ExtendedEntity extends Entity { static get modules () { return []; } }
       let extended;
       assert.doesNotThrow(() => { extended = new ExtendedEntity(); });
-      assert.equal(extended.modules.length, Entity.modules.length);
+      assert.equal(extended.__modules.length, Entity.modules.length);
     });
     it('Should silently ignore an array of NIL-values as module definitions', () => {
       class ExtendedEntity extends Entity { static get modules () { return [ null, undefined ]; } }
       let extended;
       assert.doesNotThrow(() => { extended = new ExtendedEntity(); });
-      assert.equal(extended.modules.length, Entity.modules.length);
+      assert.equal(extended.__modules.length, Entity.modules.length);
     });
     it('Shouldn\'t accept non-instantiated class as a module', () => {
       class ExtendedEntity extends Entity { static get modules () { return [ CustomModule ]; } }
@@ -53,11 +53,11 @@ describe('Extended Class', () => {
       class EntityWithModule extends Entity {
         static get modules () { return [ new CustomModule('A') ]; }
       }
-      assert.ok(_.find((new EntityWithModule()).modules, (module) => { return (module.id === 'A'); }));
+      assert.ok(_.find((new EntityWithModule()).__modules, (module) => { return (module.id === 'A'); }));
       class EntityWithOverriddenModule extends EntityWithModule {
         static get modules () { return [ new CustomModule('B') ]; }
       }
-      assert.ok(_.find((new EntityWithOverriddenModule()).modules, (module) => { return (module.id === 'B'); }));
+      assert.ok(_.find((new EntityWithOverriddenModule()).__modules, (module) => { return (module.id === 'B'); }));
     });
   });
 
@@ -66,12 +66,12 @@ describe('Extended Class', () => {
       it('Should accept vanilla property definitions via array', () => {
         class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['prop']; } }
         let extended = new ExtendedEntity();
-        assert.ok(extended.propertyDefinitions.prop);
+        assert.ok(extended.__propertyDefinitions.prop);
       });
       it('Should accept vanilla property definitions via object', () => {
         class ExtendedEntity extends Entity { static get propertyDefinitions () { return { prop: true }; } }
         let extended = new ExtendedEntity();
-        assert.ok(extended.propertyDefinitions.prop);
+        assert.ok(extended.__propertyDefinitions.prop);
       });
     });
   });

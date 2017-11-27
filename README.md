@@ -93,6 +93,19 @@ A dynamic property can be defined explicitelly using the "**dynamic**" key:
   ...
 ```
 
+A dynamic property will be recalculated when ever a change to the properties it's depending on is detected. If defining a dynamic property using the explicit syntax, you can specify the proeprties it's dpending on using the "**dependencies**" key:
+
+```js
+  ...
+  firstName: {
+    dynamic: function () { return this.fullName.split(' ')[0]; }
+    dependencies: ['fullName']
+  }
+  ...
+```
+
+If dependencies aren't explicitly specified, the dynamic property will be recalculated on any change to any property.
+
 > **Note**: dynamic property's function definitions needs to be a full-bodied function definition, and not an abreviated lambda function, so that it can be bound to the right "this" reference, allowing it to get values of other properties on the Entity instance.
 
 ##### Casting property

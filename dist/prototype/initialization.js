@@ -52,13 +52,13 @@ function fetchAllFromPrototypeChain() {
   }
   // Expose modules (read-only, returns a cloned object to prevent tampering) if debugging
   if (_prototype2.default.debug) {
-    Object.defineProperty(this, 'modules', {
+    Object.defineProperty(this, '__modules', {
       configurable: false,
       enumerable: false,
       get: function get() {
         // Allow only if debug mode
         if (_prototype2.default.debug) {
-          return _lodash2.default.clone(modules);
+          return modules;
         } else {
           throw new Error('Access denied!');
         }
@@ -73,13 +73,13 @@ function fetchAllFromPrototypeChain() {
   }
   // Expose property definitions (read-only, returns a cloned object to prevent tampering) if debugging
   if (_prototype2.default.debug) {
-    Object.defineProperty(this, 'propertyDefinitions', {
+    Object.defineProperty(this, '__propertyDefinitions', {
       configurable: false,
       enumerable: false,
       get: function get() {
         // Allow only if debug mode
         if (_prototype2.default.debug) {
-          return _lodash2.default.clone(propertyDefinitions);
+          return propertyDefinitions;
         } else {
           throw new Error('Access denied!');
         }
@@ -176,7 +176,7 @@ function processPrototypeChainForPropertyDefinitions(prototypes, modules) {
     // Allow all modules to process property definition
     _lodash2.default.reduce(modules, function (property, module) {
       // Initialize module namespace on property
-      property[module.constructor.name] = module.processProperty(def);
+      property[module.constructor.name] = module.processProperty(name, def);
       return property;
     }, propertyDefinitions[name]);
     return propertyDefinitions;

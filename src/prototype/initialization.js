@@ -27,13 +27,13 @@ export default function fetchAllFromPrototypeChain () {
   if (!modules) { Cache.store(this, 'modules', (modules = processPrototypeChainForModules.bind(this)(prototypes))); }
   // Expose modules (read-only, returns a cloned object to prevent tampering) if debugging
   if (EntityPrototype.debug) {
-    Object.defineProperty(this, 'modules', {
+    Object.defineProperty(this, '__modules', {
       configurable: false,
       enumerable: false,
       get: () => {
         // Allow only if debug mode
         if (EntityPrototype.debug) {
-          return _.clone(modules);
+          return modules;
         } else {
           throw new Error('Access denied!');
         }
@@ -46,13 +46,13 @@ export default function fetchAllFromPrototypeChain () {
   if (!propertyDefinitions) { Cache.store(this, 'propertyDefinitions', (propertyDefinitions = processPrototypeChainForPropertyDefinitions.bind(this)(prototypes, modules))); }
   // Expose property definitions (read-only, returns a cloned object to prevent tampering) if debugging
   if (EntityPrototype.debug) {
-    Object.defineProperty(this, 'propertyDefinitions', {
+    Object.defineProperty(this, '__propertyDefinitions', {
       configurable: false,
       enumerable: false,
       get: () => {
         // Allow only if debug mode
         if (EntityPrototype.debug) {
-          return _.clone(propertyDefinitions);
+          return propertyDefinitions;
         } else {
           throw new Error('Access denied!');
         }
@@ -142,7 +142,7 @@ function processPrototypeChainForPropertyDefinitions (prototypes, modules) {
     // Allow all modules to process property definition
     _.reduce(modules, (property, module) => {
       // Initialize module namespace on property
-      property[module.constructor.name] = module.processProperty(def);
+      property[module.constructor.name] = module.processProperty(name, def);
       return property;
     }, propertyDefinitions[name]);
     return propertyDefinitions;

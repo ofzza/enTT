@@ -4,9 +4,11 @@
 // =====================================================================================================================
 
 // Import dependencies
+import _ from 'lodash';
 import { castAsEntity, castCollectionAsEntity } from './casting';
 import fetchAllFromPrototypeChain from './initialization';
 import initializeManagedProperties from './properties';
+import { NotImplementedError } from '../modules';
 import Debug from './debug';
 import Watchers from './watchers';
 
@@ -91,7 +93,28 @@ export default class EntityPrototype {
          * @param {any} fn Function meant to be manually applying changes to the entity instance
          * @memberof Watchers
          */
-        return (fn) => { watchers.manualUpdate(fn); };
+        return (fn) => {
+          // Run update function
+          watchers.manualUpdate(() => {
+
+            // Run custom update function
+            let updated = fn();
+
+            // Let modules react to update
+            _.forEach(modules, (module) => {
+              try {
+                module.update.bind(this)(updated);
+              } catch (err) {
+                // Check if not implemented, or if legitimate error
+                if (err !== NotImplementedError) { throw err; }
+              }
+            });
+
+            // Return updated
+            return updated;
+
+          });
+        };
 
       }
     });

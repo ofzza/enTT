@@ -4,8 +4,8 @@
 
 // Import dependencies
 import _ from 'lodash';
-import Cache from './cache';
-
+import EntityPrototype from './';
+import { NotImplementedError } from '../modules';
 
 /**
  * Initializes managed properties, based on property definitions, calling all modules as part of getter/setter
@@ -15,91 +15,107 @@ import Cache from './cache';
  */
 export default function initializeManagedProperties (modules, propertyDefinitions, watchers) {
 
-  // Initialize value storage (or get already processed from class' cache)
-  let storage = Cache.fetch(this, 'storage');
+  // Filter modules by implemented methods
+  let getterModules = _.filter(modules, (module) => { try { module.get(); return true; } catch (err) { return (err !== NotImplementedError); } }),
+      setterModules = _.filter(modules, (module) => { try { module.set(); return true; } catch (err) { return (err !== NotImplementedError); } }),
+      afterSetterModules = _.filter(modules, (module) => { try { module.afterSet(); return true; } catch (err) { return (err !== NotImplementedError); } });
 
-  // If not loaded from cache, initialize managed properties
-  if (!storage) {
-
-    // Process managed properties and formalize their definitions per included module
-    storage = {};
-    _.forEach(propertyDefinitions, (def, name) => {
-      // Initialize values (course undefined to null)
-      _.forEach(modules, (module) => {
-        try {
-          // Try initialization if implemented
-          let initializedValue = module.initialize.bind(this)(storage[name], def[module.constructor.name]);
-          if (!_.isUndefined(initializedValue)) {
-            storage[name] = initializedValue;
-          } else if (_.isUndefined(storage[name])) {
-            storage[name] = null;
-          }
-        } catch (err) {
-          // Check if not implemented, or if legitimate error
-          if (err.message !== 'not-implemented') { throw err; }
+  // Process managed properties and formalize their definitions per included module
+  let storage = {};
+  _.forEach(propertyDefinitions, (def, name) => {
+    // Initialize values (course undefined to null)
+    _.forEach(modules, (module) => {
+      try {
+        // Try initialization if implemented
+        let initializedValue = module.initialize.bind(this)(name, storage[name], def[module.constructor.name]);
+        if (!_.isUndefined(initializedValue)) {
+          storage[name] = initializedValue;
+        } else if (_.isUndefined(storage[name])) {
+          storage[name] = null;
         }
-      });
+      } catch (err) {
+        // Check if not implemented, or if legitimate error
+        if (err !== NotImplementedError) { throw err; }
+      }
+    });
 
-      // Initialize property
-      Object.defineProperty(this, name, {
-        configurable: false,
-        enumerable: true,
-        get: (() => {
-          // Get all modules implementing .get() method
-          let getterModules = _.filter(modules, (module) => {
-            try { module.get(null, def[module.constructor.name]); return true; } catch (err) { if (err.message !== 'not-implemented') { throw err; } }
-          });
-          // Return composed getter function
-          return () => {
-            // Get value from storage
-            let value = storage[name];
-            // Let modules process value
-            _.forEach(getterModules, (module) => {
-              let updatedValue = module.get.bind(this)(value, def[module.constructor.name]);
+    // Initialize property
+    Object.defineProperty(this, name, {
+      configurable: false,
+      enumerable: true,
+
+      get: (() => {
+        // Return composed getter function
+        return () => {
+          // Get value from storage
+          let value = storage[name];
+          // Let modules process set value
+          _.forEach(getterModules, (module) => {
+            try {
+              let updatedValue = module.get.bind(this)(name, value, def[module.constructor.name]);
               if (!_.isUndefined(updatedValue)) { value = updatedValue; }
-            });
-            // Return processed value (course undefined to null)
-            return (!_.isUndefined(value) ? value : null);
-          };
-        })(),
-        set: (() => {
-          // Get all modules implementing .set() method
-          let setterModules = _.filter(modules, (module) => {
-            try { module.set(null, def[module.constructor.name]); return true; } catch (err) { if (err.message !== 'not-implemented') { throw err; } }
-          });
-          // Return composed setter function
-          return (value) => {
-            // Let modules process value
-            _.forEach(setterModules, (module) => {
-              let updatedValue = module.set.bind(this)(value, def[module.constructor.name]);
-              if (!_.isUndefined(updatedValue)) { value = updatedValue; }
-            });
-            // Check if value changed
-            let newValue = (!_.isUndefined(value) ? value : null);
-            if (newValue !== storage[name]) {
-              // Store processed value (course undefined to null)
-              storage[name] = (!_.isUndefined(value) ? value : null);
-              // In case setting an Entity, watch for it's changes
-              watchers.watchChildEntity(name, value);
-              // Trigger watchers
-              watchers.triggerChangeEvent(name);
+            } catch (err) {
+              // Check if not implemented, or if legitimate error
+              if (err !== NotImplementedError) { throw err; }
             }
-          };
-        })()
-      });
+          });
+          // Return processed value (course undefined to null)
+          return (!_.isUndefined(value) ? value : null);
+        };
+      })(),
+
+      set: (() => {
+        // Return composed setter function
+        return (value) => {
+          // Let modules process set value
+          _.forEach(setterModules, (module) => {
+            try {
+              let updatedValue = module.set.bind(this)(name, value, def[module.constructor.name]);
+              if (!_.isUndefined(updatedValue)) { value = updatedValue; }
+            } catch (err) {
+              // Check if not implemented, or if legitimate error
+              if (err !== NotImplementedError) { throw err; }
+            }
+          });
+          // Check if value changed
+          let newValue = (!_.isUndefined(value) ? value : null);
+          if (newValue !== storage[name]) {
+            // Store processed value (course undefined to null)
+            storage[name] = (!_.isUndefined(value) ? value : null);
+            // Let modules process value after having set it
+            _.forEach(afterSetterModules, (module) => {
+              try {
+                module.afterSet.bind(this)(name, value, def[module.constructor.name]);
+              } catch (err) {
+                // Check if not implemented, or if legitimate error
+                if (err !== NotImplementedError) { throw err; }
+              }
+            });
+            // In case setting an Entity, watch for it's changes
+            watchers.watchChildEntity(name, value);
+            // Trigger watchers
+            watchers.triggerChangeEvent(name);
+          }
+        };
+      })()
 
     });
 
-    // Cache for future instances
-    Cache.store(this, 'storage', storage);
+  });
 
+  // Expose storage (if debugging)
+  if (EntityPrototype.debug) {
+    Object.defineProperty(this, '__storage', {
+      configurable: false,
+      enumerable: false,
+      get: () => {
+        if (EntityPrototype.debug) {
+          return storage;
+        } else {
+          throw new Error('Access denied!');
+        }
+      }
+    });
   }
-
-  // Expose storage (read-only, returns a cloned object to prevent tampering)
-  // Object.defineProperty(this, 'storage', {
-  //   configurable: false,
-  //   enumerable: false,
-  //   get: () => { return _.clone(storage); }
-  // });
 
 }

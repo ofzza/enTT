@@ -1,6 +1,6 @@
 {
   "name": "entt",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Modular JS data-model base class, implementing often used functionality",
   "main": "./dist/index.js",
   "scripts": {

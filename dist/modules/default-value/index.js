@@ -46,7 +46,7 @@ var DefaultValueEntityModule = function (_EntityModule) {
 
   _createClass(DefaultValueEntityModule, [{
     key: 'processProperty',
-    value: function processProperty(def) {
+    value: function processProperty(name, def) {
       // Initialize formal definition
       var formal = {};
       // Check for default value
@@ -58,7 +58,7 @@ var DefaultValueEntityModule = function (_EntityModule) {
     }
   }, {
     key: 'initialize',
-    value: function initialize(value, formal) {
+    value: function initialize(name, value, formal) {
       // If not initialized already, initialize to default value
       if (_lodash2.default.isUndefined(value)) {
         return formal.value;

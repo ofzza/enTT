@@ -13,6 +13,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 // Import dependencies
 
 
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _casting = require('./casting');
 
 var _initialization = require('./initialization');
@@ -22,6 +26,8 @@ var _initialization2 = _interopRequireDefault(_initialization);
 var _properties = require('./properties');
 
 var _properties2 = _interopRequireDefault(_properties);
+
+var _modules = require('../modules');
 
 var _debug = require('./debug');
 
@@ -93,6 +99,8 @@ var EntityPrototype = function () {
   }]);
 
   function EntityPrototype() {
+    var _this = this;
+
     _classCallCheck(this, EntityPrototype);
 
     // Check if class neing directly instantiated
@@ -145,7 +153,27 @@ var EntityPrototype = function () {
          * @memberof Watchers
          */
         return function (fn) {
-          watchers.manualUpdate(fn);
+          // Run update function
+          watchers.manualUpdate(function () {
+
+            // Run custom update function
+            var updated = fn();
+
+            // Let modules react to update
+            _lodash2.default.forEach(modules, function (module) {
+              try {
+                module.update.bind(_this)(updated);
+              } catch (err) {
+                // Check if not implemented, or if legitimate error
+                if (err !== _modules.NotImplementedError) {
+                  throw err;
+                }
+              }
+            });
+
+            // Return updated
+            return updated;
+          });
         };
       }
     });

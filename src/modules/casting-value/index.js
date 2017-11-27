@@ -16,7 +16,7 @@ import EntityPrototype from '../../prototype';
  */
 export default class CastingValueEntityModule extends EntityModule {
 
-  processProperty (def) {
+  processProperty (name, def) {
     // Initialize formal definition
     const formal = {};
     // Check for casting definition
@@ -41,7 +41,7 @@ export default class CastingValueEntityModule extends EntityModule {
     return formal;
   }
 
-  set (value, formal) {
+  set (name, value, formal) {
     if (formal.castAs) {
       if (_.isNil(value)) {
         // If setting null, allow null value

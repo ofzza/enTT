@@ -50,13 +50,15 @@ var DynamicValueEntityModule = function (_EntityModule) {
 
   _createClass(DynamicValueEntityModule, [{
     key: 'processProperty',
-    value: function processProperty(def) {
+    value: function processProperty(name, def) {
       // Initialize formal definition
       var formal = {};
       // Check for dynamic value function value
-      if (def && def.dynamic) {
+      if (def && def.dynamic && _lodash2.default.isFunction(def.dynamic)) {
+
         // Assign explicitly defined function
         formal.dynamic = def.dynamic;
+        formal.dependencies = _lodash2.default.isArray(def.dependencies) ? def.dependencies : false;
       } else if (_lodash2.default.isFunction(def) && (!def.prototype || !(def.prototype instanceof _prototype2.default))) {
         // Assign short-hand definition
         formal.dynamic = def;
@@ -65,11 +67,118 @@ var DynamicValueEntityModule = function (_EntityModule) {
       return formal;
     }
   }, {
-    key: 'get',
-    value: function get(value, formal) {
-      // If defined as dynamic property, use dynamic function to calculate value
+    key: 'initialize',
+    value: function initialize(name, value, formal) {
+      var _this2 = this;
+
+      // If dynamic property
       if (formal.dynamic) {
-        return formal.dynamic.bind(this)();
+
+        // Initialize a storage for calculated dynamic values and listeners
+        // TODO: Drop $dyn as an exposed property!!!
+        var storage = this.$dyn = this.$dyn || {
+          values: {},
+          listeners: {
+            all: {},
+            byDependency: {}
+          }
+        };
+
+        // Initialize calculated values storage
+        var recalculateFn = function recalculateFn() {
+          storage.values[name] = formal.dynamic.bind(_this2)();
+        };
+        recalculateFn();
+
+        // Process dependencies and store listeners
+        storage.listeners.all[name] = recalculateFn;
+        _lodash2.default.forEach(formal.dependencies || ['*'], function (dependency) {
+          if (!storage.listeners.byDependency[dependency]) {
+            storage.listeners.byDependency[dependency] = {};
+          }
+          storage.listeners.byDependency[dependency][name] = recalculateFn;
+        });
+      }
+    }
+  }, {
+    key: 'afterSet',
+    value: function afterSet(name) {
+      // If dynamic property
+      if (this.$dyn) {
+
+        // Get storage
+        var storage = this.$dyn;
+        // Trigger dynamic property recalculation and storage for properties with this dependency
+        if (storage.listeners.byDependency && storage.listeners.byDependency[name]) {
+          _lodash2.default.forEach(storage.listeners.byDependency[name], function (recalcPropertyFn) {
+            recalcPropertyFn();
+          });
+        }
+        // Trigger dynamic property recalculation and storage for properties with no defined dependencies
+        if (storage.listeners.byDependency) {
+          _lodash2.default.forEach(storage.listeners.byDependency['*'], function (recalcPropertyFn) {
+            recalcPropertyFn();
+          });
+        }
+      }
+    }
+  }, {
+    key: 'get',
+    value: function get(name, value, formal) {
+      // If dynamic property
+      if (this.$dyn) {
+
+        // Get storage
+        var storage = this.$dyn;
+        // If defined as dynamic property, use dynamic function to calculate value
+        if (formal.dynamic) {
+          // Check if calculated value
+          if (storage.values[name]) {
+            // Return calculated value
+            return storage.values[name];
+          } else {
+            // Calculate value
+            return storage.values[name] = formal.dynamic.bind(this)();
+          }
+        }
+      }
+    }
+  }, {
+    key: 'update',
+    value: function update() {
+      var updated = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+      // If dynamic property
+      if (this.$dyn) {
+
+        // Get storage
+        var storage = this.$dyn;
+        // Check if specified updated properties
+        if (updated) {
+
+          // Trigger dynamic property recalculation for properties with updated dependencies
+          if (storage.listeners.byDependency && storage.listeners.byDependency[name]) {
+            _lodash2.default.forEach(_lodash2.default.isArray(updated) ? updated : [updated], function (name) {
+              _lodash2.default.forEach(storage.listeners.byDependency[name], function (recalcPropertyFn) {
+                recalcPropertyFn();
+              });
+            });
+          }
+          // Trigger dynamic property recalculation and storage for properties with no defined dependencies
+          if (storage.listeners.byDependency) {
+            _lodash2.default.forEach(storage.listeners.byDependency['*'], function (recalcPropertyFn) {
+              recalcPropertyFn();
+            });
+          }
+        } else {
+
+          // Trigger dynamic property recalculation for all dynamic properties
+          if (storage.listeners.all) {
+            _lodash2.default.forEach(storage.listeners.all, function (recalcPropertyFn) {
+              recalcPropertyFn();
+            });
+          }
+        }
       }
     }
   }]);

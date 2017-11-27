@@ -19,7 +19,7 @@ describe('Modules', () => {
     }
     let extended = new ExtendedEntity();
     it('Should accept default value property configuration', () => {
-      assert.ok(extended.propertyDefinitions.prop);
+      assert.ok(extended.__propertyDefinitions.prop);
     });
     it('Should use default values until value set', () => {
       assert.equal(extended.prop, 'default');
@@ -34,18 +34,35 @@ describe('Modules', () => {
     class ExtendedEntity extends Entity {
       static get propertyDefinitions () {
         return {
-          x: { value: (100 + Math.round(100 * Math.random())) },
-          squareEx: { dynamic: function () { return (this.x * this.x); } },
-          squareSh: function () { return (this.x * this.x); },
+          x: { value: 3 },
+          y: { value: 4 },
+          multiplyEx: {
+            dynamic: function () { return (this.x * this.y); }
+          },
+          multiplyExDeps: {
+            dynamic: function () { return (this.x * this.y); },
+            dependencies: ['x']
+          },
+          multiplySh: function () { return (this.x * this.y); },
         };
       }
     }
     let extended = new ExtendedEntity();
     it('Should accept explicit dynamic property configuration', () => {
-      assert.equal(extended.squareEx, extended.x * extended.x);
+      assert.equal(extended.multiplyEx, extended.x * extended.y);
     });
     it('Should accept short-hand dynamic property configuration', () => {
-      assert.equal(extended.squareSh, extended.x * extended.x);
+      assert.equal(extended.multiplySh, extended.x * extended.y);
+    });
+    it('Should recalculate on dependency change', () => {
+      extended.x = 5;
+      assert.equal(extended.multiplyEx, extended.x * extended.y);
+      assert.equal(extended.multiplyExDeps, extended.x * extended.y);
+    });
+    it('Should not recalculate on non-dependency change', () => {
+      extended.y = 6;
+      assert.equal(extended.multiplyEx, extended.x * extended.y);
+      assert.notEqual(extended.multiplyExDeps, extended.x * extended.y);
     });
   });
 
