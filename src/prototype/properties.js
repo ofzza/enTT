@@ -12,6 +12,7 @@ import { NotImplementedError } from '../modules';
  * @param {any} modules Array of modules applied to this class
  * @param {any} propertyDefinitions Collection of formalized property definitions for this class (property names used as keys)
  * @param {any} watchers Repository of entity instance's registered watchers
+ * @returns {any} Modules cache object
  */
 export default function initializeManagedProperties (modules, propertyDefinitions, watchers) {
 
@@ -21,13 +22,17 @@ export default function initializeManagedProperties (modules, propertyDefinition
       afterSetterModules = _.filter(modules, (module) => { try { module.afterSet(); return true; } catch (err) { return (err !== NotImplementedError); } });
 
   // Process managed properties and formalize their definitions per included module
-  let storage = {};
+  let storage = {},
+      cache = _.reduce(modules, (cache, module) => {
+        cache[module.constructor.name] = {};
+        return cache;
+      }, {});
   _.forEach(propertyDefinitions, (def, name) => {
     // Initialize values (course undefined to null)
     _.forEach(modules, (module) => {
       try {
         // Try initialization if implemented
-        let initializedValue = module.initialize.bind(this)(name, storage[name], def[module.constructor.name]);
+        let initializedValue = module.initialize.bind(this)(name, storage[name], def[module.constructor.name], cache[module.constructor.name]);
         if (!_.isUndefined(initializedValue)) {
           storage[name] = initializedValue;
         } else if (_.isUndefined(storage[name])) {
@@ -52,7 +57,7 @@ export default function initializeManagedProperties (modules, propertyDefinition
           // Let modules process set value
           _.forEach(getterModules, (module) => {
             try {
-              let updatedValue = module.get.bind(this)(name, value, def[module.constructor.name]);
+              let updatedValue = module.get.bind(this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
               if (!_.isUndefined(updatedValue)) { value = updatedValue; }
             } catch (err) {
               // Check if not implemented, or if legitimate error
@@ -70,7 +75,7 @@ export default function initializeManagedProperties (modules, propertyDefinition
           // Let modules process set value
           _.forEach(setterModules, (module) => {
             try {
-              let updatedValue = module.set.bind(this)(name, value, def[module.constructor.name]);
+              let updatedValue = module.set.bind(this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
               if (!_.isUndefined(updatedValue)) { value = updatedValue; }
             } catch (err) {
               // Check if not implemented, or if legitimate error
@@ -85,7 +90,7 @@ export default function initializeManagedProperties (modules, propertyDefinition
             // Let modules process value after having set it
             _.forEach(afterSetterModules, (module) => {
               try {
-                module.afterSet.bind(this)(name, value, def[module.constructor.name]);
+                module.afterSet.bind(this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
               } catch (err) {
                 // Check if not implemented, or if legitimate error
                 if (err !== NotImplementedError) { throw err; }
@@ -117,5 +122,8 @@ export default function initializeManagedProperties (modules, propertyDefinition
       }
     });
   }
+
+  // Return modules cache
+  return cache;
 
 }

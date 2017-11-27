@@ -22,6 +22,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @param {any} modules Array of modules applied to this class
  * @param {any} propertyDefinitions Collection of formalized property definitions for this class (property names used as keys)
  * @param {any} watchers Repository of entity instance's registered watchers
+ * @returns {any} Modules cache object
  */
 function initializeManagedProperties(modules, propertyDefinitions, watchers) {
   var _this = this;
@@ -50,13 +51,17 @@ function initializeManagedProperties(modules, propertyDefinitions, watchers) {
   });
 
   // Process managed properties and formalize their definitions per included module
-  var storage = {};
+  var storage = {},
+      cache = _lodash2.default.reduce(modules, function (cache, module) {
+    cache[module.constructor.name] = {};
+    return cache;
+  }, {});
   _lodash2.default.forEach(propertyDefinitions, function (def, name) {
     // Initialize values (course undefined to null)
     _lodash2.default.forEach(modules, function (module) {
       try {
         // Try initialization if implemented
-        var initializedValue = module.initialize.bind(_this)(name, storage[name], def[module.constructor.name]);
+        var initializedValue = module.initialize.bind(_this)(name, storage[name], def[module.constructor.name], cache[module.constructor.name]);
         if (!_lodash2.default.isUndefined(initializedValue)) {
           storage[name] = initializedValue;
         } else if (_lodash2.default.isUndefined(storage[name])) {
@@ -83,7 +88,7 @@ function initializeManagedProperties(modules, propertyDefinitions, watchers) {
           // Let modules process set value
           _lodash2.default.forEach(getterModules, function (module) {
             try {
-              var updatedValue = module.get.bind(_this)(name, value, def[module.constructor.name]);
+              var updatedValue = module.get.bind(_this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
               if (!_lodash2.default.isUndefined(updatedValue)) {
                 value = updatedValue;
               }
@@ -105,7 +110,7 @@ function initializeManagedProperties(modules, propertyDefinitions, watchers) {
           // Let modules process set value
           _lodash2.default.forEach(setterModules, function (module) {
             try {
-              var updatedValue = module.set.bind(_this)(name, value, def[module.constructor.name]);
+              var updatedValue = module.set.bind(_this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
               if (!_lodash2.default.isUndefined(updatedValue)) {
                 value = updatedValue;
               }
@@ -124,7 +129,7 @@ function initializeManagedProperties(modules, propertyDefinitions, watchers) {
             // Let modules process value after having set it
             _lodash2.default.forEach(afterSetterModules, function (module) {
               try {
-                module.afterSet.bind(_this)(name, value, def[module.constructor.name]);
+                module.afterSet.bind(_this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
               } catch (err) {
                 // Check if not implemented, or if legitimate error
                 if (err !== _modules.NotImplementedError) {
@@ -157,6 +162,9 @@ function initializeManagedProperties(modules, propertyDefinitions, watchers) {
       }
     });
   }
+
+  // Return modules cache
+  return cache;
 } // =====================================================================================================================
 // ENTITY PROTOTYPE Internals: Property processing and initialization functions
 // =====================================================================================================================

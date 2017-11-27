@@ -34,98 +34,96 @@ export default class DynamicValueEntityModule extends EntityModule {
     return formal;
   }
 
-  initialize (name, value, formal) {
+  initialize (name, value, formal, cache) {
     // If dynamic property
     if (formal.dynamic) {
 
-      // Initialize a storage for calculated dynamic values and listeners
-      // TODO: Drop $dyn as an exposed property!!!
-      let storage = this.$dyn = (this.$dyn || {
-        values: {},
-        listeners: {
-          all: {},
-          byDependency: {}
-        }
-      });
+      // Initialize a cached storage for calculated dynamic values and listeners
+      if (!cache.initialized) {
+        _.merge(cache, {
+          initialized: true,
+          values: {},
+          listeners: {
+            all: {},
+            byDependency: {}
+          }
+        });
+      }
 
       // Initialize calculated values storage
-      let recalculateFn = () => { storage.values[name] = formal.dynamic.bind(this)(); };
+      let recalculateFn = () => { cache.values[name] = formal.dynamic.bind(this)(); };
       recalculateFn();
 
       // Process dependencies and store listeners
-      storage.listeners.all[name] = recalculateFn;
+      cache.listeners.all[name] = recalculateFn;
       _.forEach((formal.dependencies || ['*']), (dependency) => {
-        if (!storage.listeners.byDependency[dependency]) { storage.listeners.byDependency[dependency] = {}; }
-        storage.listeners.byDependency[dependency][name] = recalculateFn;
+        if (!cache.listeners.byDependency[dependency]) { cache.listeners.byDependency[dependency] = {}; }
+        cache.listeners.byDependency[dependency][name] = recalculateFn;
       });
 
     }
   }
 
-  afterSet (name) {
+  afterSet (name, value, formal, cache) {
     // If dynamic property
-    if (this.$dyn) {
+    if (cache.initialized) {
 
-      // Get storage
-      let storage = this.$dyn;
       // Trigger dynamic property recalculation and storage for properties with this dependency
-      if (storage.listeners.byDependency && storage.listeners.byDependency[name]) {
-        _.forEach(storage.listeners.byDependency[name], (recalcPropertyFn) => { recalcPropertyFn(); });
+      if (cache.listeners.byDependency && cache.listeners.byDependency[name]) {
+        _.forEach(cache.listeners.byDependency[name], (recalcPropertyFn) => { recalcPropertyFn(); });
       }
+
       // Trigger dynamic property recalculation and storage for properties with no defined dependencies
-      if (storage.listeners.byDependency) {
-        _.forEach(storage.listeners.byDependency['*'], (recalcPropertyFn) => { recalcPropertyFn(); });
+      if (cache.listeners.byDependency) {
+        _.forEach(cache.listeners.byDependency['*'], (recalcPropertyFn) => { recalcPropertyFn(); });
       }
 
     }
   }
 
-  get (name, value, formal) {
+  get (name, value, formal, cache) {
     // If dynamic property
-    if (this.$dyn) {
+    if (cache.initialized) {
 
-      // Get storage
-      let storage = this.$dyn;
       // If defined as dynamic property, use dynamic function to calculate value
       if (formal.dynamic) {
         // Check if calculated value
-        if (storage.values[name]) {
+        if (cache.values[name]) {
           // Return calculated value
-          return storage.values[name];
+          return cache.values[name];
         } else {
           // Calculate value
-          return (storage.values[name] = formal.dynamic.bind(this)());
+          return (cache.values[name] = formal.dynamic.bind(this)());
         }
       }
 
     }
   }
 
-  update (updated = null) {
+  update (updated = null, cache) {
     // If dynamic property
-    if (this.$dyn) {
+    if (cache.initialized) {
 
-      // Get storage
-      let storage = this.$dyn;
       // Check if specified updated properties
       if (updated) {
 
         // Trigger dynamic property recalculation for properties with updated dependencies
-        if (storage.listeners.byDependency && storage.listeners.byDependency[name]) {
+        if (cache.listeners.byDependency && cache.listeners.byDependency[name]) {
           _.forEach((_.isArray(updated) ? updated : [ updated ]), (name) => {
-            _.forEach(storage.listeners.byDependency[name], (recalcPropertyFn) => { recalcPropertyFn(); });
+            _.forEach(cache.listeners.byDependency[name], (recalcPropertyFn) => { recalcPropertyFn(); });
           });
         }
+
         // Trigger dynamic property recalculation and storage for properties with no defined dependencies
-        if (storage.listeners.byDependency) {
-          _.forEach(storage.listeners.byDependency['*'], (recalcPropertyFn) => { recalcPropertyFn(); });
+        if (cache.listeners.byDependency) {
+          _.forEach(cache.listeners.byDependency['*'], (recalcPropertyFn) => { recalcPropertyFn(); });
         }
 
       } else {
 
         // Trigger dynamic property recalculation for all dynamic properties
-        if (storage.listeners.all) {
-          _.forEach(storage.listeners.all, (recalcPropertyFn) => { recalcPropertyFn(); });
+        if (cache.listeners.all) {
+          _.forEach(cache.listeners.all, (recalcPropertyFn) => { recalcPropertyFn(); });
         }
 
       }

@@ -118,6 +118,10 @@ var EntityPrototype = function () {
 
 
     var watchers = new _watchers2.default(this);
+
+    // Initialize managed properties based on definitions
+    var cache = _properties2.default.bind(this)(modules, propertyDefinitions, watchers);
+
     // Expose watch method
     Object.defineProperty(this, 'watch', {
       configurable: false,
@@ -139,6 +143,7 @@ var EntityPrototype = function () {
         };
       }
     });
+
     // Expose update method
     Object.defineProperty(this, 'update', {
       configurable: false,
@@ -162,7 +167,7 @@ var EntityPrototype = function () {
             // Let modules react to update
             _lodash2.default.forEach(modules, function (module) {
               try {
-                module.update.bind(_this)(updated);
+                module.update.bind(_this)(updated, cache[module.constructor.name]);
               } catch (err) {
                 // Check if not implemented, or if legitimate error
                 if (err !== _modules.NotImplementedError) {
@@ -177,9 +182,6 @@ var EntityPrototype = function () {
         };
       }
     });
-
-    // Initialize managed properties based on definitions
-    _properties2.default.bind(this)(modules, propertyDefinitions, watchers);
   }
 
   return EntityPrototype;

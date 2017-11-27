@@ -28,10 +28,11 @@ export default class EntityModule {
    * @param {any} name Property name
    * @param {any} value Currently initalized value
    * @param {any} formal Formalized property definition constructed by "processProperty" call earlier
+   * @param {any} cache Shared module cache object for this Entity instance, used to pass vaues between methods of the module
    * @returns {any} Initialized property value
    * @memberof EntityModule
    */
-  initialize (name, value, formal) { return (() => { value; formal; throw NotImplementedError; })(); }
+  initialize (name, value, formal, cache) { return (() => { value; formal; cache; throw NotImplementedError; })(); }
 
   /**
    * Processes value being fetched from storage via a managed property; If returning undefined, value will be ignored
@@ -39,10 +40,11 @@ export default class EntityModule {
    * @param {any} name Property name
    * @param {any} value Value being fetched and already processed by higher priority modules
    * @param {any} formal Formalized property definition constructed by "processProperty" call earlier
+   * @param {any} cache Shared module cache object for this Entity instance, used to pass vaues between methods of the module
    * @returns {any} Processed value
    * @memberof EntityModule
    */
-  get (name, value, formal) { return (() => { value; formal; throw NotImplementedError; })(); }
+  get (name, value, formal, cache) { return (() => { value; formal; cache; throw NotImplementedError; })(); }
 
   /**
    * Processes value being stored via a managed property; If returning undefined, value will be ignored
@@ -50,28 +52,31 @@ export default class EntityModule {
    * @param {any} name Property name
    * @param {any} value Value being stored and already processed by higher priority modules
    * @param {any} formal Formalized property definition constructed by "processProperty" call earlier
+   * @param {any} cache Shared module cache object for this Entity instance, used to pass vaues between methods of the module
    * @returns {any} Processed value
    * @memberof EntityModule
    */
-  set (name, value, formal) { return (() => { value; formal; throw NotImplementedError; })(); }
+  set (name, value, formal, cache) { return (() => { value; formal; cache; throw NotImplementedError; })(); }
   /**
    * Called after property value being stored
    * ... when called: this = Entity baing processed
    * @param {any} name Property name
    * @param {any} value Value that was stored
    * @param {any} formal Formalized property definition constructed by "processProperty" call earlier
+   * @param {any} cache Shared module cache object for this Entity instance, used to pass vaues between methods of the module
    * @returns {any} Processed value
    * @memberof EntityModule
    */
-  afterSet (name, value, formal) { return (() => { value; formal; throw NotImplementedError; })(); }
+  afterSet (name, value, formal, cache) { return (() => { value; formal; cache; throw NotImplementedError; })(); }
 
   /**
    * Processes values after a custom update triggered
    * ... when called: this = Entity baing processed
    * @param {any} updated Name or list of names of updated properties
+   * @param {any} cache Shared module cache object for this Entity instance, used to pass vaues between methods of the module
    * @returns {any} Processed value
    * @memberof EntityModule
    */
-  update (updated = null) { return (() => { updated; throw NotImplementedError; })(); }
+  update (updated = null, cache) { return (() => { updated;cache;  throw NotImplementedError; })(); }
 
 }

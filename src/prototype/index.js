@@ -61,6 +61,10 @@ export default class EntityPrototype {
 
     // Initialize watchers repository
     const watchers = new Watchers(this);
+
+    // Initialize managed properties based on definitions
+    let cache = initializeManagedProperties.bind(this)(modules, propertyDefinitions, watchers);
+
     // Expose watch method
     Object.defineProperty(this, 'watch', {
       configurable: false,
@@ -80,6 +84,7 @@ export default class EntityPrototype {
 
       }
     });
+
     // Expose update method
     Object.defineProperty(this, 'update', {
       configurable: false,
@@ -103,7 +108,7 @@ export default class EntityPrototype {
             // Let modules react to update
             _.forEach(modules, (module) => {
               try {
-                module.update.bind(this)(updated);
+                module.update.bind(this)(updated, cache[module.constructor.name]);
               } catch (err) {
                 // Check if not implemented, or if legitimate error
                 if (err !== NotImplementedError) { throw err; }
@@ -118,9 +123,6 @@ export default class EntityPrototype {
 
       }
     });
-
-    // Initialize managed properties based on definitions
-    initializeManagedProperties.bind(this)(modules, propertyDefinitions, watchers);
 
   }
 

@@ -50,15 +50,16 @@ var EntityModule = function () {
      * @param {any} name Property name
      * @param {any} value Currently initalized value
      * @param {any} formal Formalized property definition constructed by "processProperty" call earlier
+     * @param {any} cache Shared module cache object for this Entity instance, used to pass vaues between methods of the module
      * @returns {any} Initialized property value
      * @memberof EntityModule
      */
 
   }, {
     key: 'initialize',
-    value: function initialize(name, value, formal) {
+    value: function initialize(name, value, formal, cache) {
       return function () {
-        value;formal;throw NotImplementedError;
+        value;formal;cache;throw NotImplementedError;
       }();
     }
 
@@ -68,15 +69,16 @@ var EntityModule = function () {
      * @param {any} name Property name
      * @param {any} value Value being fetched and already processed by higher priority modules
      * @param {any} formal Formalized property definition constructed by "processProperty" call earlier
+     * @param {any} cache Shared module cache object for this Entity instance, used to pass vaues between methods of the module
      * @returns {any} Processed value
      * @memberof EntityModule
      */
 
   }, {
     key: 'get',
-    value: function get(name, value, formal) {
+    value: function get(name, value, formal, cache) {
       return function () {
-        value;formal;throw NotImplementedError;
+        value;formal;cache;throw NotImplementedError;
       }();
     }
 
@@ -86,15 +88,16 @@ var EntityModule = function () {
      * @param {any} name Property name
      * @param {any} value Value being stored and already processed by higher priority modules
      * @param {any} formal Formalized property definition constructed by "processProperty" call earlier
+     * @param {any} cache Shared module cache object for this Entity instance, used to pass vaues between methods of the module
      * @returns {any} Processed value
      * @memberof EntityModule
      */
 
   }, {
     key: 'set',
-    value: function set(name, value, formal) {
+    value: function set(name, value, formal, cache) {
       return function () {
-        value;formal;throw NotImplementedError;
+        value;formal;cache;throw NotImplementedError;
       }();
     }
     /**
@@ -103,15 +106,16 @@ var EntityModule = function () {
      * @param {any} name Property name
      * @param {any} value Value that was stored
      * @param {any} formal Formalized property definition constructed by "processProperty" call earlier
+     * @param {any} cache Shared module cache object for this Entity instance, used to pass vaues between methods of the module
      * @returns {any} Processed value
      * @memberof EntityModule
      */
 
   }, {
     key: 'afterSet',
-    value: function afterSet(name, value, formal) {
+    value: function afterSet(name, value, formal, cache) {
       return function () {
-        value;formal;throw NotImplementedError;
+        value;formal;cache;throw NotImplementedError;
       }();
     }
 
@@ -119,6 +123,7 @@ var EntityModule = function () {
      * Processes values after a custom update triggered
      * ... when called: this = Entity baing processed
      * @param {any} updated Name or list of names of updated properties
+     * @param {any} cache Shared module cache object for this Entity instance, used to pass vaues between methods of the module
      * @returns {any} Processed value
      * @memberof EntityModule
      */
@@ -127,8 +132,9 @@ var EntityModule = function () {
     key: 'update',
     value: function update() {
       var updated = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var cache = arguments[1];
       return function () {
-        updated;throw NotImplementedError;
+        updated;cache;throw NotImplementedError;
       }();
     }
   }]);

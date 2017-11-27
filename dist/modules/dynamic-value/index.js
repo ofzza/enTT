@@ -68,55 +68,56 @@ var DynamicValueEntityModule = function (_EntityModule) {
     }
   }, {
     key: 'initialize',
-    value: function initialize(name, value, formal) {
+    value: function initialize(name, value, formal, cache) {
       var _this2 = this;
 
       // If dynamic property
       if (formal.dynamic) {
 
-        // Initialize a storage for calculated dynamic values and listeners
-        // TODO: Drop $dyn as an exposed property!!!
-        var storage = this.$dyn = this.$dyn || {
-          values: {},
-          listeners: {
-            all: {},
-            byDependency: {}
-          }
-        };
+        // Initialize a cached storage for calculated dynamic values and listeners
+        if (!cache.initialized) {
+          _lodash2.default.merge(cache, {
+            initialized: true,
+            values: {},
+            listeners: {
+              all: {},
+              byDependency: {}
+            }
+          });
+        }
 
         // Initialize calculated values storage
         var recalculateFn = function recalculateFn() {
-          storage.values[name] = formal.dynamic.bind(_this2)();
+          cache.values[name] = formal.dynamic.bind(_this2)();
         };
         recalculateFn();
 
         // Process dependencies and store listeners
-        storage.listeners.all[name] = recalculateFn;
+        cache.listeners.all[name] = recalculateFn;
         _lodash2.default.forEach(formal.dependencies || ['*'], function (dependency) {
-          if (!storage.listeners.byDependency[dependency]) {
-            storage.listeners.byDependency[dependency] = {};
+          if (!cache.listeners.byDependency[dependency]) {
+            cache.listeners.byDependency[dependency] = {};
           }
-          storage.listeners.byDependency[dependency][name] = recalculateFn;
+          cache.listeners.byDependency[dependency][name] = recalculateFn;
         });
       }
     }
   }, {
     key: 'afterSet',
-    value: function afterSet(name) {
+    value: function afterSet(name, value, formal, cache) {
       // If dynamic property
-      if (this.$dyn) {
+      if (cache.initialized) {
 
-        // Get storage
-        var storage = this.$dyn;
         // Trigger dynamic property recalculation and storage for properties with this dependency
-        if (storage.listeners.byDependency && storage.listeners.byDependency[name]) {
-          _lodash2.default.forEach(storage.listeners.byDependency[name], function (recalcPropertyFn) {
+        if (cache.listeners.byDependency && cache.listeners.byDependency[name]) {
+          _lodash2.default.forEach(cache.listeners.byDependency[name], function (recalcPropertyFn) {
             recalcPropertyFn();
           });
         }
+
         // Trigger dynamic property recalculation and storage for properties with no defined dependencies
-        if (storage.listeners.byDependency) {
-          _lodash2.default.forEach(storage.listeners.byDependency['*'], function (recalcPropertyFn) {
+        if (cache.listeners.byDependency) {
+          _lodash2.default.forEach(cache.listeners.byDependency['*'], function (recalcPropertyFn) {
             recalcPropertyFn();
           });
         }
@@ -124,21 +125,19 @@ var DynamicValueEntityModule = function (_EntityModule) {
     }
   }, {
     key: 'get',
-    value: function get(name, value, formal) {
+    value: function get(name, value, formal, cache) {
       // If dynamic property
-      if (this.$dyn) {
+      if (cache.initialized) {
 
-        // Get storage
-        var storage = this.$dyn;
         // If defined as dynamic property, use dynamic function to calculate value
         if (formal.dynamic) {
           // Check if calculated value
-          if (storage.values[name]) {
+          if (cache.values[name]) {
             // Return calculated value
-            return storage.values[name];
+            return cache.values[name];
           } else {
             // Calculate value
-            return storage.values[name] = formal.dynamic.bind(this)();
+            return cache.values[name] = formal.dynamic.bind(this)();
           }
         }
       }
@@ -147,34 +146,34 @@ var DynamicValueEntityModule = function (_EntityModule) {
     key: 'update',
     value: function update() {
       var updated = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var cache = arguments[1];
 
       // If dynamic property
-      if (this.$dyn) {
+      if (cache.initialized) {
 
-        // Get storage
-        var storage = this.$dyn;
         // Check if specified updated properties
         if (updated) {
 
           // Trigger dynamic property recalculation for properties with updated dependencies
-          if (storage.listeners.byDependency && storage.listeners.byDependency[name]) {
+          if (cache.listeners.byDependency && cache.listeners.byDependency[name]) {
             _lodash2.default.forEach(_lodash2.default.isArray(updated) ? updated : [updated], function (name) {
-              _lodash2.default.forEach(storage.listeners.byDependency[name], function (recalcPropertyFn) {
+              _lodash2.default.forEach(cache.listeners.byDependency[name], function (recalcPropertyFn) {
                 recalcPropertyFn();
               });
             });
           }
+
           // Trigger dynamic property recalculation and storage for properties with no defined dependencies
-          if (storage.listeners.byDependency) {
-            _lodash2.default.forEach(storage.listeners.byDependency['*'], function (recalcPropertyFn) {
+          if (cache.listeners.byDependency) {
+            _lodash2.default.forEach(cache.listeners.byDependency['*'], function (recalcPropertyFn) {
               recalcPropertyFn();
             });
           }
         } else {
 
           // Trigger dynamic property recalculation for all dynamic properties
-          if (storage.listeners.all) {
-            _lodash2.default.forEach(storage.listeners.all, function (recalcPropertyFn) {
+          if (cache.listeners.all) {
+            _lodash2.default.forEach(cache.listeners.all, function (recalcPropertyFn) {
               recalcPropertyFn();
             });
           }
