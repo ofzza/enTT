@@ -1,0 +1,16 @@
+[key='value'],
+body .dummy-css-class {
+  display: block;
+  width: 3px;
+}
+
+[key='value']::before,
+body .dummy-css-class::before {
+  content: '';
+}
+
+[key='value']::after,
+body .dummy-css-class::after {
+  content: '';
+}
+

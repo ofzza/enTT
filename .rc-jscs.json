@@ -1,4 +1,4 @@
-{
+{ 
   "safeContextKeyword"                      : ["self"],
   "validateLineBreaks"                      : "LF",
   "validateIndentation"                     : 2,

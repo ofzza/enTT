@@ -1,0 +1,10 @@
+[key='value'],
+body .dummy-scss-class {
+  display: block;
+  width: 3px; }
+  [key='value']::before,
+  body .dummy-scss-class::before {
+    content: ''; }
+  [key='value']::after,
+  body .dummy-scss-class::after {
+    content: ''; }

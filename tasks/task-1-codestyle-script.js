@@ -1,5 +1,5 @@
 // =====================================================================================================================
-// GULP TASK: Code-style checks
+// GULP TASK: Code-style JS checks
 // =====================================================================================================================
 
 // Require dependencies
@@ -14,7 +14,7 @@ module.exports = (gulp) => {
     return gulp
       .src(['./**/*.js', '!./node_modules/**/*', '!./dist/**/*'])
       .pipe(jscs({
-        configPath: './.jscsrc.json',
+        configPath: './.rc-jscs.json',
         fix: false
       }))
       .pipe(jscs.reporter());
@@ -25,9 +25,10 @@ module.exports = (gulp) => {
     return gulp
       .src(['./**/*.js', '!./node_modules/**/*', '!./dist/**/*'])
       .pipe(eslint({
-        configFile: './.eslintrc.json'
+        configFile: './.rc-eslint.json'
       }))
       .pipe(eslint.format());
+    //.pipe(eslint.failOnError());
   });
 
   // Return registered tasks

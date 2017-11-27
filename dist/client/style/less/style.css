@@ -1,0 +1,13 @@
+[key='value'],
+body .dummy-less-class {
+  display: block;
+  width: 3px;
+}
+[key='value']::before,
+body .dummy-less-class::before {
+  content: '';
+}
+[key='value']::after,
+body .dummy-less-class::after {
+  content: '';
+}
