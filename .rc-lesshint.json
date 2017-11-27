@@ -1,0 +1,61 @@
+{ "DOCS": "https://github.com/lesshint/lesshint/blob/master/lib/linters/README.md",
+  
+  "attributeQuotes": true,
+  "borderZero": { "style": "zero" },
+  "colorVariables": true,
+  "decimalZero": "leading",
+  "depthLevel": { "depth": 32 },
+  "duplicateProperty": {
+    "exclude": [ "display", "width", "height", "top", "bottom", "left", "right" ]
+  },
+  "emptyRule": true,
+  "finalNewline": true,
+  "hexLength": { "style": "short" },
+  "hexNotation": { "style": "lowercase" },
+  "hexValidation": true,
+  "idSelector": {
+    "exclude": []
+  },
+  "importantRule": true,
+  "importPath": true,
+  "maxCharPerLine": { "limit": 80 },
+  "newlineAfterBlock": false,
+  "propertyOrdering": false,
+  "propertyUnits": {
+    "valid": ["%", "px"],
+    "properties": { }
+  },
+  "qualifyingElement": {
+    "allowWithAttribute": true,
+    "allowWithClass": true,
+    "allowWithId": false
+  },
+  "selectorNaming": {
+    "disallowUppercase": true,
+    "disallowUnderscore": true,
+    "disallowDash": false
+  },
+  "singleLinePerProperty": {
+    "allowSingleLineRules": true
+  },
+  "singleLinePerSelector": { "style": "none" },
+  "spaceAfterPropertyColon": { "style": "one_space" },
+  "spaceAfterPropertyName": { "style": "no_space" },
+  "spaceAfterPropertyValue": { "style": "no_space" },
+  "spaceAroundBang": { "style": "before" },
+  "spaceAroundComma": { "style": "after", "allowNewline": false },
+  "spaceAroundOperator": { "style": "both" },
+  "spaceBeforeBrace": { "style": "one_space" },
+  "spaceBetweenParens": { "style": "no_space" },
+  "stringQuotes": { "style": "single" },
+  "trailingSemicolon": true,
+  "trailingWhitespace": true,
+  "urlFormat": { "style": "relative" },
+  "universalSelector": false,
+  "urlQuotes": true,
+  "variableValue": {
+    "always": [ "color", "background-color", "border-color" ],
+    "never": []
+  },
+  "zeroUnit": { "style": "no_unit" }
+}
