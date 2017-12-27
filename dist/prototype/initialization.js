@@ -176,7 +176,18 @@ function processPrototypeChainForPropertyDefinitions(prototypes, modules) {
     // Allow all modules to process property definition
     _lodash2.default.reduce(modules, function (property, module) {
       // Initialize module namespace on property
-      property[module.constructor.name] = module.processProperty(name, def);
+      try {
+        property[module.constructor.name] = module.processProperty(name, def);
+      } catch (err) {
+        // Check if not implemented, or if legitimate error
+        if (err !== _modules.NotImplementedError) {
+          // Throw ligitimate error
+          throw err;
+        } else {
+          // Initialize dummy module namespace on property
+          property[module.constructor.name] = null;
+        }
+      }
       return property;
     }, propertyDefinitions[name]);
     return propertyDefinitions;

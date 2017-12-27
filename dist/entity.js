@@ -27,6 +27,10 @@ var _castingValue = require('./modules/casting-value');
 
 var _castingValue2 = _interopRequireDefault(_castingValue);
 
+var _dataManagement = require('./modules/data-management');
+
+var _dataManagement2 = _interopRequireDefault(_dataManagement);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -44,7 +48,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var keyValueModule = new _keyValue2.default(),
     defaultValueModule = new _defaultValue2.default(),
     dynamicValueModule = new _dynamicValue2.default(),
-    castingValueModule = new _castingValue2.default();
+    castingValueModule = new _castingValue2.default(),
+    dataManagementModule = new _dataManagement2.default();
 
 /**
  * Entity base class
@@ -110,7 +115,7 @@ var Entity = function (_EntityPrototype) {
   }, {
     key: 'modules',
     get: function get() {
-      return [keyValueModule, defaultValueModule, dynamicValueModule, castingValueModule];
+      return [keyValueModule, defaultValueModule, dynamicValueModule, castingValueModule, dataManagementModule];
     }
 
     /**

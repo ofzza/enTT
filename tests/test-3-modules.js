@@ -233,4 +233,30 @@ describe('Modules', () => {
     });
   });
 
+  describe('Data management module', () => {
+    class ExtendedEntity extends Entity { static get propertyDefinitions () { return ['propA', 'propB']; } }
+    const data = { propA: 1, propB: 2 };
+    it('Should set full-entity', () => {
+      let extended = (new ExtendedEntity()).set(data);
+      assert.ok(extended instanceof ExtendedEntity);
+      assert.equal(data.propA, extended.propA);
+      assert.equal(data.propB, extended.propB);
+    });
+    it('Should get full-entity', () => {
+      let extended = (new ExtendedEntity()).set(data),
+          exportedData = extended.get();
+      assert.ok(extended instanceof ExtendedEntity);
+      assert.equal(extended.propA, exportedData.propA);
+      assert.equal(extended.propB, exportedData.propB);
+    });
+    it('Should clone full-entity', () => {
+      let extended = (new ExtendedEntity()).set(data),
+          cloned = extended.clone();
+      assert.ok(extended instanceof ExtendedEntity);
+      assert.ok(cloned instanceof ExtendedEntity);
+      assert.equal(extended.propA, cloned.propA);
+      assert.equal(extended.propB, cloned.propB);
+    });
+  });
+
 });

@@ -8,12 +8,14 @@ import KeyValueEntityModule from './modules/key-value';
 import DefaultValueEntityModule from './modules/default-value';
 import DynamicValueEntityModule from './modules/dynamic-value';
 import CastingValueEntityModule from './modules/casting-value';
+import DataManagementModule from './modules/data-management';
 
 // Instantiate modules used in all Entities
-const keyValueModule     = new KeyValueEntityModule(),
-      defaultValueModule = new DefaultValueEntityModule(),
-      dynamicValueModule = new DynamicValueEntityModule(),
-      castingValueModule = new CastingValueEntityModule();
+const keyValueModule        = new KeyValueEntityModule(),
+      defaultValueModule    = new DefaultValueEntityModule(),
+      dynamicValueModule    = new DynamicValueEntityModule(),
+      castingValueModule    = new CastingValueEntityModule(),
+      dataManagementModule  = new DataManagementModule();
 
 /**
  * Entity base class
@@ -60,7 +62,8 @@ export default class Entity extends EntityPrototype {
       keyValueModule,
       defaultValueModule,
       dynamicValueModule,
-      castingValueModule
+      castingValueModule,
+      dataManagementModule
     ];
   }
 

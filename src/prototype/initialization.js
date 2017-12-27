@@ -5,7 +5,7 @@
 // Import dependencies
 import _ from 'lodash';
 import EntityPrototype from '../prototype';
-import EntityModule from '../modules';
+import { default as EntityModule, NotImplementedError } from '../modules';
 import Cache from './cache';
 
 
@@ -142,7 +142,18 @@ function processPrototypeChainForPropertyDefinitions (prototypes, modules) {
     // Allow all modules to process property definition
     _.reduce(modules, (property, module) => {
       // Initialize module namespace on property
-      property[module.constructor.name] = module.processProperty(name, def);
+      try {
+        property[module.constructor.name] = module.processProperty(name, def);
+      } catch (err) {
+        // Check if not implemented, or if legitimate error
+        if (err !== NotImplementedError) {
+          // Throw ligitimate error
+          throw err;
+        } else {
+          // Initialize dummy module namespace on property
+          property[module.constructor.name] = null;
+        }
+      }
       return property;
     }, propertyDefinitions[name]);
     return propertyDefinitions;

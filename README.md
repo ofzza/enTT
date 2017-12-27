@@ -166,10 +166,6 @@ Default Propery Value module initializes properties with an initial, default val
 
 The module is included in all Entities by default and doesn't require you to add it via the static **modules** property.
 
-##### Data management
-
-TODO: Import / Export / Clone
-
 ##### Validation
 
 ##### Validation via JOI
@@ -271,6 +267,34 @@ entity.update(
 ```
 
 ### Additional functions
+
+#### Data management
+
+#### Full-Entity Setter
+
+ `.set(value)` method is available on every entity instance and is a shorthand for setting multiple entity properties based on the value object passed. The method will return a reference to the entity allowing for quick initialization syntax as follows:
+
+ ```js
+ // Define an entity class
+class MyModel extends Entity {
+  static get propertyDefinitions () { return ['propA', 'propB']; }
+}
+// Instantiate entity
+let myEntity = (new MyModel()).set({ propA: 1, propB: 2 });
+```
+
+#### Full-Entity Getter
+
+`.get()` method is available on every entity instance and will, when called, return a raw object with same keys and values as the entity:
+
+```js
+// ... continuing from previous code example for .set(value):
+myEntity.get()  // Equals: { propA: 1, propB: 2 }
+```
+
+#### Full-Entity Clone
+
+`.clone()` will instantiate a new entity of same type and will copy over values of all properties from the existing entity.
 
 ##### Casting between entitiy types
 
