@@ -65,6 +65,22 @@ export default class EntityPrototype {
     // Initialize managed properties based on definitions
     let cache = initializeManagedProperties.bind(this)(modules, propertyDefinitions, watchers);
 
+    // Initialize modules
+    _.forEach(modules, (module) => {
+      try {
+        // Extract property definitions for this module
+        let formal = _.reduce(propertyDefinitions, (formal, def, name) => {
+          formal[name] = def[module.constructor.name];
+          return formal;
+        }, {});
+        // Initializie module
+        module.initializePrototype.bind(this)(formal);
+      } catch (err) {
+        // Check if not implemented, or if legitimate error
+        if (err !== NotImplementedError) { throw err; }
+      }
+    });
+
     // Expose watch method
     Object.defineProperty(this, 'watch', {
       configurable: false,
@@ -108,7 +124,7 @@ export default class EntityPrototype {
             // Let modules react to update
             _.forEach(modules, (module) => {
               try {
-                module.update.bind(this)(updated, cache[module.constructor.name]);
+                module.afterUpdate.bind(this)(updated, cache[module.constructor.name]);
               } catch (err) {
                 // Check if not implemented, or if legitimate error
                 if (err !== NotImplementedError) { throw err; }

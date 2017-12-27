@@ -40,7 +40,7 @@ function castAsEntity(value, EntityClass) {
   // Attempt copying properties from casting source
   if (value) {
     _lodash2.default.forEach(entity, function (none, key) {
-      // Copy value if  property exists on source
+      // Copy value if property exists on source
       if (!_lodash2.default.isUndefined(value[key])) {
         entity[key] = value[key];
       }

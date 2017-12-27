@@ -4,12 +4,14 @@
 
 // Import dependencies
 import EntityPrototype from './prototype';
+import KeyValueEntityModule from './modules/key-value';
 import DefaultValueEntityModule from './modules/default-value';
 import DynamicValueEntityModule from './modules/dynamic-value';
 import CastingValueEntityModule from './modules/casting-value';
 
 // Instantiate modules used in all Entities
-const defaultValueModule = new DefaultValueEntityModule(),
+const keyValueModule     = new KeyValueEntityModule(),
+      defaultValueModule = new DefaultValueEntityModule(),
       dynamicValueModule = new DynamicValueEntityModule(),
       castingValueModule = new CastingValueEntityModule();
 
@@ -55,6 +57,7 @@ export default class Entity extends EntityPrototype {
    */
   static get modules () {
     return [
+      keyValueModule,
       defaultValueModule,
       dynamicValueModule,
       castingValueModule

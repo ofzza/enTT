@@ -11,6 +11,10 @@ var _prototype = require('./prototype');
 
 var _prototype2 = _interopRequireDefault(_prototype);
 
+var _keyValue = require('./modules/key-value');
+
+var _keyValue2 = _interopRequireDefault(_keyValue);
+
 var _defaultValue = require('./modules/default-value');
 
 var _defaultValue2 = _interopRequireDefault(_defaultValue);
@@ -37,7 +41,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 
 // Instantiate modules used in all Entities
-var defaultValueModule = new _defaultValue2.default(),
+var keyValueModule = new _keyValue2.default(),
+    defaultValueModule = new _defaultValue2.default(),
     dynamicValueModule = new _dynamicValue2.default(),
     castingValueModule = new _castingValue2.default();
 
@@ -105,7 +110,7 @@ var Entity = function (_EntityPrototype) {
   }, {
     key: 'modules',
     get: function get() {
-      return [defaultValueModule, dynamicValueModule, castingValueModule];
+      return [keyValueModule, defaultValueModule, dynamicValueModule, castingValueModule];
     }
 
     /**

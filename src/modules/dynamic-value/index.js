@@ -19,7 +19,7 @@ export default class DynamicValueEntityModule extends EntityModule {
   processProperty (name, def) {
     // Initialize formal definition
     const formal = {};
-    // Check for dynamic value function value
+    // Check for dynamic property function value
     if (def && def.dynamic && _.isFunction(def.dynamic)) {
 
       // Assign explicitly defined function
@@ -34,7 +34,7 @@ export default class DynamicValueEntityModule extends EntityModule {
     return formal;
   }
 
-  initialize (name, value, formal, cache) {
+  initializePropertyValue (name, value, formal, cache) {
     // If dynamic property
     if (formal.dynamic) {
 
@@ -64,7 +64,7 @@ export default class DynamicValueEntityModule extends EntityModule {
     }
   }
 
-  afterSet (name, value, formal, cache) {
+  afterSetPropertyValue (name, value, formal, cache) {
     // If dynamic property
     if (cache.initialized) {
 
@@ -81,7 +81,7 @@ export default class DynamicValueEntityModule extends EntityModule {
     }
   }
 
-  get (name, value, formal, cache) {
+  getPropertyValue (name, value, formal, cache) {
     // If dynamic property
     if (cache.initialized) {
 
@@ -100,7 +100,7 @@ export default class DynamicValueEntityModule extends EntityModule {
     }
   }
 
-  update (updated = null, cache) {
+  afterUpdate (updated = null, cache) {
     // If dynamic property
     if (cache.initialized) {
 

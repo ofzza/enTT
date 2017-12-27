@@ -53,7 +53,7 @@ var DynamicValueEntityModule = function (_EntityModule) {
     value: function processProperty(name, def) {
       // Initialize formal definition
       var formal = {};
-      // Check for dynamic value function value
+      // Check for dynamic property function value
       if (def && def.dynamic && _lodash2.default.isFunction(def.dynamic)) {
 
         // Assign explicitly defined function
@@ -67,8 +67,8 @@ var DynamicValueEntityModule = function (_EntityModule) {
       return formal;
     }
   }, {
-    key: 'initialize',
-    value: function initialize(name, value, formal, cache) {
+    key: 'initializePropertyValue',
+    value: function initializePropertyValue(name, value, formal, cache) {
       var _this2 = this;
 
       // If dynamic property
@@ -103,8 +103,8 @@ var DynamicValueEntityModule = function (_EntityModule) {
       }
     }
   }, {
-    key: 'afterSet',
-    value: function afterSet(name, value, formal, cache) {
+    key: 'afterSetPropertyValue',
+    value: function afterSetPropertyValue(name, value, formal, cache) {
       // If dynamic property
       if (cache.initialized) {
 
@@ -124,8 +124,8 @@ var DynamicValueEntityModule = function (_EntityModule) {
       }
     }
   }, {
-    key: 'get',
-    value: function get(name, value, formal, cache) {
+    key: 'getPropertyValue',
+    value: function getPropertyValue(name, value, formal, cache) {
       // If dynamic property
       if (cache.initialized) {
 
@@ -143,8 +143,8 @@ var DynamicValueEntityModule = function (_EntityModule) {
       }
     }
   }, {
-    key: 'update',
-    value: function update() {
+    key: 'afterUpdate',
+    value: function afterUpdate() {
       var updated = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       var cache = arguments[1];
 

@@ -5,7 +5,7 @@
 // Import dependencies
 import _ from 'lodash';
 import EntityPrototype from './';
-import { NotImplementedError } from '../modules';
+import { NotImplementedError, SetPropertyValueEvent } from '../modules';
 
 /**
  * Initializes managed properties, based on property definitions, calling all modules as part of getter/setter
@@ -32,7 +32,7 @@ export default function initializeManagedProperties (modules, propertyDefinition
     _.forEach(modules, (module) => {
       try {
         // Try initialization if implemented
-        let initializedValue = module.initialize.bind(this)(name, storage[name], def[module.constructor.name], cache[module.constructor.name]);
+        let initializedValue = module.initializePropertyValue.bind(this)(name, storage[name], def[module.constructor.name], cache[module.constructor.name]);
         if (!_.isUndefined(initializedValue)) {
           storage[name] = initializedValue;
         } else if (_.isUndefined(storage[name])) {
@@ -57,7 +57,7 @@ export default function initializeManagedProperties (modules, propertyDefinition
           // Let modules process set value
           _.forEach(getterModules, (module) => {
             try {
-              let updatedValue = module.get.bind(this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
+              let updatedValue = module.getPropertyValue.bind(this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
               if (!_.isUndefined(updatedValue)) { value = updatedValue; }
             } catch (err) {
               // Check if not implemented, or if legitimate error
@@ -73,9 +73,10 @@ export default function initializeManagedProperties (modules, propertyDefinition
         // Return composed setter function
         return (value) => {
           // Let modules process set value
+          const event = new SetPropertyValueEvent();
           _.forEach(setterModules, (module) => {
             try {
-              let updatedValue = module.set.bind(this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
+              let updatedValue = module.setPropertyValue.bind(this)(name, value, def[module.constructor.name], cache[module.constructor.name], event);
               if (!_.isUndefined(updatedValue)) { value = updatedValue; }
             } catch (err) {
               // Check if not implemented, or if legitimate error
@@ -84,19 +85,19 @@ export default function initializeManagedProperties (modules, propertyDefinition
           });
           // Check if value changed
           let newValue = (!_.isUndefined(value) ? value : null);
-          if (newValue !== storage[name]) {
+          if (newValue !== storage[name] || event.changed) {
             // Store processed value (course undefined to null)
-            storage[name] = (!_.isUndefined(value) ? value : null);
+            storage[name] = newValue;
             // Let modules process value after having set it
             _.forEach(afterSetterModules, (module) => {
               try {
-                module.afterSet.bind(this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
+                module.afterSetPropertyValue.bind(this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
               } catch (err) {
                 // Check if not implemented, or if legitimate error
                 if (err !== NotImplementedError) { throw err; }
               }
             });
-            // In case setting an Entity, watch for it's changes
+            // In case setting a new Entity, watch for it's changes
             watchers.watchChildEntity(name, value);
             // Trigger watchers
             watchers.triggerChangeEvent(name);

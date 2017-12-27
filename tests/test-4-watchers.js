@@ -202,6 +202,7 @@ describe('Change Detection', () => {
 
     it('Should watch for changes in child Entities', () => {
       // Start watchers
+      casting.child = null;
       propertyChangeEvents = [];
       propertyWatchers.push(casting.watch((e) => { propertyChangeEvents.push(e); }, 'child'));
       // Check changes detection
@@ -222,6 +223,7 @@ describe('Change Detection', () => {
     });
     it('Should watch for changes in child Entitiy collections', () => {
       // Start watchers
+      casting.children = null;
       propertyChangeEvents = [];
       propertyWatchers.push(casting.watch((e) => { propertyChangeEvents.push(e); }, 'children'));
       // Check changes detection
@@ -242,6 +244,7 @@ describe('Change Detection', () => {
     });
     it('Should keep watching when replacing a child entity', () => {
       // Start watchers
+      casting.child = null;
       propertyChangeEvents = [];
       propertyWatchers.push(casting.watch((e) => { propertyChangeEvents.push(e); }, 'child'));
       // Check changes detection for first entity

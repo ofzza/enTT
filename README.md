@@ -136,6 +136,24 @@ A casting property can be defined explicitly using the "**castAs**" key:
 
 ### Modules: Prepackaged modules
 
+##### Key Property Value
+
+Key Property Value module allows for marking of properties as primary key values, making them unique identifiers of the entity:
+
+```
+ idA: { key: true }
+ idB: { key: true }
+```
+
+Using the **entity.uniqueKey** property, you can access a unique identifier of the entity generated from all of the entity's key properties:
+
+```js
+  myEntity.idA = 'A';
+  myEntity.idB = 'B';
+  myEntity.uniqueKey    // will now equal: '{"idA":"A","idB":"B"}'
+
+```
+
 ##### Default Propery Value
 
 Default Propery Value module initializes properties with an initial, default value configured by the property definition's **value** key:
@@ -155,10 +173,6 @@ TODO: Import / Export / Clone
 ##### Validation
 
 ##### Validation via JOI
-
-##### Identity
-
-TODO: ...
 
 ### Modules: Writing your own, custom module
 

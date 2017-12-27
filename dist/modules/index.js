@@ -27,8 +27,17 @@ var EntityModule = function () {
   }
 
   _createClass(EntityModule, [{
-    key: 'processProperty',
+    key: 'initializePrototype',
 
+
+    /**
+     * Runs once, when entity instance constructed; used to initialize additional methods or state on the entity prototype
+     * @param {any} formal Formalized property definitions constructed by "processProperty" calls earlier
+     * @memberof EntityModule
+     */
+    value: function initializePrototype(formal) {
+      formal;throw NotImplementedError;
+    }
 
     /**
      * Called on every property definition, method should formalize and return relevant parts of the property definition. This
@@ -38,6 +47,9 @@ var EntityModule = function () {
      * @returns {any} Formalized property definition
      * @memberof EntityModule
      */
+
+  }, {
+    key: 'processProperty',
     value: function processProperty(name, def) {
       return function () {
         def;throw NotImplementedError;
@@ -45,7 +57,7 @@ var EntityModule = function () {
     }
 
     /**
-     * Initializes entity instance right after instantiation; If returning undefined, value will be ignored
+     * Called on every property definition, method should initialize a property; If returning undefined, value will be ignored
      * ... when called: this = Entity baing processed
      * @param {any} name Property name
      * @param {any} value Currently initalized value
@@ -56,8 +68,8 @@ var EntityModule = function () {
      */
 
   }, {
-    key: 'initialize',
-    value: function initialize(name, value, formal, cache) {
+    key: 'initializePropertyValue',
+    value: function initializePropertyValue(name, value, formal, cache) {
       return function () {
         value;formal;cache;throw NotImplementedError;
       }();
@@ -75,8 +87,8 @@ var EntityModule = function () {
      */
 
   }, {
-    key: 'get',
-    value: function get(name, value, formal, cache) {
+    key: 'getPropertyValue',
+    value: function getPropertyValue(name, value, formal, cache) {
       return function () {
         value;formal;cache;throw NotImplementedError;
       }();
@@ -89,15 +101,16 @@ var EntityModule = function () {
      * @param {any} value Value being stored and already processed by higher priority modules
      * @param {any} formal Formalized property definition constructed by "processProperty" call earlier
      * @param {any} cache Shared module cache object for this Entity instance, used to pass vaues between methods of the module
+     * @param {any} e Instance of SetPropertyValueEvent used to track any changes made to the set value
      * @returns {any} Processed value
      * @memberof EntityModule
      */
 
   }, {
-    key: 'set',
-    value: function set(name, value, formal, cache) {
+    key: 'setPropertyValue',
+    value: function setPropertyValue(name, value, formal, cache, e) {
       return function () {
-        value;formal;cache;throw NotImplementedError;
+        value;formal;cache;e;throw NotImplementedError;
       }();
     }
     /**
@@ -112,8 +125,8 @@ var EntityModule = function () {
      */
 
   }, {
-    key: 'afterSet',
-    value: function afterSet(name, value, formal, cache) {
+    key: 'afterSetPropertyValue',
+    value: function afterSetPropertyValue(name, value, formal, cache) {
       return function () {
         value;formal;cache;throw NotImplementedError;
       }();
@@ -129,8 +142,8 @@ var EntityModule = function () {
      */
 
   }, {
-    key: 'update',
-    value: function update() {
+    key: 'afterUpdate',
+    value: function afterUpdate() {
       var updated = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       var cache = arguments[1];
       return function () {
@@ -142,5 +155,23 @@ var EntityModule = function () {
   return EntityModule;
 }();
 
+/**
+ * Keeps track of property value being set by multiple modules
+ * @export
+ * @class SetPropertyValueEvent
+ */
+
+
 exports.default = EntityModule;
+
+var SetPropertyValueEvent =
+/**
+ * Creates an instance of SetPropertyValueEvent.
+ * @memberof SetPropertyValueEvent
+ */
+exports.SetPropertyValueEvent = function SetPropertyValueEvent() {
+  _classCallCheck(this, SetPropertyValueEvent);
+
+  this.changed = false;
+};
 //# sourceMappingURL=index.js.map

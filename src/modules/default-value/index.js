@@ -24,7 +24,7 @@ export default class DefaultValueEntityModule extends EntityModule {
     return formal;
   }
 
-  initialize (name, value, formal) {
+  initializePropertyValue (name, value, formal) {
     // If not initialized already, initialize to default value
     if (_.isUndefined(value)) { return formal.value; }
   }

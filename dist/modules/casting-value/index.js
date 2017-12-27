@@ -75,34 +75,57 @@ var CastingValueEntityModule = function (_EntityModule) {
       return formal;
     }
   }, {
-    key: 'set',
-    value: function set(name, value, formal) {
+    key: 'setPropertyValue',
+    value: function setPropertyValue(name, value, formal, e) {
       if (formal.castAs) {
+        // Report as changed
+        e.changed = true;
+        // Update value
         if (_lodash2.default.isNil(value)) {
           // If setting null, allow null value
           return null;
         } else if (!formal.collection) {
-          // Check if already cast
-          if (value instanceof formal.castAs) {
-            // Keep current casting
-            return value;
+          // Prepare value (cast if not cast already)
+          var valueToCast = value instanceof formal.castAs ? value : _prototype2.default.cast(value, formal.castAs);
+          // Check if current value matches "uniqueKey" - if so, import properties, else overwrite with cast value
+          var currentValue = this[name];
+          if (currentValue && currentValue instanceof formal.castAs && currentValue.uniqueKey && currentValue.uniqueKey === valueToCast.uniqueKey) {
+            _lodash2.default.forEach(valueToCast, function (value, name) {
+              currentValue[name] = value;
+            });
+            return currentValue;
           } else {
-            // Attempt casting value directly
-            return _prototype2.default.cast(value, formal.castAs);
+            return valueToCast;
           }
         } else {
-          // Attempt casting value as a collection of castable values
-          return _lodash2.default.reduce(value, function (collection, value, key) {
-            // Check if already cast
-            if (value instanceof formal.castAs) {
-              // Keep current casting
-              collection[key] = value;
+          // Update current collection, if exists
+          var _currentValue = this[name];
+          // If current collection exists, extract existing members by "uniqueKey" values
+          var existingByUniqueKey = _lodash2.default.reduce(_lodash2.default.isObject(_currentValue) ? _currentValue : {}, function (existingByUniqueKey, value) {
+            var uniqueKey = value.uniqueKey;
+            if (uniqueKey) {
+              existingByUniqueKey[value.uniqueKey] = value;
+            }
+            return existingByUniqueKey;
+          }, {});
+          // Attempt casting value as a collection of castable values (reuse existing, matching entities if found by "uniqueKey" value)
+          var updatedCollection = _lodash2.default.reduce(value, function (collection, value, key) {
+            // Prepare value (cast if not cast already)
+            var valueToCast = value instanceof formal.castAs ? value : _prototype2.default.cast(value, formal.castAs),
+                uniqueKey = valueToCast.uniqueKey;
+            // Check if matching entity already exists
+            if (uniqueKey && existingByUniqueKey[uniqueKey]) {
+              _lodash2.default.forEach(valueToCast, function (value, name) {
+                existingByUniqueKey[uniqueKey][name] = value;
+              });
+              collection[key] = existingByUniqueKey[uniqueKey];
             } else {
-              // Attempt casting value
-              collection[key] = _prototype2.default.cast(value, formal.castAs);
+              collection[key] = valueToCast;
             }
             return collection;
           }, _lodash2.default.isArray(value) ? [] : {});
+          // Return cast value
+          return updatedCollection;
         }
       }
     }

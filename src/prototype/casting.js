@@ -25,7 +25,7 @@ export function castAsEntity (value, EntityClass) {
   // Attempt copying properties from casting source
   if (value) {
     _.forEach(entity, (none, key) => {
-      // Copy value if  property exists on source
+      // Copy value if property exists on source
       if (!_.isUndefined(value[key])) { entity[key] = value[key]; }
     });
   }

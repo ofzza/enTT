@@ -61,7 +61,7 @@ function initializeManagedProperties(modules, propertyDefinitions, watchers) {
     _lodash2.default.forEach(modules, function (module) {
       try {
         // Try initialization if implemented
-        var initializedValue = module.initialize.bind(_this)(name, storage[name], def[module.constructor.name], cache[module.constructor.name]);
+        var initializedValue = module.initializePropertyValue.bind(_this)(name, storage[name], def[module.constructor.name], cache[module.constructor.name]);
         if (!_lodash2.default.isUndefined(initializedValue)) {
           storage[name] = initializedValue;
         } else if (_lodash2.default.isUndefined(storage[name])) {
@@ -88,7 +88,7 @@ function initializeManagedProperties(modules, propertyDefinitions, watchers) {
           // Let modules process set value
           _lodash2.default.forEach(getterModules, function (module) {
             try {
-              var updatedValue = module.get.bind(_this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
+              var updatedValue = module.getPropertyValue.bind(_this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
               if (!_lodash2.default.isUndefined(updatedValue)) {
                 value = updatedValue;
               }
@@ -108,9 +108,10 @@ function initializeManagedProperties(modules, propertyDefinitions, watchers) {
         // Return composed setter function
         return function (value) {
           // Let modules process set value
+          var event = new _modules.SetPropertyValueEvent();
           _lodash2.default.forEach(setterModules, function (module) {
             try {
-              var updatedValue = module.set.bind(_this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
+              var updatedValue = module.setPropertyValue.bind(_this)(name, value, def[module.constructor.name], cache[module.constructor.name], event);
               if (!_lodash2.default.isUndefined(updatedValue)) {
                 value = updatedValue;
               }
@@ -123,13 +124,13 @@ function initializeManagedProperties(modules, propertyDefinitions, watchers) {
           });
           // Check if value changed
           var newValue = !_lodash2.default.isUndefined(value) ? value : null;
-          if (newValue !== storage[name]) {
+          if (newValue !== storage[name] || event.changed) {
             // Store processed value (course undefined to null)
-            storage[name] = !_lodash2.default.isUndefined(value) ? value : null;
+            storage[name] = newValue;
             // Let modules process value after having set it
             _lodash2.default.forEach(afterSetterModules, function (module) {
               try {
-                module.afterSet.bind(_this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
+                module.afterSetPropertyValue.bind(_this)(name, value, def[module.constructor.name], cache[module.constructor.name]);
               } catch (err) {
                 // Check if not implemented, or if legitimate error
                 if (err !== _modules.NotImplementedError) {
@@ -137,7 +138,7 @@ function initializeManagedProperties(modules, propertyDefinitions, watchers) {
                 }
               }
             });
-            // In case setting an Entity, watch for it's changes
+            // In case setting a new Entity, watch for it's changes
             watchers.watchChildEntity(name, value);
             // Trigger watchers
             watchers.triggerChangeEvent(name);

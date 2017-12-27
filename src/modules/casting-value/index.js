@@ -41,33 +41,50 @@ export default class CastingValueEntityModule extends EntityModule {
     return formal;
   }
 
-  set (name, value, formal) {
+  setPropertyValue (name, value, formal, e) {
     if (formal.castAs) {
+      // Report as changed
+      e.changed = true;
+      // Update value
       if (_.isNil(value)) {
         // If setting null, allow null value
         return null;
       } else if (!formal.collection) {
-        // Check if already cast
-        if (value instanceof formal.castAs) {
-          // Keep current casting
-          return value;
+        // Prepare value (cast if not cast already)
+        let valueToCast = (value instanceof formal.castAs ? value : EntityPrototype.cast(value, formal.castAs));
+        // Check if current value matches "uniqueKey" - if so, import properties, else overwrite with cast value
+        let currentValue = this[name];
+        if (currentValue && currentValue instanceof formal.castAs && currentValue.uniqueKey && currentValue.uniqueKey === valueToCast.uniqueKey) {
+          _.forEach(valueToCast, (value, name) => { currentValue[name] = value; });
+          return currentValue;
         } else {
-          // Attempt casting value directly
-          return EntityPrototype.cast(value, formal.castAs);
+          return valueToCast;
         }
       } else {
-        // Attempt casting value as a collection of castable values
-        return _.reduce(value, (collection, value, key) => {
-          // Check if already cast
-          if (value instanceof formal.castAs) {
-            // Keep current casting
-            collection[key] = value;
+        // Update current collection, if exists
+        let currentValue = this[name];
+        // If current collection exists, extract existing members by "uniqueKey" values
+        let existingByUniqueKey = _.reduce((_.isObject(currentValue) ? currentValue : {}), (existingByUniqueKey, value) => {
+          let uniqueKey = value.uniqueKey;
+          if (uniqueKey) { existingByUniqueKey[value.uniqueKey] = value; }
+          return existingByUniqueKey;
+        }, {});
+        // Attempt casting value as a collection of castable values (reuse existing, matching entities if found by "uniqueKey" value)
+        let updatedCollection = _.reduce(value, (collection, value, key) => {
+          // Prepare value (cast if not cast already)
+          let valueToCast = (value instanceof formal.castAs ? value : EntityPrototype.cast(value, formal.castAs)),
+              uniqueKey = valueToCast.uniqueKey;
+          // Check if matching entity already exists
+          if (uniqueKey && existingByUniqueKey[uniqueKey]) {
+            _.forEach(valueToCast, (value, name) => { existingByUniqueKey[uniqueKey][name] = value; });
+            collection[key] = existingByUniqueKey[uniqueKey];
           } else {
-            // Attempt casting value
-            collection[key] = EntityPrototype.cast(value, formal.castAs);
+            collection[key] = valueToCast;
           }
           return collection;
         }, (_.isArray(value) ? [] : {}));
+        // Return cast value
+        return updatedCollection;
       }
     }
   }

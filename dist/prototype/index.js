@@ -122,6 +122,24 @@ var EntityPrototype = function () {
     // Initialize managed properties based on definitions
     var cache = _properties2.default.bind(this)(modules, propertyDefinitions, watchers);
 
+    // Initialize modules
+    _lodash2.default.forEach(modules, function (module) {
+      try {
+        // Extract property definitions for this module
+        var formal = _lodash2.default.reduce(propertyDefinitions, function (formal, def, name) {
+          formal[name] = def[module.constructor.name];
+          return formal;
+        }, {});
+        // Initializie module
+        module.initializePrototype.bind(_this)(formal);
+      } catch (err) {
+        // Check if not implemented, or if legitimate error
+        if (err !== _modules.NotImplementedError) {
+          throw err;
+        }
+      }
+    });
+
     // Expose watch method
     Object.defineProperty(this, 'watch', {
       configurable: false,
@@ -167,7 +185,7 @@ var EntityPrototype = function () {
             // Let modules react to update
             _lodash2.default.forEach(modules, function (module) {
               try {
-                module.update.bind(_this)(updated, cache[module.constructor.name]);
+                module.afterUpdate.bind(_this)(updated, cache[module.constructor.name]);
               } catch (err) {
                 // Check if not implemented, or if legitimate error
                 if (err !== _modules.NotImplementedError) {
