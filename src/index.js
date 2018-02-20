@@ -3,8 +3,11 @@
 // =====================================================================================================================
 
 // Export Entity class as default
-import Entity from './entity';
+import Entity from './entt';
 export default Entity;
 
-// Export Entity Custom Module base class
-export { default as Module } from './modules';
+// Export Entity extension class
+export { default as EnTTExt } from './enttext';
+
+// Export extensions
+export { default as DynamicPropertiesExtension } from './ext/dynamic-properties';

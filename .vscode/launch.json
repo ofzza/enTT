@@ -13,7 +13,7 @@
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "sourceMaps": true,
       "args": [
-        "tests/**/*.js",
+        "tests/*.js",
         "--no-timeouts"
       ],
       "preLaunchTask": null,
@@ -35,7 +35,7 @@
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "sourceMaps": true,
       "args": [
-        "tests/**/*.js",
+        "tests/*.js",
         "--no-timeouts"
       ],
       "preLaunchTask": null,

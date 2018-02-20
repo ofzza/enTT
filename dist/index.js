@@ -3,26 +3,35 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Module = undefined;
+exports.DynamicPropertiesExtension = exports.EnTTExt = undefined;
 
-var _modules = require('./modules');
+var _enttext = require('./enttext');
 
-Object.defineProperty(exports, 'Module', {
+Object.defineProperty(exports, 'EnTTExt', {
   enumerable: true,
   get: function get() {
-    return _interopRequireDefault(_modules).default;
+    return _interopRequireDefault(_enttext).default;
   }
 });
 
-var _entity = require('./entity');
+var _dynamicProperties = require('./ext/dynamic-properties');
 
-var _entity2 = _interopRequireDefault(_entity);
+Object.defineProperty(exports, 'DynamicPropertiesExtension', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_dynamicProperties).default;
+  }
+});
+
+var _entt = require('./entt');
+
+var _entt2 = _interopRequireDefault(_entt);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = _entity2.default;
+exports.default = _entt2.default;
 
-// Export Entity Custom Module base class
+// Export Entity extension class
 // =====================================================================================================================
 // ENTITY
 // =====================================================================================================================

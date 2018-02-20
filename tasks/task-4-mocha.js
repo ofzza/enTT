@@ -11,7 +11,7 @@ module.exports = (gulp) => {
   // JSCS code-style task
   gulp.task('test@mocha', gulp.series((done) => {
     // Queue up test suite
-    gulp.src('./tests/**/*.js', { read: false })
+    gulp.src('./tests/*.js', { read: false })
       .pipe(mocha({
         checkLeaks: true,
         reporter: 'spec'

@@ -7,5 +7,7 @@
     "logs/": true,
     "dist/": false
   },
-  "terminal.integrated.shell.windows": "C:\\Windows\\sysnative\\bash.exe"
+  "terminal.integrated.shell.windows": "C:\\Windows\\sysnative\\bash.exe",
+
+  "eslint.options": { "configFile": "./.rc-eslint.json" }
 }

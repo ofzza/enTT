@@ -1,369 +1,858 @@
-# enTT
+EnTT
+======
 
-**enTT**, short for Entity, is an extensible JS class implementing some of the often used data-model functionality.
+```EnTT```, pronounced "Entity", is an extensible Javascript data-model implementation with some of the typically required functionality, such as change-detection, easy import/export, composition/decomposition, data validation, etc., all available out of the box.
 
-## Get enTT
-TODO: ... how to get, install, include into your project ...
 
-## Usage
+# Get EnTT
 
-> For the TL;DR version, see Examples at the bottom!
+To start using ```EnTT``` in your project, simply install it from NPM by running the following in your terminal:
+ ```
+ npm install entt --save
+ ```
 
-The Entity class is not meant to be instantiated directly; instead it is supposed to be extended into your own, custom data-model classes. When extending the Entity class, there are static properties that can be set to configure the behavior of the extended class:
 
-- **propertyDefinitions** static property can return property definition for your extended class. These definitions define managed properties that will be created and handled by each instance of the class.
+# Reference table
+
+- [How to Use](#how-to-use)
+- [Property configuration](#property-configuration)
+  - [How to configure properties](#how-to-configure-properties)
+  - [Configuration options](#configuration-options)
+    - [Value](#value)
+    - [Readonly](#readonly)
+    - [Exportable](#exportable)
+    - [Bind](#bind)
+    - [Cast](#cast)
+- [Data management](#data-management)
+  - [Importing](#importing)
+  - [Exporting](#exporting)
+  - [Casting](#casting)
+    - [Cast a single object as a single entity](#cast-a-single-object-as-a-single-entity)
+    - [Cast an array of objects as an array of entities](#cast-an-array-of-objects-as-an-array-of-entities)
+    - [Cast a hashmap of objects as a hashmap of entities](#cast-a-hashmap-of-objects-as-a-hashmap-of-entities)
+- [Change detection](#change-detection)
+  - [Watching for changes](#watching-for-changes)
+  - [Manual Update Notification](#manual-update-notification)
+  - [Update Batching](#update-batching)
+- [Extensions](#extensions)
+  - [How to include extensions](#how-to-include-extensions)
+  - [Included extensions and how to use them](#included-extensions-and-how-to-use-them)
+    - [Dynamic Properties Extension](#dynamic-properties-extension)
+    - [Validation Extension](#validation-extension)
+  - [Extension Authoring](#extension-authoring)
+
+
+# How to Use
+
+When creating your data-model you should have your classes inherit from the base ```EnTT``` class like:
 
 ```js
-  // Import Entity base class
-  import enTT from 'enTT';
+import EnTT from 'entt';
 
-  // Define a model class with vanilla, unconfigured properties
-  class MyBase extends enTT {
-    // Define two vanilla properties
-    static get propertyDefinitions () { return ['propVanillaA', 'propVanillaB']; }
+class MyModel extends EnTT {
+ static get includes () { /* Include extensions */ }
+ static get props () { /* Configure properties */ }
+}
+```
+
+or, alternatively, from existing data-model classes, like:
+
+```js
+class MyMoreSpecificModel extends MyModel {
+ static get includes () { /* Include extensions */ }
+ static get props () { /* Configure properties */ }
+}
+```
+
+When constructing a model instance with ```let instance = new MyMoreSpecificModel()```, the created instance will inherit it's properties' configuration and included extensions from all of the classes it inherits from.
+
+- > _See [Property configuration](#property-configuration) section for details on how to configure your class' properties_
+
+- > _See [Extensions](#extensions) section for details on how to extend ```EnTT``` functionality_
+
+
+## Property configuration
+
+### How to configure properties
+
+When extending your class from ```EnTT``` you should declare and configure any properties you need your class to contain by defining the ```static get props()``` property of your class:
+
+```js
+class MyModel extends EnTT {
+  static get props () {
+    // Return configuration for all properties
+    return {
+      foo: { /* ... configuration ... */ },
+      bar: { /* ... configuration ... */ },
+    };
   }
-  // Extend your model class with additional, configured properties
-  class MyModel extends MyBase {
-    // Define additional, configured properties
-    static get propertyDefinitions () {
-      return {
-        configuredProperty: { /*... property configuration ...*/ }
-      };
+}
+```
+
+- > _See [Property configuration](#property-configuration) > [Configuration options](#configuration-options) section for details on all of the configuration options available out of the box._
+
+- > _See [Extensions](#extensions) > [Included extensions and how to use them](#included-extensions-and-how-to-use-them) section for details on all of the included extensions' configuration options._
+
+- > _See [Extensions](#extensions) > [Extension authoring](#extension-authoring) section for details on how to extend EnTT with your own configuration options and functionality._
+
+Having set up the property configuration, every instance of your class will be created with all of the configured properties (configured on this class or any of the inherited classes) initialized with getters/setters implementing the configured for functionality.
+
+<sub>_**Example**_:</sub>
+```js
+
+// Define a 1st level EnTT class
+class MyModel extends EnTT {
+  static get props () {
+    // Configure properties with initial values
+    return {
+      foo: { value: 'value for FOO' },
+      bar: { value: 'value for BAR' }
+    };
+  }
+}
+
+// Inherit into a 2nd level EnTT class
+class MyMoreSpecificModel extends MyModel {
+  static get props () {
+    // Configure properties with initial values
+    return {
+      foo: { value: 'overridden value for FOO' },
+      baz: { value: 'value for BAZ' }
+    };
+  }
+}
+
+// Instantiate the 2nd level class
+let instance = new MyMoreSpecificModel();
+
+// Check initial values set
+console.log(instance.foo);
+  // Outputs "overridden value for FOO", set because of "MyMoreSpecificModel.foo" configuration
+console.log(instance.bar);
+  // Outputs "value for BAR", set because of "MyModel.bar" configuration
+console.log(instance.baz);
+  // Outputs "value for BAZ", set because of "MyMoreSpecificModel.baz" configuration
+```
+
+### Configuration options
+
+#### Value
+
+```js
+foo: { value: 'some value' }
+```
+
+The ```value``` configuration option sets an initial value to be assigned to the configured property as soon as the class in instantiated.
+
+<sub>_**Example**_:</sub>
+```js
+// Define an EnTT class
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      // Configure property .foo with a initial value "bar"
+      foo: { value: 'bar' }
+    };
+  }
+}
+
+// Construct a single instance and check initial property value
+console.log((new MyModel()).foo)  // Outputs initial "bar" value
+```
+
+#### Readonly
+
+```js
+foo: { readOnly: true }
+```
+
+The ```readOnly``` configuration option, when set to true, makes the configured property read-only. When read-only, the property:
+- Will be readable
+- Will **not** be writable (will throw an error if tried to be assigned a value)
+- Will be exported when exporting 
+- Will **not** accept imported data
+- Will **not** accept data being cast into it
+
+<sub>_**For Example**_:</sub>
+```js
+// Define an EnTT class
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      // Configure a read-only property .foo with a initial value "bar"
+      foo: {
+        value: 'bar',
+        readOnly: true
+      }
+    };
+  }
+}
+
+// Construct a single instance
+let instance = new MyModel();
+// Check if readable
+console.log(instance.foo);            // Outputs initial "bar" value
+// Check if writable
+instance.foo = 'baz';                 // Throws an error
+// Check if exported when exporting
+console.log(instance.export().foo);   // Outputs unchanged value of "bar"
+// Try importing data
+instance.import({ foo: 'baz' });
+console.log(instance.foo);            // Outputs unchanged value of "bar"
+// Try casting to MyModel
+let castIntoModel = EnTT.cast({ foo: 'baz' }, MyModel);
+console.log(castIntoModel.foo);       // Outputs unchanged value of "bar"
+```
+
+#### Exportable
+
+```js
+foo: { exportable: true }
+```
+
+The ```exportable``` configuration option, when set to false, makes the configured property not exportable. When not exportable, the property:
+- Will be readable
+- Will be writable
+- Will **not** be exported when exporting
+- Will **not** accept imported data
+- Will accept data being cast into it
+
+<sub>_**Example**_:</sub>
+```js
+// Define an EnTT class
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      // Configure a read-only property .foo with a initial value "bar"
+      foo: {
+        value: 'bar',
+        exportable: false
+      }
+    };
+  }
+}
+
+// Construct a single instance
+let instance = new MyModel();
+// Check if readable
+console.log(instance.foo);            // Outputs initial "bar" value
+// Check if writable
+instance.foo = 'baz';
+console.log(instance.foo);            // Outputs assigned "baz" value
+// Check if exported when exporting
+console.log(instance.export().foo);   // Outputs undefined
+// Try importing data
+instance.import({ foo: 'qux' });
+console.log(instance.foo);            // Outputs unchanged value of "baz"
+// Try casting to MyModel
+let castIntoModel = EnTT.cast({ foo: 'qux' }, MyModel);
+console.log(castIntoModel.foo);       // Outputs cast value of "qux"
+```
+
+#### Bind
+
+```js
+foo: { bind: 'bar' }
+```
+
+The ```bind``` configuration option can configure a property to import/export from/to a property of a different name then itself.
+
+- > _See [Data management](#data-management) > [Importing](#importing) and [Data management](#data-management) > [Exporting](#exporting) sections for details and examples._
+
+#### Cast
+
+```js
+foo: { cast: MyModel },
+bar: { cast: [ MyModel ] },
+baz: { cast: { MyModel } }
+```
+
+The ```cast``` configuration option can configure a property to cast any value assigned to it before setting it. The configured value (```MyModel```, ```[ MyModel ]``` or ```{ MyModel }```) sets if the value being set will get cast as a particular EnTT class (```MyModel```), as an array of a particular EnTT class (```[ MyModel ]```) or a hashmap of a particular EnTT class (```{ MyModel }```).
+
+- > _See [Data management](#data-management) > [Casting](#casting) section for details on casting target syntax on how casting works._
+
+<sub>_**Example**_:</sub>
+```js
+// Define a simple EnTT class to use as a casting target
+class MyValue extends EnTT {
+  static get props () {
+    return {
+      val: { }
+    };
+  }
+}
+
+// Define an EnTT class containing casting properties
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      // Configure some casting properties
+      foo: { cast: MyValue },
+      bar: { cast: [ MyValue ] },
+      baz: { cast: { MyValue } },
+    };
+  }
+}
+
+// Instantiate the class
+let instance = new MyModel();
+
+// Assign value to cast property
+instance.foo = { val: 1 };
+console.log((instance.foo instance MyValue), Object.entries(instance.foo), Object.values(instance.foo));
+  // Outputs true, [ "val" ], [ 1 ]
+  // The set raw object was cast as MyValue instance
+
+// Assign array of values to cast property
+instance.bar = [ { val: 0 }, { val: 1 }, { val: 2 } ];
+console.log((instance.bar[0] instance MyValue), Object.entries(instance.bar[0]), Object.values(instance.bar]));
+  // Outputs true, [ "val" ], [ 0 ]
+console.log((instance.bar[1] instance MyValue), Object.entries(instance.bar[1]), Object.values(instance.bar]));
+  // Outputs true, [ "val" ], [ 1 ]
+console.log((instance.bar[2] instance MyValue), Object.entries(instance.bar[2]), Object.values(instance.bar]));
+  // Outputs true, [ "val" ], [ 2 ]
+  // The set array of raw objects was cast as array of MyValue instances
+
+// Assign hashmap of values to cast property
+instance.baz = [ a: { val: 0 }, b: { val: 1 } ];
+console.log((instance.baz.a instance MyValue), Object.entries(instance.baz.a), Object.values(mode.baz.a))
+  // Outputs true, [ "val" ], [ 0 ]
+console.log((instance.bar.b instance MyValue), Object.entries(instance.bar.b), Object.values(instance.bar.b)
+  // Outputs true, [ "val" ], [ 1 ]
+  // The set hashmap of raw objects was cast as hashmap of MyValue instances
+```
+
+> _Note: It is possible to define casting properties using a shorthand syntax, provided you don't require setting any other configuration options for that same property. The following 2 examples will be interpreted the same way:_
+> ```js
+> static get props () {
+>   return {
+>     // Configure some casting properties
+>     foo: { cast: MyValue },
+>     bar: { cast: [ MyValue ] },
+>     baz: { cast: { MyValue } },
+>   };
+> }
+> ```
+> ```js
+> static get props () {
+>   return {
+>     // Configure some casting properties using shorthand syntax
+>     foo: MyValue,
+>     bar: [ MyValue ],
+>     baz: { MyValue },
+>   };
+> }
+> ```
+
+## Data management
+
+### Importing
+
+Every instance of a ```EnTT``` exposes a ```.import(data: Object)``` method. By passing either another entity instance or any other object to the ```.import(data: Object)``` method, the data from the passed object will get imported into the instance.
+
+<sub>_**Example**_:</sub>
+```js
+// Define an EnTT class to use as an import target
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      foo: { },
+      bar: { readOnly: true },
+      baz: { exportable: false }
+    };
+  }
+}
+
+// Instantiate the class and import raw data
+let instance = (new MyModel()).import({
+  foo: 'FOO',   // Targeting import to a simple property
+  bar: 'BAR',   // Targeting import to a read-only property
+  baz: 'BAZ',   // Targeting import to a non-exportable property
+  qux: 'QUX'    // Targeting import to a not define property
+});
+
+// Check imported properties
+console.log(instance.foo);  // Outputs imported value "FOO"
+console.log(instance.bar);  // Outputs undefined because can't import to read-only property
+console.log(instance.baz);  // Outputs undefined because can't import to a not exportable property
+console.log(instance.qux);  // Outputs undefined because can't import to a non-existant property
+```
+
+To map properties of different name when importing, you can configure your properties with the ```bind``` option making them import values from the configured property name instead of from a property of the same name:
+
+```js
+foo: { bind: 'bar' }
+```
+
+<sub>_**Example**_:</sub>
+```js
+// Define an EnTT class to use as a mapped import target
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      foo: { bind: 'bar' },
+      bar: { bind: 'baz' }
+    };
+  }
+}
+
+// Instantiate the class and import raw data
+let instance = (new MyModel()).import({
+  bar: 'BAR',   // Targeting mapped import into .foo
+  baz: 'BAZ',   // Targeting mapped import into .bar
+});
+
+// Check imported properties
+console.log(instance.foo);  // Outputs "BAR", imported value from .bar
+console.log(instance.bar);  // Outputs "BAZ", imported value from .baz
+```
+
+### Exporting
+
+Every instance of a ```EnTT``` class exposes a ```.export()``` method. When called, the method will extract all of the entity instance's property values and return them packaged up as a raw object.
+
+<sub>_**Example**_:</sub>
+```js
+// Define an EnTT class to use as an exporting source
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      foo: { value: 'FOO' },
+      bar: { value: 'BAR', readOnly: true },
+      baz: { value: 'BAZ', exportable: false }
+    };
+  }
+}
+
+// Instantiate the class and export raw data
+let exported = (new MyModel()).export();
+
+// Check exported properties
+console.log(exported.foo);  // Outputs initial value "FOO"
+console.log(exported.bar);  // Outputs initial value "BAR"
+console.log(exported.baz);  // Outputs undefined because can't export a not exportable property
+```
+
+To map properties of different name when exporting, you can configure your properties with the ```bind``` option making them export values to the configured property name instead of to a property of the same name:
+
+```js
+foo: { bind: 'bar' }
+```
+
+<sub>_**Example**_:</sub>
+```js
+// Define an EnTT class to use as a mapped exporting source
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      foo: { value: 'FOO', bind: 'bar' },
+      bar: { value: 'BAR', bind: 'baz' }
+    };
+  }
+}
+
+// Instantiate the class and export raw data
+let exported = (new MyModel()).export();
+
+// Check exported properties
+console.log(exported.foo);  // Outputs "BAR", exported value from .bar
+console.log(exported.bar);  // Outputs "FOO", imported value from .foo
+```
+
+### Casting
+
+You can quickly convert between raw objects and instances of an ```EnTT``` class by using the ```EnTT.cast(rawData, TargetClassSyntax)``` method. You can also cast between different ```EnTT``` classes.
+
+Assuming you have defined an extended ```EnTT``` class with some properties like:
+
+```js
+// Define an EnTT class to use as a casting target
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      foo: { },
+      bar: { }
+    };
+  }
+}
+```
+
+using ```EnTT.cast(rawData, TargetClassSyntax)``` method, you can:
+
+#### Cast a single object as a single entity
+
+To cast as a single entity you'll need to call ```EnTT.cast(rawData, TargetClassSyntax)``` with the following arguments:
+- ```rawData```: Should contain a single raw object to be cast\
+  _Example_: ```{ foo: 'bar' }```
+- ```TargetClassSyntax```: Should contain the ```EnTT``` extended class you're casting as\
+  _Example_: ```MyModel```
+
+<sub>_**Example**_:</sub>
+```js
+// Cast a raw object as a single entity
+let rawData = { foo: 'FOO', bar: 'BAR' },
+    castEntity = EnTT.cast(rawData, MyModel);
+
+// Check cast entity
+console.log((castEntity instanceof MyModel), castEntity.foo, castEntity.bar);
+  // Outputs: true, "FOO", "BAR"
+```
+
+#### Cast an array of objects as an array of entities
+
+To cast as an array of entities you'll need to call ```EnTT.cast(rawData, TargetClassSyntax)``` with the following arguments:
+- ```rawData```: Should contain a collection of raw objects to be cast,\
+  _Example_: ```[{ foo: 'bar' }, { foo: 'baz' }]```
+- ```TargetClassSyntax```: Should contain an array literal, containg the ```EnTT``` extended class you're casting as as it's only member,\
+  _Example_: ```[ MyModel ]```
+
+<sub>_**Example**_:</sub>
+```js
+// Cast a raw object array as an entity array
+let rawData = [
+      { foo: 'FOO', bar: 'BAR' },
+      { foo: 'BAZ', bar: 'QUX' }
+    ],
+    castEntityArray = EnTT.cast(rawData, [ MyModel ]);
+
+// Check cast entity array
+console.log(castEntityArray.length);
+  // Outputs 2
+console.log(castEntityArray[0] instanceof MyModel), castEntityArray[0].foo, castEntityArray[0].bar);
+  // Outputs: true, "FOO", "BAR"
+console.log(castEntityArray[1] instanceof MyModel), castEntityArray[1].foo, castEntityArray[1].bar);
+  // Outputs: true, "BAZ", "QUX"
+```
+
+#### Cast a hashmap of objects as a hashmap of entities
+
+To cast as a hashmap of entities you'll need to call ```EnTT.cast(rawData, TargetClassSyntax)``` with the following arguments:
+- ```rawData```: Should contain a hashmap of raw objects to be cast,\
+  _Example_: ```{ a: { foo: 'bar' }, b: { foo: 'baz' } }```
+- ```TargetClassSyntax```: Should contain a hashmap literal, containg the ```EnTT``` extended class you're casting as as it's only property value,\
+  _Example_: ```{ MyModel: MyModel }``` or just ```{ MyModel }```
+
+<sub>_**Example**_:</sub>
+```js
+// Cast a raw object hashmap as an entity hashmap
+let rawData = {
+      waldo:  { foo: 'FOO', bar: 'BAR' },
+      fred:   { foo: 'BAZ', bar: 'QUX' }
+    },
+    castEntityHashmap = EnTT.cast(rawData, { MyModel });
+
+  // Outputs: 2
+console.log(castEntityHashmap.waldo instanceof MyModel), castEntityHashmap.waldo.foo, castEntityHashmap.waldo.bar);
+  // Outputs: true, "FOO", "BAR"
+console.log(castEntityHashmap.fred instanceof MyModel), castEntityHashmap.fred.foo, castEntityHashmap.fred.bar);
+  // Outputs: true, "BAZ", "QUX"
+```
+
+
+## Change detection
+
+Every instance of an ```EnTT``` class has build in data-change detection allowing you to subscribe to get notified of changes to any of the ```EnTT``` instance's properties' values.
+
+### Watching for changes
+
+To subscribe to data-changes on an instance, you can use the ```.watch(watcherFn: function)``` method, exposed on every ```EnTT``` instance.
+
+```js
+let cancel = instance.watch((e) => { ... })
+```
+
+The ```.watch(...)``` method takes a change event handler function as its only argument and returns a callback which cancels the subscription when called.
+
+<sub>_**Example**_:</sub>
+```js
+// Define an EnTT class to use for change detection
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      foo: { value: 'FOO' }
+    };
+  }
+}
+
+// Instantiate an instance and subscribe to changes
+let instance = new MyModel(),
+    cancel = instance.watch((e) => {
+      console.log(
+        (e.source === instance),  // Source will be the instance which detected a change
+        e.propertyName,           // Property which changed
+        e.oldValue,               // Old property value before the change
+        e.newValue                // New property value after the change
+      );
+    });
+
+// Update instance
+instance.foo = 'BAR';
+  // Change event handler outputs: true, "foo", "FOO", "BAR"
+instance.foo = 'BAZ';
+  // Change event handler outputs: true, "foo", "BAR", "BAZ"
+
+// Cancel the subscription
+cancel();
+
+// Update instance
+instance.foo = 'QUX';   // No output from change event handler
+
+```
+
+In cases where you're embedding instances of ```EnTT``` into another ```EnTT```'s properties, detected changes will propagate from the nested child entity through to parent entities.
+
+<sub>_**Example**_:</sub>
+```js
+// Define an EnTT class to use for change detection
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      foo: { value: 'FOO' },
+      bar: { value: 'BAR' }
+    };
+  }
+}
+
+// Nest 3 levels of instances and watch top level instance for changes
+let instance = new MyModel(),         // Top level instance
+    instance.foo = new MyModel(),     // 2nd level instance, nested as instance.foo 
+    instance.foo.bar = new MyModel(), // 3rd level instance, nested as instance.foo.bar
+    cancel = instance.watch((e) => {  // Watch top level instance for changes
+      console.log(
+        (e.source === instance),  // Source will be the instance which detected a change
+        e.propertyName,           // Property which changed
+        e.oldValue,               // Old property value before the change
+        e.newValue,               // New property value after the change
+        e.innerEvent              // Reference to the change event of the child instance
+      );
+    });
+
+// Update 2nd level instance
+instance.foo.foo = 'BAR';
+  // Change event handler outputs:
+  // true, "foo", null, null, {
+  //   source: [instance.foo],
+  //   propertyName: "foo",
+  //   oldValue: "FOO",
+  //   newValue: "BAR"
+  // }
+instance.foo.bar.foo = 'BAZ';
+  // Change event handler outputs:
+  // true, "foo", null, null, {
+  //   source: [instance.foo],
+  //   propertyName: "bar",
+  //   oldValue: null,
+  //   newValue: null,
+  //   innerEvent: {
+  //     source: [instance.foo.bar]
+  //     propertyName: "foo",
+  //     oldValue: "FOO",
+  //     newValue: "BAZ"
+  //   }
+  // }
+
+```
+
+### Manual Update Notification
+
+While ```EnTT``` instances will detect any value assignments you make to properties of ```EnTT``` instances themselves, there are some types of changes that can't be detected automatically:
+- Change, addition or deletion of internal properties of an object assigned as ```EnTT``` instance property value.
+- Change, addition or deletion to members of an array assigned as ```EnTT``` instance property value
+- Changes to instances of any class other than ```EnTT``` assigned as ```EnTT``` instance property value.
+- Changes to instances of ```EnTT``` nested deeper within data assigned as ```EnTT``` instance property value.
+
+To make sure change detection still triggers when making these types of updates, you can manually notify the ```EnTT``` of the changes you've made by calling the ```.update()``` method.
+
+> _Note: The change event called this way will have the ```.propertyName``` property equal to ```false``` and will not contain any values for ```.oldValue``` or ```.newValue``` properties. When this is the case, change handler functions should act as if anything could have changed on the instance._
+
+<sub>_**Example**_:</sub>
+```js
+// Define an EnTT class to use for change detection
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      foo: { }
+    };
+  }
+}
+
+// Instantiate an instance and subscribe to changes
+let instance = new MyModel(),
+    cancel = instance.watch((e) => {
+      console.log('Change detected!');
+    });
+
+// Set an object as property value
+instance.foo = { foo: 'FOO', bar: 'BAR' };  // Outputs: "Change detected!"
+instance.foo.bar = 'BAZ';                   // No output, can't detect changes to embedded properties
+instance.foo.baz = 'BAZ';                   // No output, can't detect creation of new embedded properties
+delete instance.foo.bar                     // No output, can't detect deletion of embedded properties
+// Manually notify of changes to trigger watchers
+instance.update();                          // Outputs: "Change detected!"
+
+// Set an array as property value
+instance.foo = [0, 1, 2, 3, 4];             // Outputs: "Change detected!"
+instance.foo[2] = 20;                       // No output, can't detect changes to array members
+instance.foo.push(5)                        // No output, can't detect addition of array members
+instance.foo.splice(1, 1)                   // No output, can't detect removal of array members
+// Manually notify of changes to trigger watchers
+instance.update();                          // Outputs: "Change detected!"
+
+// Set a foreign class instance as property value
+instance.foo = document.body;               // Outputs: "Change detected!"
+instance.foo.innerHTML = "Hello World!";    // No output, can't detect changes within non-EnTT instances
+instance.update();                          // Outputs: "Change detected!"
+
+// Embed as EnTT instance deeper within data as property value
+instance.foo = { bar: new MyModel() };      // Outputs: "Change detected!"
+instance.foo.bar.foo = 'QUX';               // No output, can't propagate EnTT change through a non.EnTT object
+instance.update();                          // Outputs: "Change detected!"
+
+```
+
+### Update Batching
+
+When making a series of consequitive changes to the same instance it can be practical not to trigger all of the watchers on every change, but only to have them all trigger once, after the last change was made. To accomplish this use the ```.update(batchFn: function)``` form of the method.
+
+When called with a function as its only argument, the ```.update(batchFn: function)``` method will suppress triggering any change watchers until the function arguments has been executed. This way you can do any number of updates within the passed function only triggering change watchers once, after the updates were made.
+
+<sub>_**Example**_:</sub>
+```js
+// Define an EnTT class to use for change detection
+class MyModel extends EnTT {
+  static get props () {
+    return {
+      foo: { },
+      bar: { },
+      baz: { }
+    };
+  }
+}
+
+// Instantiate an instance and subscribe to changes
+let instance = new MyModel(),
+    cancel = instance.watch((e) => {
+      console.log('Change detected!');
+    });
+
+// Make multiple changes without batching
+instance.foo = 'FOO';   // Outputs: "Change detected!"
+instance.bar = 'BAR';   // Outputs: "Change detected!"
+instance.baz = 'BAZ';   // Outputs: "Change detected!"
+
+// Batch a number of changes
+instance.update(() => {
+  instance.foo = 'FOO';   // No output
+  instance.bar = 'BAR';   // No output
+  instance.baz = 'BAZ';   // No output
+});                       // Outputs: "Change detected!"
+```
+
+
+# Extensions
+
+
+## How to include extensions
+
+When extending your class from ```EnTT``` you can include extensions onto the class to provide additional functionality by defining the ```static get includes()``` property of your class:
+
+```js
+class MyModel extends EnTT {
+  static get includes () {
+    return [
+      // Extensions can be included as classes
+      MyExtension,
+      // ... or as instances if the extension needs to be configured before inclusion
+      MyOtherExtension({ foo: 'bar' })
+    ];
+  }
+}
+```
+
+Having included extensions, every instance of your class will contain additional functionality provided by the included extensions (included on this class or any of the inherited classes).
+
+## Included extensions and how to use them
+
+Some extensions are already packaged up in the ```EnTT``` library and can be imported and used out of the box ...
+
+### Dynamic Properties Extension
+
+```js
+import { DynamicPropertiesExtension } from 'entt';
+
+class MyModel extends EnTT {
+  static get includes () {
+    return [ DynamicPropertiesExtension ];
+  }
+}
+```
+
+```DynamicPropertiesExtension```, when included in your class, adds an additional property configuration option ```dynamic```. When a property is marked as ```dynamic```, with a function as its configured value, the property becomes read-only and dynamically assigns itself a value based on returned value the function provided. This pattern can be used to add additional proeprties whose values are based off of values of other proeprties of the entity.
+
+<sub>_**Example**_:</sub>
+```js
+// Define an EnTT class with dynamic properties
+class MyModel extends EnTT {
+  static get includes () {
+    return [ DynamicPropertiesExtension ];
+  }
+  static get props () {
+    return: {
+      firstName: {},      // Standard property
+      lastName: {},       // Standard property
+      fullName: {         // Dynamic proeprty
+        // Make this property dynamic
+        dynamic: (entity) => {
+          // Compose full name from first and last names
+          return `${entity.firstName} ${entity.lastName}`;
+        }
+      }
     }
   }
+}
 
-  // Instantiate the class and check properties
-  let model = new MyModel();
-  // TODO: ...  
+// Instantiate an instance and set some values
+let instance = new MyModel();
+instance.firstName = 'Homer';
+instance.lastName = 'Simpson';
+
+// Check the dynamic property
+console.log(instance.fullName);     // Outputs "Homer Simpson"
 ```
 
-> More on different types of properties and their configuration a bit later ...
+> _Note: It is possible to define dynamic properties using a shorthand syntax, provided you don't require setting any other configuration options for that same property. The following 2 examples will be interpreted the same way:_
+> ```js
+> static get props () {
+>   return {
+>     // Configure a dynamic property
+>     foo: { dynamic: (entity) => { return 'a dynamic value'; } },
+>   };
+> }
+> ```
+> ```js
+> static get props () {
+>   return {
+>     // Configure a dynamic property using shorthand syntax
+>     foo: (entity) => { return 'a dynamic value'; },
+>   };
+> }
+> ```
 
-- **modules** static property can also return a Module instance (or array of Module instances) which will be used to augment behavior of your extended class.
+> _Note: When including ```DynamicPropertiesExtension``` into your class it is possible to preconfigre it with the ```deferred``` argument. If set to true the extension will regenerate the value of the dynamic property every time the value is fetched from the property instead of it's default behavior where it regenerates the dynamic value every time there is a change detected on the entity. If you'll be writing to properties of the entity frequently, but will only be reading from the dynamic property rarely, you'll get the same behavior with better performance if you configure the extension as ```deferred: true```._
+> ```js
+> static get includes () {
+>   return [ new DynamicPropertiesExtension({ deferred: true }) ];
+> }
+> ```
 
-```js
-  // Import Entity base class
-  import enTT from 'enTT';
-
-  // Define a model class augmented by some module
-  class MyBase extends enTT {
-    // Set used modules
-    static get modules () {
-      return [ new SomeModule(moduleConfiguration) ];
-    }
-  }
-  // Extend your model class with an additional module
-  class MyModel extends MyBase {
-    // Set more used modules
-    static get modules () {
-      return [ new SomeOtherModule(otehrModuleConfiguration) ];
-    }
-  }
-```
-
-> You can also create your own, custom Modules - more on that, and all the prepackaged modules a bit later ...
-
-### Property types and configuration
-
-When defining your data-model class' managed properties using the **propertyDefinitions** static property on your class, there are different proeprty types you can define:
-
-##### Value property
-
-Value property is the default property type whose getter and setter can accept and hold any value or object.
-
-##### Dynamic property
-
-Dynamic property is a dynamically calculated, read-only property type defined by a function generating it's value based off of values of other properties in the entity instance.
-
-A dynamic property can be defined explicitelly using the "**dynamic**" key:
-
-```js
-  ...
-  firstName: {
-    dynamic: function () { return this.fullName.split(' ')[0]; }
-  }
-  ...
-```
-
-... or, if no other property configuration is needed, by a short-hand, passing the function in place of the entire property definition:
-
-```js
-  ...
-  firstName: function () { return this.fullName.split(' ')[0];
-  ...
-```
-
-A dynamic property will be recalculated when ever a change to the properties it's depending on is detected. If defining a dynamic property using the explicit syntax, you can specify the proeprties it's dpending on using the "**dependencies**" key:
-
-```js
-  ...
-  firstName: {
-    dynamic: function () { return this.fullName.split(' ')[0]; }
-    dependencies: ['fullName']
-  }
-  ...
-```
-
-If dependencies aren't explicitly specified, the dynamic property will be recalculated on any change to any property.
-
-> **Note**: dynamic property's function definitions needs to be a full-bodied function definition, and not an abreviated lambda function, so that it can be bound to the right "this" reference, allowing it to get values of other properties on the Entity instance.
-
-##### Casting property
-
-Casting property is a property which will try to cast any value that is set to it as an Entity instance of a configured type, or as a collection of Entity instances of a configured type.
-
-A casting property can be defined explicitly using the "**castAs**" key:
-
-```js
-  ...
-  // Will convert any value being set into: new MyEntity()
-  castSingle: { castAs: MyEntity },
-  // Will convert any collection being set into: [ new MyEntity(), ... ]
-  castCollection: { castAs: MyEntity, collection: true }
-  ...
-```
-
-... or, if no other property configuration is needed, by a short-hand, passing only the Entity class the property should cast to:
-
-```js
-  ...
-  // Will convert any value being set into: new MyEntity()
-  castSingle: MyEntity,
-  // Will convert any collection being set into: [ new MyEntity(), ... ]
-  castCollection: [ MyEntity ]
-  ...
-```
-
-### Modules: Prepackaged modules
-
-##### Key Property Value
-
-Key Property Value module allows for marking of properties as primary key values, making them unique identifiers of the entity:
-
-```
- idA: { key: true }
- idB: { key: true }
-```
-
-Using the **entity.uniqueKey** property, you can access a unique identifier of the entity generated from all of the entity's key properties:
-
-```js
-  myEntity.idA = 'A';
-  myEntity.idB = 'B';
-  myEntity.uniqueKey    // will now equal: '{"idA":"A","idB":"B"}'
-
-```
-
-##### Default Propery Value
-
-Default Propery Value module initializes properties with an initial, default value configured by the property definition's **value** key:
-
-```js
-  ...
-  score: { value: 0 }
-  ...
-```
-
-The module is included in all Entities by default and doesn't require you to add it via the static **modules** property.
-
-##### Validation
-
-##### Validation via JOI
-
-### Modules: Writing your own, custom module
+### Validation Extension
 
 TODO: ...
 
-### Notifying and being notified of changes
-
+## Extension authoring
 TODO: ...
 
-### Observing changes
+... Inheriting from ```EnTTExt class```\
+... ```constructor() { super({ ... implemented ... }) }``` as defining partial implementation
+... extension methods available, their interfaces and purpose
 
-Each entity exposes a watcher which you can use to trigger a callback every time a change has been detected to an entity property:
-
-```js
-// Watch changes to any property on the entity
-entity.watch(
-  (e) => {
-    console.log(`Property ${e.property} => new value ${e.entity[e.property]}`);
-  }
-);
-
-// Watch changes to the 'prop' property on the entity
-entity.watch(
-  (e) => {
-    console.log(`Property ${e.property} => new value ${e.entity[e.property]}`);
-  },
-  'prop'
-);
-
-// Watch changes to multiple properties on the entity
-entity.watch(
-  (e) => {
-    console.log(`Property ${e.property} => new value ${e.entity[e.property]}`);
-  },
-  ['propA', 'propB', 'propC']
-);
-```
-
-Changes are automatically detected when:
-- An entity property get a new value set:
-
-```js
-  entity.prop = value;              // Change detected
-```
-- An embedded entity gets a new property value set:
-
-```js
-  entity.prop = new MyModel();      // Change detected
-  entity.prop.innerProp = value;    // Change detected
-```
-
-Changes are not automatically detected when:
-- An embedded non-entity object or array is modified:
-
-```js
-// Array
-entity.arrayProperty = [];                  // Change detected
-entity.arrayProperty.push(value);           // Change NOT detected
-entity.arrayProperty[1] = value;            // Change NOT detected
-entity.arrayProperty.splice(0,0);           // Change NOT detected
-delete entity.arrayProperty[0];             // Change NOT detected
-// Object
-entity.objectProperty = {};                 // Change detected
-entity.objectProperty.innerProp = value;    // Change NOT detected
-delete entity.objectProperty.innerProp;     // Change NOT detected
-```
-
-When making changes which can't be automatically detected, you should wrap making them in an `.update(() => { ... })` call like this:
-
-```js
-// Will trigger all watchers registered with the entity
-entity.update(
-  () => {
-    entity.arrayProperty.push(value);
-    entity.objectProperty.innerProp = value;
-  }
-);
-
-// Will trigger only watchers watching the 'arrayProperty'
-entity.update(
-  () => {
-    entity.arrayProperty.push(value);
-    entity.objectProperty.innerProp = value;
-  },
-  'arrayProperty'
-);
-
-// Will trigger watchers watching 'arrayProperty' or 'objectProperty'
-entity.update(
-  () => {
-    entity.arrayProperty.push(value);
-    entity.objectProperty.innerProp = value;
-  },
-  ['arrayProperty', 'objectProperty']
-);
-```
-
-### Additional functions
-
-#### Data management
-
-#### Full-Entity Setter
-
- `.set(value)` method is available on every entity instance and is a shorthand for setting multiple entity properties based on the value object passed. The method will return a reference to the entity allowing for quick initialization syntax as follows:
-
- ```js
- // Define an entity class
-class MyModel extends Entity {
-  static get propertyDefinitions () { return ['propA', 'propB']; }
-}
-// Instantiate entity
-let myEntity = (new MyModel()).set({ propA: 1, propB: 2 });
-```
-
-#### Full-Entity Getter
-
-`.get()` method is available on every entity instance and will, when called, return a raw object with same keys and values as the entity:
-
-```js
-// ... continuing from previous code example for .set(value):
-myEntity.get()  // Equals: { propA: 1, propB: 2 }
-```
-
-#### Full-Entity Clone
-
-`.clone()` will instantiate a new entity of same type and will copy over values of all properties from the existing entity.
-
-##### Casting between entitiy types
-
-Entity class has an exposed static `.cast(value, EntityClass)` method which you can use to cast anything as an Entity type:
-
-```js
-// Define an entity class
-class MyModel extends Entity {
-  static get propertyDefinitions () { return ['propA', 'propB']; }
-}
-
-// Cast any data as that entity class
-let castEntity = Entity.cast(
-  {
-    propA: 'Aa1',
-    propB: 'Bb2'
-    propC: 'Extra property not defined for MyModel class!'
-  },
-  MyModel
-);
-
-// Result of the cast is an instance of the requsted class with all properties copied over
-console.log(                              // Outputs:
-  (castEntity instanceof castEntity),     //  true
-  (castEntity.propA),                     //  "Aa1"
-  (castEntity.propB),                     //  "Bb2"
-  (castEntity.propC)                      //  undefined
-);
-```
-
-To cast arrays or other collections use .castCollection(collection, EntityClass) method:
-
-```js
-// Define an entity class
-class MyModel extends Entity {
-  static get propertyDefinitions () { return ['propA', 'propB']; }
-}
-
-// Cast any data as that entity class
-let castEntityCollection = Entity.castCollection(
-  [
-    {
-      propA: 'Aa1',
-      propB: 'Bb1'
-      propC: 'Extra property not defined for MyModel class!'
-    },
-    {
-      propA: 'Aa2',
-      propB: 'Bb2'
-      propC: 'Extra property not defined for MyModel class!'
-    },
-    {
-      propA: 'Aa3',
-      propB: 'Bb3'
-      propC: 'Extra property not defined for MyModel class!'
-    },
-  ]
-  MyModel
-);
-
-// Result of the cast is an instance of the requsted class with all properties copied over
-console.log(                              // Outputs:
-  (castEntityCollection[1] instanceof castEntity),     //  true
-  (castEntityCollection[1].propA),                     //  "Aa2"
-  (castEntityCollection[1].propB),                     //  "Bb2"
-  (castEntityCollection[1].propC)                      //  undefined
-);
-```
-
-## Examples
-
-TODO: ...
