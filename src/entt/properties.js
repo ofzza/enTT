@@ -69,7 +69,7 @@ export default class Properties {
               // Check if allowed to write value
               if (value instanceof EnTTBypassEverythingValue) {
                 // Write value directly into storage, regardless of read-only status bypassing any pre-processing and without triggering any watchers
-                return (store.values[propertyName] = value.value);
+                store.values[propertyName] = value.value;
               } else if (propertyConfiguration.readOnly) {
                 // Don't write value to read-only property
                 throw new Error(`Can't set a read-only EnTT property!`);
@@ -132,12 +132,15 @@ export default class Properties {
     if ((value instanceof EnTT) && (value !== this.entity)) {
       // Watch for changes to the child entity, and trigger own watcher on change
       const cancelWatcherFn = value.watch((e) => {
-        // Check if changed entity is this one (nested in itself)
-        if (e.source !== this.entity) {
+        // Check if this entity was already nested along the line of innerEvents (nested in itself directly or indirectly)
+        let current = e,
+            isNested = false;
+        do { isNested = isNested || (current.source === this.entity); } while ((current = current.innerEvent));
+        if (!isNested) {
           // Trigger watchers with the change to the property
           this.changeManager.triggerOnPropertyChange(
             new EntityChangedEvent({
-              source: e.source,
+              source: this.entity,
               propertyName: key,
               innerEvent: e
             })

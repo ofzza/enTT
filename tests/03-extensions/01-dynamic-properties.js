@@ -12,7 +12,7 @@ module.exports = () => {
     // Should make dynamic properties read-only
     it('Should make dynamic properties read-only', () => {
 
-      // Define EnTT extending class using the custom extension
+      // Define EnTT extending class using dynamic properties custom extension
       class MyExtendedEntity extends EnTT {
         static get includes () {
           return [ DynamicPropertiesExtension ];
@@ -38,7 +38,7 @@ module.exports = () => {
     // Should properly process shorthand syntax for dynamic property configuration
     it('Should properly process shorthand syntax for dynamic property configuration', () => {
 
-      // Define EnTT extending class using the custom extension
+      // Define EnTT extending class using the dynamic properties extension
       class MyExtendedEntity extends EnTT {
         static get includes () {
           return [ DynamicPropertiesExtension ];
@@ -67,7 +67,7 @@ module.exports = () => {
       // Count dynamic property generations
       let count = 0;
 
-      // Define EnTT extending class using the custom extension
+      // Define EnTT extending class using the dynamic properties extension
       class MyExtendedEntity extends EnTT {
         static get includes () {
           return [ new DynamicPropertiesExtension({ deferred: true }) ];
@@ -123,7 +123,7 @@ module.exports = () => {
       // Count dynamic property generations
       let count = 0;
 
-      // Define EnTT extending class using the custom extension
+      // Define EnTT extending class using the dynamic properties extension
       class MyExtendedEntity extends EnTT {
         static get includes () {
           return [ new DynamicPropertiesExtension({ deferred: false }) ];

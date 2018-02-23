@@ -41,7 +41,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
  * Adds support for read-only, dynamically generated properties that generate their value based on other
  * existing properties' values
  * @export
- * @class Extensions
+ * @class DynamicPropertiesExtension
  */
 var DynamicPropertiesExtension = function (_EnTTExt) {
   _inherits(DynamicPropertiesExtension, _EnTTExt);

@@ -85,6 +85,7 @@ export default class EnTT {
     }
 
     // Get (or load from cache if previously initialized) class properties configuration
+    // NOTE: .properties are cached per class, not per instance!
     refs.loadedPropertiesFromCache = !!cached.properties;
     refs.properties = cached.properties;
     if (!refs.properties) {
@@ -99,6 +100,7 @@ export default class EnTT {
     // Initialize extension manager (if not already loaded initialized from cache)
     if (!refs.loadedExtensionsManagerFromCache) {
       // Initialize the extension manager (with properties)
+      // NOTE: Extensnion mamager is instantiated per class, not per instance!
       refs.extensionsManager.initializeWithProperties(refs);
     }
 

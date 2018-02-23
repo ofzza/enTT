@@ -4,17 +4,19 @@
   "description": "Modular JS data-model base class, implementing often used functionality",
   "main": "./dist/index.js",
   "scripts": {
-    "test": "gulp test && node ./tests",
-    "start": "gulp default && node ./dist"
+    "start": "gulp",
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ofzza/enTT.git"
   },
   "keywords": [
-    "enTT",
+    "entt",
     "entity",
-    "data model"
+    "data model",
+    "change detection",
+    "validation"
   ],
   "author": "ofzza",
   "license": "MIT",

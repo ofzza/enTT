@@ -15,7 +15,7 @@ import EnTTExt from '../enttext';
  * Adds support for read-only, dynamically generated properties that generate their value based on other
  * existing properties' values
  * @export
- * @class Extensions
+ * @class DynamicPropertiesExtension
  */
 export default class DynamicPropertiesExtension extends EnTTExt {
 

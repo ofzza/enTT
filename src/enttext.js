@@ -139,21 +139,21 @@ export class EnTTExtValueEvent {
    */
   constructor ({ changes, currentValue, value }) {
 
-    // Expose changes as a read-only property
+    // Expose "changes" as a read-only property
     Object.defineProperty(this, 'changes', {
       configurable: false,
       enumerable: true,
       get: () => { return changes; }
     });
 
-    // Expose currentValue as a read-only property
+    // Expose "currentValue" as a read-only property
     Object.defineProperty(this, 'currentValue', {
       configurable: false,
       enumerable: true,
       get: () => { return currentValue; }
     });
 
-    // Expose value as a writable property
+    // Expose "value" as a writable property
     Object.defineProperty(this, 'value', {
       configurable: false,
       enumerable: true,

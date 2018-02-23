@@ -204,7 +204,7 @@ exports.EnTTExtValueEvent = function EnTTExtValueEvent(_ref2) {
 
   _classCallCheck(this, EnTTExtValueEvent);
 
-  // Expose changes as a read-only property
+  // Expose "changes" as a read-only property
   Object.defineProperty(this, 'changes', {
     configurable: false,
     enumerable: true,
@@ -213,7 +213,7 @@ exports.EnTTExtValueEvent = function EnTTExtValueEvent(_ref2) {
     }
   });
 
-  // Expose currentValue as a read-only property
+  // Expose "currentValue" as a read-only property
   Object.defineProperty(this, 'currentValue', {
     configurable: false,
     enumerable: true,
@@ -222,7 +222,7 @@ exports.EnTTExtValueEvent = function EnTTExtValueEvent(_ref2) {
     }
   });
 
-  // Expose value as a writable property
+  // Expose "value" as a writable property
   Object.defineProperty(this, 'value', {
     configurable: false,
     enumerable: true,

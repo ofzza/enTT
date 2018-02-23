@@ -59,6 +59,6 @@ module.exports = () => {
   // Define default tasks
   gulp.task('test',     gulp.series(tasks.test));
   gulp.task('build',    gulp.series(tasks.build));
-  gulp.task('default',  gulp.series(['test', 'build']));
+  gulp.task('default',  gulp.series(['build', 'test']));
 
 };

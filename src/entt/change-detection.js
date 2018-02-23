@@ -171,12 +171,41 @@ export class EntityChangedEvent {
    * @memberof EntityChangedEvent
    */
   constructor ({ source, propertyName = false, oldValue = null, newValue = null, innerEvent = null } = {}) {
-    // Store internal properties
-    this.source = source;
-    this.propertyName = propertyName;
-    this.oldValue = oldValue;
-    this.newValue = newValue;
-    this.innerEvent = innerEvent;
+
+    // Expose "source" as a read-only property
+    Object.defineProperty(this, 'source', {
+      configurable: false,
+      enumerable: true,
+      get: () => { return source; }
+    });
+
+    // Expose "propertyName" as a read-only property
+    Object.defineProperty(this, 'propertyName', {
+      configurable: false,
+      enumerable: true,
+      get: () => { return propertyName; }
+    });
+
+    // Expose "oldValue" as a read-only property
+    Object.defineProperty(this, 'oldValue', {
+      configurable: false,
+      enumerable: true,
+      get: () => { return oldValue; }
+    });
+
+    // Expose "newValue" as a read-only property
+    Object.defineProperty(this, 'newValue', {
+      configurable: false,
+      enumerable: true,
+      get: () => { return newValue; }
+    });
+
+    // Expose "innerEvent" as a read-only property
+    Object.defineProperty(this, 'innerEvent', {
+      configurable: false,
+      enumerable: true,
+      get: () => { return innerEvent; }
+    });
   }
 
 }

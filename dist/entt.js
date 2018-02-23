@@ -135,6 +135,7 @@ var EnTT = function () {
     }
 
     // Get (or load from cache if previously initialized) class properties configuration
+    // NOTE: .properties are cached per class, not per instance!
     refs.loadedPropertiesFromCache = !!cached.properties;
     refs.properties = cached.properties;
     if (!refs.properties) {
@@ -151,6 +152,7 @@ var EnTT = function () {
     // Initialize extension manager (if not already loaded initialized from cache)
     if (!refs.loadedExtensionsManagerFromCache) {
       // Initialize the extension manager (with properties)
+      // NOTE: Extensnion mamager is instantiated per class, not per instance!
       refs.extensionsManager.initializeWithProperties(refs);
     }
 
