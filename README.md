@@ -1,12 +1,12 @@
 EnTT
 ======
 
-```EnTT```, pronounced "Entity", is an extensible Javascript data-model implementation with some of the typically required functionality, such as change-detection, easy import/export, composition/decomposition, data validation, etc., all available out of the box.
+```enTT```, read as "Entity", is an extensible Javascript data-model implementation with some of the typically required functionality, such as change-detection, easy import/export, composition/decomposition, data validation, etc., all available out of the box.
 
 
-# Get EnTT
+# Get **enTT**
 
-To start using ```EnTT``` in your project, simply install it from NPM by running the following in your terminal:
+To start using ```enTT``` in your project, simply install it from NPM by running the following in your terminal:
  ```
  npm install entt --save
  ```
@@ -78,7 +78,7 @@ When constructing a model instance with ```let instance = new MyMoreSpecificMode
 
 - > _See [Property configuration](#property-configuration) section for details on how to configure your class' properties_
 
-- > _See [Extensions](#extensions) section for details on how to extend ```EnTT``` functionality_
+- > _See [Extensions](#extensions) section for details on how to extend ```enTT``` functionality_
 
 
 ## Property configuration
@@ -103,7 +103,7 @@ class MyModel extends EnTT {
 
 - > _See [Extensions](#extensions) > [Included extensions and how to use them](#included-extensions-and-how-to-use-them) section for details on all of the included extensions' configuration options._
 
-- > _See [Extensions](#extensions) > [Extension authoring](#extension-authoring) section for details on how to extend EnTT with your own configuration options and functionality._
+- > _See [Extensions](#extensions) > [Extension authoring](#extension-authoring) section for details on how to extend ```enTT``` with your own configuration options and functionality._
 
 Having set up the property configuration, every instance of your class will be created with all of the configured properties (configured on this class or any of the inherited classes) initialized with getters/setters implementing the configured for functionality.
 
@@ -675,7 +675,7 @@ While ```EnTT``` instances will detect any value assignments you make to propert
 - Changes to instances of any class other than ```EnTT``` assigned as ```EnTT``` instance property value.
 - Changes to instances of ```EnTT``` nested deeper within data assigned as ```EnTT``` instance property value.
 
-To make sure change detection still triggers when making these types of updates, you can manually notify the ```EnTT``` of the changes you've made by calling the ```.update()``` method.
+To make sure change detection still triggers when making these types of updates, you can manually notify the ```EnTT``` instance of the changes you've made by calling the ```.update()``` method.
 
 - > _Note: The change event called this way will have the ```.propertyName``` property equal to ```false``` and will not contain any values for ```.oldValue``` or ```.newValue``` properties. When this is the case, change handler functions should act as if anything could have changed on the instance._
 
@@ -786,7 +786,7 @@ Having included extensions, every instance of your class will contain additional
 
 ## Included extensions and how to use them
 
-Some extensions are already packaged up in the ```EnTT``` library and can be imported and used out of the box ...
+Some extensions are already packaged up in the ```enTT``` library and can be imported and used out of the box ...
 
 ### Dynamic Properties Extension
 
@@ -958,7 +958,7 @@ console.log(instance.validation.lastName.message);  // Outputs "Value "simpson" 
 
 ## More extensions
 
-Some additional extensions, not prepacked in the ```EnTT``` library, can be downloaded separately ...
+Some additional extensions, not prepacked in the ```enTT``` library, can be downloaded separately ...
 
 ### EnValidate
 
@@ -1002,7 +1002,7 @@ class MyModel extends EnTT {
 
 ### EnTTExt class
 
-To author your own ```EnTT``` extension, you'll need to extend it from the ```EnTTExt``` class.
+To author your own ```enTT``` extension, you'll need to extend it from the ```EnTTExt``` class.
 
 ```js
 import { EnTTExt } from 'entt';
@@ -1011,7 +1011,7 @@ import { EnTTExt } from 'entt';
 class MyExtension extends EnTTExt { ... }
 ```
 
-Your extension can now be included into any ```EnTT``` classm but it won't do anything. To implement functionality for your extension you need to declare and implemet at least one of the optional methods that will get called at appropriate time by every ```EnTT``` instance.
+Your extension can now be included into any ```EnTT``` class but it won't do anything. To implement functionality for your extension you need to declare and implemet at least one of the optional methods that will get called at appropriate time by every ```EnTT``` instance.
 
 ### EnTTExt class methods
 
