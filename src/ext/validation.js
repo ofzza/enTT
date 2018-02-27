@@ -124,7 +124,7 @@ function validateProperties (entity, properties, changedPropertyName, changedPro
  * Holds validation output information
  * @class ValidationOutput
  */
-class ValidationOutput {
+export class ValidationOutput {
   /**
    * Creates an instance of ValidationError.
    * @param {any} property Name of the property being validated

@@ -7,6 +7,7 @@ let _                           = require('lodash'),
     DynamicPropertiesExtension  = require('../dist').DynamicPropertiesExtension,
     ValidationExtension         = require('../dist').ValidationExtension;
 
+// Run tests
 describe('> README.md Examples', () => {
 
   // Property configuration

@@ -119,20 +119,20 @@ var EnTT = function () {
     var cached = _cache.ConfigurationCache.get(this);
 
     // Get (or load from cache if previously initialized) class extensions
-    refs.loadedExtensionsManagerFromCache = !!cached.extensions;
-    refs.extensionsManager = cached.extensions;
-    if (!refs.extensionsManager) {
+    refs.extensions = cached.extensions;
+    if (!refs.extensions) {
       // Get inherited classes (if not already gotten)
       if (!classes) {
         classes = getInheritedClasses.bind(this)();
       }
       // Get extensions
       _cache.ConfigurationCache.set(this, {
-        extensions: refs.extensionsManager = getClassExtensions.bind(this)(classes)
+        extensions: refs.extensions = getClassExtensions.bind(this)(classes)
       });
-      // Initialize extension manager (without properties)
-      refs.extensionsManager.initializeWithoutProperties(refs);
     }
+    // Initialize extension manager (without properties)
+    refs.extensionsManager = new _extensions2.default(refs.extensions);
+    refs.extensionsManager.initializeWithoutProperties(refs);
 
     // Get (or load from cache if previously initialized) class properties configuration
     // NOTE: .properties are cached per class, not per instance!
@@ -149,12 +149,8 @@ var EnTT = function () {
       });
     }
 
-    // Initialize extension manager (if not already loaded initialized from cache)
-    if (!refs.loadedExtensionsManagerFromCache) {
-      // Initialize the extension manager (with properties)
-      // NOTE: Extensnion mamager is instantiated per class, not per instance!
-      refs.extensionsManager.initializeWithProperties(refs);
-    }
+    // Initialize extension manager (with properties)
+    refs.extensionsManager.initializeWithProperties(refs);
 
     // EXTENSIONS HOOK: .updateDefaultPropertyConfiguration(...)
     // If properties weren't cached, lets extension update properties
@@ -224,7 +220,7 @@ function getClassExtensions(classes) {
   }, []);
 
   // Return extracted properties
-  return new _extensions2.default(extensions);
+  return extensions;
 }
 
 /**

@@ -992,8 +992,8 @@ class MyExtension extends EnTTExt {
   // Implement .updatePropertyConfiguration(...) method as was declared
   updatePropertyConfiguration () { ... }
 
-  // Implement .updatePropertyConfiguration(...) method as was declared
-  updatePropertyConfiguration () { ... }
+  // Implement .onChangeDetected(...) method as was declared
+  onChangeDetected () { ... }
 
 }
 ```

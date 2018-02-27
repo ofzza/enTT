@@ -48,7 +48,7 @@ module.exports = () => {
 
       // Instantiate an entity with custom modules and get property configuration
       const e = new MyExtendedEntity1(),
-            extensions = Extensions.getEntityExtensions(e).extensions;
+            extensions = Extensions.getEntityExtensions(e);
 
       // Should return array of extensions
       assert.ok(_.isArray(extensions));
@@ -63,7 +63,7 @@ module.exports = () => {
 
       // Instantiate an entity with custom modules and get property configuration
       const e = new MyExtendedEntity2(),
-            extensions = Extensions.getEntityExtensions(e).extensions;
+            extensions = Extensions.getEntityExtensions(e);
 
       // Should return array of extensions
       assert.ok(_.isArray(extensions));
