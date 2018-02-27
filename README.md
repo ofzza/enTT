@@ -969,11 +969,13 @@ Extends validation syntax to understand schema from 3rd party validation librari
 
 <sub>_**Example**_:</sub>
 ```
-npm install --save envalidate
+npm install envalidate --save
 ```
 ```js
-// Import JOI and/or YUP validation library
+// Import enTT and enValidate
+import EnTT from 'entt';
 import EnValidate from 'envalidate';
+// Import JOI and/or YUP validation library
 import joi from 'joi';  // Will also work with lite version: 'joi-browser'
 import yap from 'yap';
 
