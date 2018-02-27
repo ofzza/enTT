@@ -39,6 +39,8 @@ To start using ```EnTT``` in your project, simply install it from NPM by running
   - [Included extensions and how to use them](#included-extensions-and-how-to-use-them)
     - [Dynamic Properties Extension](#dynamic-properties-extension)
     - [Validation Extension](#validation-extension)
+  - [More extensions](#more-extensions)
+    - [EnValidate](#envalidate)
   - [Extension Authoring](#extension-authoring)
     - [EnTTExt class](#enttext-class)
     - [EnTTExt class methods](#enttext-class-methods)
@@ -953,6 +955,48 @@ console.log(instance.validation.lastName.message);  // Outputs "Value "simpson" 
   >   return [ new ValidationExtension({ reject: true }) ];
   > }
   > ```
+
+## More extensions
+
+Some additional extensions, not prepacked in the ```EnTT``` library, can be downloaded separately ...
+
+### EnValidate
+
+- Get from: [NPM/package/envalidate](https://www.npmjs.com/package/envalidate)
+- Clone/Fork from: [GitHub.com/ofzza/enValidate](https://github.com/ofzza/enValidate)
+
+Extends validation syntax to understand schema from 3rd party validation libraries [__*JOI*__](https://github.com/hapijs/joi) and [__*YUP*__](https://github.com/jquense/yup) as validation criteria.
+
+<sub>_**Example**_:</sub>
+```
+npm install --save envalidate
+```
+```js
+// Import JOI and/or YUP validation library
+import EnValidate from 'envalidate';
+import joi from 'joi';  // Will also work with lite version: 'joi-browser'
+import yap from 'yap';
+
+// Define an EnTT class with validated properties using JOI and YAP
+class MyModel extends EnTT {
+  static get includes () {
+    // Include EnValidate extension passing instances of Joi and Yap
+    return [ new EnValidate({ joi, yap }) ];
+  }
+  static get props () {
+    return {
+      // Extends validation to accept Joi schema instead of a function
+      foo: { validate: joi.string().uppercase() },
+      // Extends validation to accept Yup schema instead of a function
+      bar: { validate: yup.string().uppercase() },
+      // Accepts Joi schema as short-hand property configuration
+      baz: joi.string().uppercase()
+      // Accepts Yup schema as short-hand property configuration
+      qux: yup.string().uppercase()
+    };
+  }
+}
+```
 
 ## Extension authoring
 
