@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build code
-dist
+# dist -> Allowing /dist for direct inclusion when writing tests
 
 # Runtime data
 pids
