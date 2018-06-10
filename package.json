@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/ofzza/enTT#readme",
   "devDependencies": {
+    "colors": "^1.1.2",
     "babel-core": "*",
     "babel-preset-esnext": "*",
     "gulp": "github:gulpjs/gulp#4.0",
@@ -36,7 +37,6 @@
     "gulp-sourcemaps": "^2.6.4"
   },
   "dependencies": {
-    "colors": "^1.1.2",
     "lodash": "^4.17.4"
   }
 }

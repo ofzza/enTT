@@ -40,9 +40,30 @@ export default class EnTT {
    * @export
    * @param {any} data Data to cast
    * @param {any} EntityClass Extended EnTT class to cast as
+   *        - if not provided, will cast to EnTT class this static method is being called from
+   *        - if empty array provided, will cast to array of instances of EnTT class this static method is being called from
+   *        - if empty hashmap provided, will cast to array of instances of EnTT class this static method is being called from
    * @returns {any} Instance of required EnTT class with provided data cast into it
    */
-  static cast (data, EntityClass = EnTT) { return DataManagement.cast(data, EntityClass); }
+  static cast (data, EntityClass) {
+    // Check if/how EntityClass is defined or implied
+    if (!EntityClass && !_.isArray(data)) {
+      // No explicit class definition, casting data not array
+      return DataManagement.cast(data, this);
+    } else if (!EntityClass && _.isArray(data)) {
+      // No explicit class definition, casting data is array
+      return DataManagement.cast(data, [ this ]);
+    } else if (_.isArray(EntityClass) && (EntityClass.length === 0)) {
+      // Explicit class definition as array with implicit members
+      return DataManagement.cast(data,  [ this ]);
+    } else if (_.isObject(EntityClass) && !_.isFunction(EntityClass) && (_.values(EntityClass).length === 0)) {
+      // Explicit class definition as hashmap with implicit members
+      return DataManagement.cast(data, { [this.name]: this });
+    } else {
+      // Explicit class definition
+      return DataManagement.cast(data, EntityClass);
+    }
+  }
 
   /**
    * Creates an instance of EnTT.
@@ -221,6 +242,7 @@ function getClassProperties (classes, { extensionsManager } = {}) {
 
     // Edit short-hand configuration syntax where possible
     _.forEach(currentProperties, (propertyConfiguration, propertyName) => {
+
       // Replace "casting properties" short-hand configuration syntax for single entity
       CastClass = isPropertyShorthandCastAsSingleEntity(propertyConfiguration);
       if (CastClass) {
@@ -228,7 +250,6 @@ function getClassProperties (classes, { extensionsManager } = {}) {
         currentProperties[propertyName] = { cast: propertyConfiguration };
         return;
       }
-
       // Replace "casting properties" short-hand configuration syntax for entity array
       CastClass = isPropertyShorthandCastAsEntityArray(propertyConfiguration);
       if (CastClass) {
@@ -236,12 +257,18 @@ function getClassProperties (classes, { extensionsManager } = {}) {
         currentProperties[propertyName] = { cast: [ CastClass ] };
         return;
       }
-
       // Replace "casting properties" short-hand configuration syntax for entity array
       CastClass = isPropertyShorthandCastAsEntityHashmap(propertyConfiguration);
       if (CastClass) {
         // Replace shorthand cast-as-entity-hashmap syntax
         currentProperties[propertyName] = { cast: { [(new CastClass()).constructor.name]: CastClass } };
+        return;
+      }
+
+      // Replace key definition short-hand configuration syntax with full definition
+      if (isPropertyKeyDefinition(propertyConfiguration)) {
+        // Replace shorthand key definition syntax
+        currentProperties[propertyName] = { key: propertyConfiguration };
         return;
       }
 

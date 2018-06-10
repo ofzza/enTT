@@ -1,10 +1,10 @@
-EnTT
+enTT
 ======
 
 ```enTT```, read as "Entity", is an extensible Javascript data-model implementation with some of the typically required functionality, such as change-detection, easy import/export, composition/decomposition, data validation, etc., all available out of the box.
 
 
-# Get **enTT**
+# Get enTT
 
 To start using ```enTT``` in your project, simply install it from NPM by running the following in your terminal:
  ```
@@ -504,10 +504,14 @@ To cast as a single entity you'll need to call ```EnTT.cast(rawData, TargetClass
 ```js
 // Cast a raw object as a single entity
 let rawData = { foo: 'FOO', bar: 'BAR' },
-    castEntity = EnTT.cast(rawData, MyModel);
+    castEntity = EnTT.cast(rawData, MyModel),
+    altCastEntity = MyModel.cast(rawData);            // Alternative casting syntax (same result as castEntity)
 
 // Check cast entity
 console.log((castEntity instanceof MyModel), castEntity.foo, castEntity.bar);
+  // Outputs: true, "FOO", "BAR"
+// Check alternative cast entity
+console.log((altCastEntity instanceof MyModel), altCastEntity.foo, altCastEntity.bar);
   // Outputs: true, "FOO", "BAR"
 ```
 
@@ -526,10 +530,14 @@ let rawData = [
       { foo: 'FOO', bar: 'BAR' },
       { foo: 'BAZ', bar: 'QUX' }
     ],
-    castEntityArray = EnTT.cast(rawData, [ MyModel ]);
+    castEntityArray = EnTT.cast(rawData, [ MyModel ]),
+    altCastEntityArray = MyModel.cast(rawData);        // Alternative casting syntax (same result as castEntityArray)
 
 // Check cast entity array
 console.log(castEntityArray.length);
+  // Outputs 2
+// Check alternative cast entity array
+console.log(altCastEntityArray.length);
   // Outputs 2
 console.log(castEntityArray[0] instanceof MyModel), castEntityArray[0].foo, castEntityArray[0].bar);
   // Outputs: true, "FOO", "BAR"
@@ -552,9 +560,14 @@ let rawData = {
       waldo:  { foo: 'FOO', bar: 'BAR' },
       fred:   { foo: 'BAZ', bar: 'QUX' }
     },
-    castEntityHashmap = EnTT.cast(rawData, { MyModel });
+    castEntityHashmap = EnTT.cast(rawData, { MyModel }),
+    altCastEntityHashmap = MyModel.cast(rawData, {}); // Alternative casting syntax (same result as castEntityHashmap)
 
+// Check cast entity hashmap
 console.log(Object.values(castEntityHashmap.length));
+  // Outputs: 2
+// Check alternative cast entity hashmap
+console.log(Object.values(altCastEntityHashmap.length));
   // Outputs: 2
 console.log(castEntityHashmap.waldo instanceof MyModel), castEntityHashmap.waldo.foo, castEntityHashmap.waldo.bar);
   // Outputs: true, "FOO", "BAR"
@@ -977,13 +990,13 @@ import EnTT from 'entt';
 import EnValidate from 'envalidate';
 // Import JOI and/or YUP validation library
 import joi from 'joi';  // Will also work with lite version: 'joi-browser'
-import yap from 'yap';
+import yup from 'yup';
 
 // Define an EnTT class with validated properties using JOI and YAP
 class MyModel extends EnTT {
   static get includes () {
     // Include EnValidate extension passing instances of Joi and Yap
-    return [ new EnValidate({ joi, yap }) ];
+    return [ new EnValidate({ joi, yup }) ];
   }
   static get props () {
     return {

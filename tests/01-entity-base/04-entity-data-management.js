@@ -651,11 +651,12 @@ module.exports = () => {
         // Instantiate testing instances and cast
         let { data } = getInstances(),
             castAs1 = EnTT.cast(data, MyExtendedEntity1),
-            castAs2 = EnTT.cast(data, MyExtendedEntity2);
+            castAs2 = MyExtendedEntity2.cast(data);       // Alternative syntax
 
         // Should be an entity
         assert.ok(_.isObject(castAs1));
         assert.ok(castAs1 instanceof EnTT);
+        // Should be an entity (should work with alternative syntax)
         assert.ok(_.isObject(castAs2));
         assert.ok(castAs2 instanceof EnTT);
         // Should preserve cast data
@@ -684,7 +685,9 @@ module.exports = () => {
         // Instantiate testing instances and cast
         let { data } = getInstances(),
             castAsArrayOf1 = EnTT.cast([ data, data ], [ MyExtendedEntity1 ]),
-            castAsArrayOf2 = EnTT.cast([ data, data ], [ MyExtendedEntity2 ]);
+            castAsArrayOf2 = EnTT.cast([ data, data ], [ MyExtendedEntity2 ]),
+            alt1CastAsArrayOf1 = MyExtendedEntity1.cast([ data, data ], []),    // Alternative syntax
+            alt2CastAsArrayOf1 = MyExtendedEntity1.cast([ data, data ]);        // Alternative syntax
 
         // Should be an entity array
         assert.equal(castAsArrayOf1.length, 2);
@@ -697,6 +700,17 @@ module.exports = () => {
         assert.ok(castAsArrayOf2[0] instanceof EnTT);
         assert.ok(_.isObject(castAsArrayOf2[1]));
         assert.ok(castAsArrayOf2[1] instanceof EnTT);
+        // Should be an entity array (should work with alternative syntax)
+        assert.equal(alt1CastAsArrayOf1.length, 2);
+        assert.equal(alt2CastAsArrayOf1.length, 2);
+        assert.ok(_.isObject(alt1CastAsArrayOf1[0]));
+        assert.ok(alt1CastAsArrayOf1[0] instanceof EnTT);
+        assert.ok(_.isObject(alt1CastAsArrayOf1[1]));
+        assert.ok(alt1CastAsArrayOf1[1] instanceof EnTT);
+        assert.ok(_.isObject(alt2CastAsArrayOf1[0]));
+        assert.ok(alt2CastAsArrayOf1[0] instanceof EnTT);
+        assert.ok(_.isObject(alt2CastAsArrayOf1[1]));
+        assert.ok(alt2CastAsArrayOf1[1] instanceof EnTT);
         // Should preserve cast data
         assert.equal(castAsArrayOf1[0].foo, 'foo');
         assert.equal(castAsArrayOf1[0].bar.baz, 'baz');
@@ -725,9 +739,9 @@ module.exports = () => {
         // Instantiate testing instances and cast
         let { data } = getInstances(),
             castAsHashmapOf1 = EnTT.cast({ foo: data, bar: data }, { MyExtendedEntity1 }),
-            castAsHashmapOf2 = EnTT.cast({ foo: data, bar: data }, { MyExtendedEntity2 });
+            castAsHashmapOf2 = MyExtendedEntity2.cast({ foo: data, bar: data }, {});        // Alternative syntax
 
-        // Should be an entity hashmap
+        // Should be an entity hashmap (should work with alternative syntax)
         assert.equal(_.keys(castAsHashmapOf1).length, 2);
         assert.equal(_.keys(castAsHashmapOf2).length, 2);
         assert.ok(_.isObject(castAsHashmapOf1.foo));

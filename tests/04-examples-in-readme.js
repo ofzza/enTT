@@ -396,13 +396,20 @@ describe('> README.md Examples', () => {
 
         // Cast a raw object as a single entity
         let rawData = { foo: 'FOO', bar: 'BAR' },
-            castEntity = EnTT.cast(rawData, MyModel);
+            castEntity = EnTT.cast(rawData, MyModel),
+            altCastEntity = MyModel.cast(rawData);            // Alternative casting syntax (same result as castEntity)
 
         // Check cast entity
         assert.ok(castEntity instanceof MyModel);
         assert.equal(castEntity.foo, 'FOO');
         assert.equal(castEntity.bar, 'BAR');
         // ... console.log((castEntity instanceof MyModel), castEntity.foo, castEntity.bar);
+        // ... Outputs: true, "FOO", "BAR"
+        // Check alternative cast entity
+        assert.ok(altCastEntity instanceof MyModel);
+        assert.equal(altCastEntity.foo, 'FOO');
+        assert.equal(altCastEntity.bar, 'BAR');
+        // ... console.log((altCastEntity instanceof MyModel), altCastEntity.foo, altCastEntity.bar);
         // ... Outputs: true, "FOO", "BAR"
 
       });
@@ -415,11 +422,16 @@ describe('> README.md Examples', () => {
           { foo: 'FOO', bar: 'BAR' },
           { foo: 'BAZ', bar: 'QUX' }
         ],
-        castEntityArray = EnTT.cast(rawData, [ MyModel ]);
+        castEntityArray = EnTT.cast(rawData, [ MyModel ]),
+        altCastEntityArray = MyModel.cast(rawData);        // Alternative casting syntax (same result as castEntityArray)
 
         // Check cast entity array
         assert.equal(castEntityArray.length, 2);
         // ... console.log(castEntityArray.length);
+        // ... Outputs 2
+        // Check alternative cast entity array
+        assert.equal(altCastEntityArray.length, 2);
+        // ... console.log(altCastEntityArray.length);
         // ... Outputs 2
         assert.ok(castEntityArray[0] instanceof MyModel);
         assert.equal(castEntityArray[0].foo, 'FOO');
@@ -442,10 +454,16 @@ describe('> README.md Examples', () => {
           waldo:  { foo: 'FOO', bar: 'BAR' },
           fred:   { foo: 'BAZ', bar: 'QUX' }
         },
-        castEntityHashmap = EnTT.cast(rawData, { MyModel });
+        castEntityHashmap = EnTT.cast(rawData, { MyModel }),
+        altCastEntityHashmap = MyModel.cast(rawData, {}); // Alternative casting syntax (same result as castEntityHashmap)
 
+        // Check cast entity hashmap
         assert.equal(Object.values(castEntityHashmap).length, 2);
         // ... console.log(Object.values(castEntityArray.length));
+        // ... Outputs: 2
+        // Check alternative cast entity hashmap
+        assert.equal(Object.values(altCastEntityHashmap).length, 2);
+        // ... console.log(Object.values(altCastEntityHashmap.length));
         // ... Outputs: 2
         assert.ok(castEntityHashmap.waldo instanceof MyModel);
         assert.equal(castEntityHashmap.waldo.foo, 'FOO');
