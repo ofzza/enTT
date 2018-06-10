@@ -1,12 +1,18 @@
 {
   "name": "entt",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Modular JS data-model base class, implementing often used functionality",
   "main": "./dist/index.js",
   "scripts": {
-    "start": "gulp",
-    "test": "gulp test"
+    "build": "gulp build",
+    "test": "gulp test",
+    "start": "gulp default && node ./dist",
+    "production": "gulp build --production"
   },
+  "pre-commit": [
+    "build",
+    "test"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ofzza/enTT.git"
@@ -25,18 +31,33 @@
   },
   "homepage": "https://github.com/ofzza/enTT#readme",
   "devDependencies": {
-    "colors": "^1.1.2",
-    "babel-core": "*",
-    "babel-preset-esnext": "*",
-    "gulp": "github:gulpjs/gulp#4.0",
-    "gulp-babel": "^7.0.0",
-    "gulp-clean": "^0.3.2",
-    "gulp-eslint": "^4.0.0",
-    "gulp-jscs": "^4.0.0",
-    "gulp-mocha": "^4.0.1",
-    "gulp-sourcemaps": "^2.6.4"
+    "babel-core": "6.26.3",
+    "babel-preset-esnext": "1.1.3",
+    "del": "^3.0.0",
+    "eslint": "^4.19.1",
+    "gulp": "gulpjs/gulp#d693e49",
+    "gulp-babel": "^7.0.1",
+    "gulp-clean-css": "^3.9.4",
+    "gulp-eslint": "^4.0.2",
+    "gulp-htmlhint": "^2.1.1",
+    "gulp-htmlmin": "^4.0.0",
+    "gulp-jscs": "^4.1.0",
+    "gulp-less": "^3.5.0",
+    "gulp-lesshint": "^5.0.2",
+    "gulp-mocha": "^6.0.0",
+    "gulp-noop": "^1.0.0",
+    "gulp-sass": "^4.0.1",
+    "gulp-sass-lint": "^1.4.0",
+    "gulp-scss-lint": "^0.6.1",
+    "gulp-stylelint": "^7.0.0",
+    "gulp-uglify": "^3.0.0",
+    "jscs": "^3.0.7",
+    "minimist": "^1.2.0",
+    "pre-commit": "^1.2.2",
+    "stylelint": "^9.2.1"
   },
   "dependencies": {
-    "lodash": "^4.17.4"
+    "colors": "^1.3.0",
+    "lodash": "^4.17.10"
   }
 }

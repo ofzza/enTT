@@ -13,14 +13,19 @@
 // Load dependencies
 require('colors');
 const pck     = require('./package.json'),
-      _       = require('lodash');
+      _       = require('lodash'),
+      argv    = require('minimist')(process.argv.slice(2), { boolean: true });
 
 // Prompt
 const title = _._.padEnd(` ${ pck.name.toUpperCase() }: ${ pck.description } `, 78, ' ');
 console.log('--------------------------------------------------------------------------------'.green);
 console.log('#'.green + ' ' + title.bgGreen.gray);
 console.log('#'.green + ' > Initializing tasks ...'.yellow);
-console.log('#'.green + ' > (run with `--production` parameter to get production ready build)'.yellow);
+if (!argv.production) {
+  console.log('#'.green + '   (run with `--production` parameter to get production ready build)'.gray);
+} else {
+  console.log('#'.green + '   (runing PRODUCTION BUILD)'.red);
+}
 console.log('# ------------------------------------------------------------------------------'.green);
 console.log();
 

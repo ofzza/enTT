@@ -4,8 +4,10 @@
 
 // Require dependencies
 const path        = require('path'),
-      util        = require('gulp-util'),
+      argv        = require('minimist')(process.argv.slice(2), { boolean: true }),
+      noop        = require('gulp-noop'),
       babel       = require('gulp-babel'),
+      uglify      = require('gulp-uglify'),
       sourcemaps  = require('gulp-sourcemaps');
 
 // Initialize tasks
@@ -15,14 +17,15 @@ module.exports = (gulp) => {
   gulp.task('build@script-babel', () => {
     return gulp
       .src('./src/**/*.js')
-      .pipe(!util.env.production ? sourcemaps.init({ loadMaps: true }) : util.noop())
+      .pipe(!argv.production ? sourcemaps.init({ loadMaps: true }) : noop())
       .pipe(babel({
         presets: [
           require('babel-preset-esnext')
         ],
         filenameRelative: true
       }))
-      .pipe(!util.env.production ? sourcemaps.write('.', { includeContent: false, sourceRoot: sourceRootFn }) : util.noop())
+      .pipe(!argv.production ? sourcemaps.write('.', { includeContent: false, sourceRoot: sourceRootFn }) : noop())
+      .pipe(argv.production ? uglify({ mangle: { keep_fnames: true } }) : noop())
       .pipe(gulp.dest('./dist'));
   });
 

@@ -14,7 +14,7 @@ module.exports = (gulp) => {
     return gulp
       .src(['./**/*.js', '!./node_modules/**/*', '!./dist/**/*'])
       .pipe(jscs({
-        configPath: './.rc-jscs.json',
+        configPath: './.jscsrc',
         fix: false
       }))
       .pipe(jscs.reporter());
@@ -25,7 +25,7 @@ module.exports = (gulp) => {
     return gulp
       .src(['./**/*.js', '!./node_modules/**/*', '!./dist/**/*'])
       .pipe(eslint({
-        configFile: './.rc-eslint.json'
+        configFile: './.eslintrc'
       }))
       .pipe(eslint.format());
     //.pipe(eslint.failOnError());

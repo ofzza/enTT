@@ -18,7 +18,4 @@ describe('> Base Entity Class Functionality', () => {
   // Test property value change detection
   require('./01-entity-base/05-entity-change-detection')();
 
-  // Test foreign key linking/unlinking
-  require('./01-entity-base/06-entity-fk-linking')();
-
 });

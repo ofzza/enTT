@@ -265,13 +265,6 @@ function getClassProperties (classes, { extensionsManager } = {}) {
         return;
       }
 
-      // Replace key definition short-hand configuration syntax with full definition
-      if (isPropertyKeyDefinition(propertyConfiguration)) {
-        // Replace shorthand key definition syntax
-        currentProperties[propertyName] = { key: propertyConfiguration };
-        return;
-      }
-
       // EXTENSIONS HOOK: .processShorthandPropertyConfiguration(...)
       // Lets extensions process short-hand property configuration
       currentProperties[propertyName] = extensionsManager.processShorthandPropertyConfiguration(propertyConfiguration);
