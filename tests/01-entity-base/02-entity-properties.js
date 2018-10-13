@@ -7,23 +7,23 @@ let assert              = require('assert'),
 
 // Export tests
 module.exports = () => {
-  describe('> Property Definitions and Initialization', () => {
+  describe('> Property Configuration and Initialization', () => {
 
     // Set default property values
     EnTT.default = { value: null };
 
-    // Define Entity extending class with some properties
-    class MyExtendedEntity1 extends EnTT {
+    // Define an Entity class with some properties
+    class ParentEntityClass extends EnTT {
       static get props () {
         return {
-          foo: {          // Local property
-            bar: 'bar'
+          foo: {          // Local property, specific to only this class
+            bar: 'bar'      // Random, meaningless configuration
           },
-          shared: {       // Shared property
-            foo: 'foo',
-            bar: 'bar'
+          shared: {       // Shared property, to be overridden by extending classes
+            foo: 'foo',     // Random, meaningless configuration
+            bar: 'bar'      // Random, meaningless configuration
           },
-          readonly: {    // Readonly property
+          readonly: {    // Read-only property
             value: 'readonly',
             readOnly: true
           }
@@ -31,25 +31,10 @@ module.exports = () => {
       }
     }
 
-    // Property configuration fetching
-    it('> Should be able to extract property configuration from an Entity class', () => {
+    it('> Should extract property configuration from an Entity class', () => {
 
       // Get property configuration
-      let properties = Properties.getEntityPropertyConfiguration(MyExtendedEntity1);
-
-      // Check properties' configuration
-      assert.equal(properties.foo.bar,    'bar');
-      assert.equal(properties.shared.foo, 'foo');
-      assert.equal(properties.shared.bar, 'bar');
-
-    });
-    // Property configuration fetching
-    it('> Should be able to extract property configuration from an Entity instance', () => {
-
-      // Instantiate an extended Entity class
-      let e = new MyExtendedEntity1();
-      // Get property configuration
-      let properties = Properties.getEntityPropertyConfiguration(e);
+      let properties = Properties.getEntityPropertyConfiguration(ParentEntityClass);
 
       // Check properties' configuration
       assert.equal(properties.foo.bar,    'bar');
@@ -58,71 +43,74 @@ module.exports = () => {
 
     });
 
-    // Entity extending and instantiation
-    it('> Should properly configure 1st level extended properties', () => {
+    it('> Should extract property configuration from an Entity instance', () => {
+
+      // Get property configuration
+      let properties = Properties.getEntityPropertyConfiguration(new ParentEntityClass());
+
+      // Check properties' configuration
+      assert.equal(properties.foo.bar,    'bar');
+      assert.equal(properties.shared.foo, 'foo');
+      assert.equal(properties.shared.bar, 'bar');
+
+    });
+
+    it('> Should properly initialize property values', () => {
 
       // Instantiate a 1st level extended Entity class
-      let e = new MyExtendedEntity1();
-      // Get cached properties
-      let properties = Properties.getEntityPropertyConfiguration(e);
-
-      // Check properties' configuration
-      assert.equal(properties.foo.bar,    'bar');
-      assert.equal(properties.shared.foo, 'foo');
-      assert.equal(properties.shared.bar, 'bar');
+      let e = new ParentEntityClass();
 
       // Check initial property values
       assert.equal(e.foo, null);
       assert.equal(e.shared, null);
+      assert.equal(e.readonly, 'readonly');
 
     });
 
-    // Define 2nd level extending property adding to and overriding some of the 1st level properties
-    class MyExtendedEntity2 extends MyExtendedEntity1 {
+    // Define a 2nd-level Entity class, adding to and overriding some of the 1st level properties
+    class ChildEntityClass extends ParentEntityClass {
       static get props () {
         return {
-          bar: {          // Local property
-            baz: 'baz'
+          bar: {          // Local property, specific to only this class
+            baz: 'baz'      // Random, meaningless configuration
           },
-          shared: {       // Shared property
-            foo: 'bar',     // Override property value
-            baz: 'baz'      // Append property value
+          shared: {       // Shared property, being overridden
+            foo: 'bar',     // Overriding configuration
+            baz: 'baz'      // Overriding configuration
           }
         };
       }
     }
-    // Entity extending and instantiation
-    it('> Should properly extend and override 2st level extended properties', () => {
 
-      // Instantiate a 1st level extended Entity class
-      let e = new MyExtendedEntity2();
-      // Get cached properties
-      let properties = Properties.getEntityPropertyConfiguration(e);
+    it('> Should extend and override property configuration', () => {
+
+      // Get property configuration
+      let properties = Properties.getEntityPropertyConfiguration(new ChildEntityClass());
 
       // Check properties' configuration
-      assert.equal(properties.foo.bar, 'bar');      // 1st level Local property
-      assert.equal(properties.bar.baz, 'baz');      // 2st level Local property
-      assert.equal(properties.shared.foo, 'bar');   // Overridden value
-      assert.equal(properties.shared.bar, 'bar');   // 1st level shared property
-      assert.equal(properties.shared.baz, 'baz');   // Appended 2nd level property
+      assert.equal(properties.foo.bar, 'bar');      // Inherited, parent-class Local property
+      assert.equal(properties.bar.baz, 'baz');      // Appended, child-class Local property
+      assert.equal(properties.shared.foo, 'bar');   // Extended property's overridden configuration
+      assert.equal(properties.shared.bar, 'bar');   // Extended property's inherited configuration
+      assert.equal(properties.shared.baz, 'baz');   // Extended property's extended configuration
 
     });
 
-    // Properties added and locked
-    it('> Should lock the instance to prevent ad-hoc addition of additional properties', () => {
+    it('> Should lock instances to prevent ad-hoc addition of properties', () => {
 
       // Instantiate a 1st level extended Entity class
-      let e = new MyExtendedEntity1();
+      let e = new ParentEntityClass();
 
-      // Check trying to add new not configured property silently ignores new value
+      // Adding new, not-configured property silently ignored
       assert.doesNotThrow(() => { e.bar = 'baz'; });
       assert.notEqual(e.bar, 'baz');
 
     });
-    it('> Should lock configured properties and prevent them from being deleted or reconfigured', () => {
+
+    it('> Should lock instances to prevent then being deleted or reconfigured', () => {
 
       // Instantiate a 1st level extended Entity class
-      let e = new MyExtendedEntity1();
+      let e = new ParentEntityClass();
       e.foo = 'bar';
 
       // Check configured property can't be deleted or reconfigured
@@ -131,10 +119,11 @@ module.exports = () => {
       assert.equal(e.foo, 'bar');
 
     });
+
     it('> Should instantiate configured properties with working getters and setters', () => {
 
       // Instantiate a 1st level extended Entity class
-      let e = new MyExtendedEntity1();
+      let e = new ParentEntityClass();
 
       // Check configured property initialized
       assert.ok(e.hasOwnProperty('foo'));
@@ -143,10 +132,11 @@ module.exports = () => {
       assert.equal(e.foo, 'waldo');
 
     });
+
     it('> Should instantiate read-only properties with only a getter', () => {
 
       // Instantiate a 1st level extended Entity class
-      let e = new MyExtendedEntity1();
+      let e = new ParentEntityClass();
 
       // Check read-only property initialized
       assert.ok(e.hasOwnProperty('readonly'));
@@ -157,8 +147,8 @@ module.exports = () => {
 
     });
 
-    // Define Entity extending class with properties occluding methods
-    class MyExtendedEntity3 extends EnTT {
+    // Define 3rd-level Entity class, with properties occluding existing Entity class methods
+    class EntityClassWithOcluddedMethods extends EnTT {
       static get props () {
         return {
           watch: {},
@@ -166,18 +156,19 @@ module.exports = () => {
         };
       }
     }
-    // Check if method occlusion is allowed
-    it('> Should not prevent properties from occluding existing methods', () => {
 
-      // Instantiate a 1st level extended Entity class
-      let e = new MyExtendedEntity3();
+    it('> Should allow properties to occlude existing methods', () => {
 
-      // Check properties' configuration
+      // Instantiate Entity class with ocludded methods
+      let e = new EntityClassWithOcluddedMethods();
+
+      // Check properties initialized
       assert.equal(e.watch, null);
       assert.equal(e.update, null);
+      // Check properties have working setters and getters
       assert.doesNotThrow(() => { e.watch = 'foo'; });
-      assert.doesNotThrow(() => { e.update = 'bar'; });
       assert.equal(e.watch, 'foo');
+      assert.doesNotThrow(() => { e.update = 'bar'; });
       assert.equal(e.update, 'bar');
 
     });

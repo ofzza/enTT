@@ -11,12 +11,11 @@ module.exports = () => {
     // Define Entity extending class
     class MyExtendedEntity extends EnTT { }
 
-    // Entity extending and instantiation
-    it('> Should not allow for Entity base class to be instantiated', () => {
+    it('> Should not allow Entity base class to be instantiated', () => {
       assert.throws(() => { new EnTT(); });
     });
-    // Entity extending and instantiation
-    it('> Should allow for extended class to instantiate', () => {
+
+    it('> Should allow extended EnTT class to be instantiated', () => {
       assert.doesNotThrow(() => { new MyExtendedEntity(); });
     });
 

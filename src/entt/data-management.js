@@ -163,9 +163,10 @@ export default class DataManagement {
    * Imports provided raw data into the entity isntance
    * @param {any} data Raw data object to import from
    * @param {bool} importNonExportable If true, even properties not marked exportable will be imported
+   * @param {bool} cloneValues If true, all values (raw objects and entities) will be deep-cloned before importing
    * @returns {any} Reference to current entity instance (useful for chaining)
    */
-  import (data = {}, { importNonExportable = false } = {}) {
+  import (data = {}, { importNonExportable = false, cloneValues = false } = {}) {
     // Import data, and trigger change watchers when done
     this.entity.update(() => {
       _.forEach(this.properties, (propertyConfiguration, key) => {
@@ -173,6 +174,12 @@ export default class DataManagement {
         if ((propertyConfiguration.exportable || importNonExportable) && !propertyConfiguration.readOnly) {
           // Get importing value (check "bind" property configuration if exists, or use same property name)
           let value = (propertyConfiguration.bind ? data[propertyConfiguration.bind] : data[key]);
+          // Check if cloning before import
+          if (cloneValues) {
+            value = _.cloneDeepWith(value, (value) => {
+              if (value instanceof EnTT) { return value.clone(); }
+            });
+          }
           // Check if value needs to be cast
           if (propertyConfiguration.cast) {
             // Cast and import data
@@ -191,9 +198,10 @@ export default class DataManagement {
   /**
    * Exports entity instance's data as a raw object
    * @param {bool} exportNonExportable If true, even properties not marked exportable will be exported
+   * @param {bool} cloneValues If true, all values (raw objects and entities) will be deep-cloned before exporting
    * @returns {any} Raw object containing entity instance's data
    */
-  export ({ exportNonExportable = false } = {}) {
+  export ({ exportNonExportable = false, cloneValues = false } = {}) {
     // Export data
     const exported = {};
     _.forEach(this.properties, (propertyConfiguration, key) => {
@@ -205,6 +213,17 @@ export default class DataManagement {
         if (propertyConfiguration.cast) {
           // Export property values expected to be cast as entities
           exported[exportPropertyName] = DataManagement.uncast(this.entity[key], propertyConfiguration.cast);
+        } else if (cloneValues) {
+          // Export raw property values after deep-cloning it
+          if (this.entity[key] instanceof EnTT) {
+            // Clone entity instance
+            exported[exportPropertyName] = this.entity[key].clone();
+          } else {
+            // Deep clone value
+            exported[exportPropertyName] = _.cloneDeepWith(this.entity[key], (value) => {
+              if (value instanceof EnTT) { return value.clone(); }
+            });
+          }
         } else {
           // Export raw property values with no conversion
           exported[exportPropertyName] = this.entity[key];
@@ -222,7 +241,7 @@ export default class DataManagement {
   clone () {
     return (new (this.entity.constructor)())
       .import(
-        this.entity.export()
+        this.entity.export({ cloneValues: true })
       );
   }
 

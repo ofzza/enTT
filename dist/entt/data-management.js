@@ -194,6 +194,7 @@ var DataManagement = function () {
    * Imports provided raw data into the entity isntance
    * @param {any} data Raw data object to import from
    * @param {bool} importNonExportable If true, even properties not marked exportable will be imported
+   * @param {bool} cloneValues If true, all values (raw objects and entities) will be deep-cloned before importing
    * @returns {any} Reference to current entity instance (useful for chaining)
    */
 
@@ -207,7 +208,9 @@ var DataManagement = function () {
 
       var _ref3 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
           _ref3$importNonExport = _ref3.importNonExportable,
-          importNonExportable = _ref3$importNonExport === undefined ? false : _ref3$importNonExport;
+          importNonExportable = _ref3$importNonExport === undefined ? false : _ref3$importNonExport,
+          _ref3$cloneValues = _ref3.cloneValues,
+          cloneValues = _ref3$cloneValues === undefined ? false : _ref3$cloneValues;
 
       // Import data, and trigger change watchers when done
       this.entity.update(function () {
@@ -216,6 +219,14 @@ var DataManagement = function () {
           if ((propertyConfiguration.exportable || importNonExportable) && !propertyConfiguration.readOnly) {
             // Get importing value (check "bind" property configuration if exists, or use same property name)
             var value = propertyConfiguration.bind ? data[propertyConfiguration.bind] : data[key];
+            // Check if cloning before import
+            if (cloneValues) {
+              value = _lodash2.default.cloneDeepWith(value, function (value) {
+                if (value instanceof _entt2.default) {
+                  return value.clone();
+                }
+              });
+            }
             // Check if value needs to be cast
             if (propertyConfiguration.cast) {
               // Cast and import data
@@ -234,6 +245,7 @@ var DataManagement = function () {
     /**
      * Exports entity instance's data as a raw object
      * @param {bool} exportNonExportable If true, even properties not marked exportable will be exported
+     * @param {bool} cloneValues If true, all values (raw objects and entities) will be deep-cloned before exporting
      * @returns {any} Raw object containing entity instance's data
      */
 
@@ -244,7 +256,9 @@ var DataManagement = function () {
 
       var _ref4 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
           _ref4$exportNonExport = _ref4.exportNonExportable,
-          exportNonExportable = _ref4$exportNonExport === undefined ? false : _ref4$exportNonExport;
+          exportNonExportable = _ref4$exportNonExport === undefined ? false : _ref4$exportNonExport,
+          _ref4$cloneValues = _ref4.cloneValues,
+          cloneValues = _ref4$cloneValues === undefined ? false : _ref4$cloneValues;
 
       // Export data
       var exported = {};
@@ -257,6 +271,19 @@ var DataManagement = function () {
           if (propertyConfiguration.cast) {
             // Export property values expected to be cast as entities
             exported[exportPropertyName] = DataManagement.uncast(_this2.entity[key], propertyConfiguration.cast);
+          } else if (cloneValues) {
+            // Export raw property values after deep-cloning it
+            if (_this2.entity[key] instanceof _entt2.default) {
+              // Clone entity instance
+              exported[exportPropertyName] = _this2.entity[key].clone();
+            } else {
+              // Deep clone value
+              exported[exportPropertyName] = _lodash2.default.cloneDeepWith(_this2.entity[key], function (value) {
+                if (value instanceof _entt2.default) {
+                  return value.clone();
+                }
+              });
+            }
           } else {
             // Export raw property values with no conversion
             exported[exportPropertyName] = _this2.entity[key];
@@ -275,7 +302,7 @@ var DataManagement = function () {
   }, {
     key: 'clone',
     value: function clone() {
-      return new this.entity.constructor().import(this.entity.export());
+      return new this.entity.constructor().import(this.entity.export({ cloneValues: true }));
     }
   }]);
 

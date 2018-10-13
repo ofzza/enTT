@@ -111,28 +111,28 @@ module.exports = () => {
       e.watch((e) => { callbackEvents.push(e); });
 
       // Update a 1st level property and check if watchers triggered with correct arguments
-      e.bar = 'bar';
+      e.bar = 'foo';
       assert.equal(callbackEvents.length, 1);
       assert.equal(callbackEvents[0].propertyName, 'bar');
       assert.equal(callbackEvents[0].oldValue, null);
-      assert.equal(callbackEvents[0].newValue, 'bar');
+      assert.equal(callbackEvents[0].newValue, 'foo');
 
       // Update a 2nd level property and check if watchers triggered with correct arguments
-      e.foo.bar = 'bar';
+      e.foo.bar = 'baz';
       assert.equal(callbackEvents.length, 2);
       assert.equal(callbackEvents[1].propertyName, 'foo');
       assert.equal(callbackEvents[1].innerEvent.propertyName, 'bar');
       assert.equal(callbackEvents[1].innerEvent.oldValue, null);
-      assert.equal(callbackEvents[1].innerEvent.newValue, 'bar');
+      assert.equal(callbackEvents[1].innerEvent.newValue, 'baz');
 
       // Update a 3rd level property and check if watchers triggered with correct arguments
-      e.foo.foo.bar = 'bar';
+      e.foo.foo.bar = 'qux';
       assert.equal(callbackEvents.length, 3);
       assert.equal(callbackEvents[2].propertyName, 'foo');
       assert.equal(callbackEvents[2].innerEvent.propertyName, 'foo');
       assert.equal(callbackEvents[2].innerEvent.innerEvent.propertyName, 'bar');
       assert.equal(callbackEvents[2].innerEvent.innerEvent.oldValue, null);
-      assert.equal(callbackEvents[2].innerEvent.innerEvent.newValue, 'bar');
+      assert.equal(callbackEvents[2].innerEvent.innerEvent.newValue, 'qux');
 
     });
 

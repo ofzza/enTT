@@ -14,11 +14,11 @@ module.exports = () => {
     class MyExtendedEntity extends EnTT {
       static get props () {
         return {
-          foo: {},
-          bar: {},
-          entity: { cast: MyExtendedEntity },
-          entityArray: { cast: [ MyExtendedEntity ] },
-          entityHashmap: { cast: { MyExtendedEntity }}
+          foo: {},                                      // Local property
+          bar: {},                                      // Local property
+          entity: { cast: MyExtendedEntity },           // Property to have it's value cast as an Entity instance
+          entityArray: { cast: [ MyExtendedEntity ] },  // Property to have it's value cast as an array of Entity instances
+          entityHashmap: { cast: { MyExtendedEntity }}  // Property to have it's value cast as an array of Entity instances
         };
       }
     }
@@ -26,29 +26,19 @@ module.exports = () => {
     // Define a factory creating a testing instance
     let getInstance = () => {
       // Instantiate
-      let e = new MyExtendedEntity();
-      // Set non-nested Entity property as entity
-      e.bar = new MyExtendedEntity();
-      e.bar.foo = 'foo';
-      e.bar.bar = { baz: 'baz' };
+      let e = new MyExtendedEntity(),
+          member = { foo: 'foo', bar: { baz: 'baz' } };
       // Set nested entity
-      e.entity = { foo: 'foo', bar: { baz: 'baz' } };
+      e.entity = member;
       // Set nested entity array
-      e.entityArray = [
-        { foo: 'foo', bar: { baz: 'baz' } },
-        { foo: 'foo', bar: { baz: 'baz' } }
-      ];
+      e.entityArray = [member, member];
       // Set nested entity hashmap
-      e.entityHashmap = {
-        foo: { foo: 'foo', bar: { baz: 'baz' } },
-        bar: { foo: 'foo', bar: { baz: 'baz' } }
-      };
+      e.entityHashmap = { a: member, b: member };
       // Return instance
       return e;
     };
 
-    // Single nested entity casting
-    it('> Should properly cast property values being set as single entity', () => {
+    it('> Should properly cast single entity', () => {
 
       // Instantiate testing instance
       let e = getInstance();
@@ -62,48 +52,47 @@ module.exports = () => {
 
     });
 
-    // Nested entity array casting
-    it('> Should properly cast property values being set as entity array', () => {
+    it('> Should properly cast entity array', () => {
 
       // Instantiate testing instance
       let e = getInstance();
 
-      // Check entity array property value was cast
-      assert.ok(_.isObject(e.entityArray[0]));
-      assert.ok(e.entityArray[0] instanceof EnTT);
-      assert.ok(_.isObject(e.entityArray[1]));
-      assert.ok(e.entityArray[1] instanceof EnTT);
-      // Check entity array data
+      // Check array contains all members
       assert.equal(e.entityArray.length, 2);
-      assert.equal(e.entityArray[0].foo, 'foo');
-      assert.equal(e.entityArray[0].bar.baz, 'baz');
-      assert.equal(e.entityArray[1].foo, 'foo');
-      assert.equal(e.entityArray[1].bar.baz, 'baz');
+      // Check all members of entity array property
+      _.forEach(e.entityArray, (e) => {
+        // Check member was cast
+        assert.ok(_.isObject(e));
+        assert.ok(e instanceof EnTT);
+        // Check member data
+        assert.equal(e.foo, 'foo');
+        assert.equal(e.bar.baz, 'baz');
+      });
 
     });
 
-    // Nested entity hashmap casting
-    it('> Should properly cast property values being set as entity hashmap', () => {
+    it('> Should properly cast entity hashmap', () => {
 
       // Instantiate testing instance
       let e = getInstance();
 
-      // Check entity array property value was cast
-      assert.ok(_.isObject(e.entityHashmap.foo));
-      assert.ok(e.entityHashmap.foo instanceof EnTT);
-      assert.ok(_.isObject(e.entityHashmap.bar));
-      assert.ok(e.entityHashmap.bar instanceof EnTT);
-      // Check entity array data
+      // Check hashmap contains all members, with expected keys
       assert.equal(_.keys(e.entityHashmap).length, 2);
-      assert.equal(e.entityHashmap.foo.foo, 'foo');
-      assert.equal(e.entityHashmap.foo.bar.baz, 'baz');
-      assert.equal(e.entityHashmap.bar.foo, 'foo');
-      assert.equal(e.entityHashmap.bar.bar.baz, 'baz');
+      assert.ok(e.entityHashmap.hasOwnProperty('a'));
+      assert.ok(e.entityHashmap.hasOwnProperty('b'));
+      // Check all members of entity hashmap property
+      _.forEach(e.entityHashmap, (x) => {
+        // Check member was cast
+        assert.ok(_.isObject(x));
+        assert.ok(x instanceof EnTT);
+        // Check member data
+        assert.equal(x.foo, 'foo');
+        assert.equal(x.bar.baz, 'baz');
+      });
 
     });
 
-    // Should properly process shorthand syntax
-    it('> Should properly process shorthand syntax for property cast configuration', () => {
+    it('> Should allow shorthand syntax for property cast configuration', () => {
 
       // Define Entity extending class using shorthand property configuration syntax
       class MyExtendedEntityWithShorthandSyntax extends EnTT {
