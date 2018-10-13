@@ -4,6 +4,7 @@
 
 // Import dependencies
 import _ from 'lodash';
+import * as symbols from './symbols';
 import Properties from './entt/properties';
 import Extensions from './entt/extensions';
 import ChangeDetection from './entt/change-detection';
@@ -83,9 +84,18 @@ export default class EnTT {
       values:             undefined,
       extensionsManager:  undefined,
       changeManager:      undefined,
-      propertyManager:    undefined,
       dataManager:        undefined,
+      propertyManager:    undefined
     };
+
+    // Initialize private EnTT property
+    const $$entt = {};
+    Object.defineProperty(this, symbols.privateNamespace, {
+      configurable: false,
+      enumerable: false,
+      writable: false,
+      value: $$entt
+    });
 
     // Load previously cached configuration
     let classes = null;
@@ -133,13 +143,13 @@ export default class EnTT {
     refs.changeManager = new ChangeDetection(refs);
     ChangeDetection.initialize(refs);
 
-    // Initialize properties with getters/setters
-    refs.propertyManager = new Properties(refs);
-    Properties.initialize(refs);
-
     // Initialize data management (Import/Export of data)
     refs.dataManager = new DataManagement(refs);
     DataManagement.initialize(refs);
+
+    // Initialize properties with getters/setters
+    refs.propertyManager = new Properties(refs);
+    Properties.initialize(refs);
 
     // EXTENSIONS HOOK: .onEntityInstantiate(...)
     // Lets extensions modify the entity after being constructed and before it is locked

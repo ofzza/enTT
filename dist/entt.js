@@ -16,6 +16,10 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _symbols = require('./symbols');
+
+var symbols = _interopRequireWildcard(_symbols);
+
 var _properties = require('./entt/properties');
 
 var _properties2 = _interopRequireDefault(_properties);
@@ -33,6 +37,8 @@ var _dataManagement = require('./entt/data-management');
 var _dataManagement2 = _interopRequireDefault(_dataManagement);
 
 var _cache = require('./utils/cache');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -128,9 +134,18 @@ var EnTT = function () {
       values: undefined,
       extensionsManager: undefined,
       changeManager: undefined,
-      propertyManager: undefined,
-      dataManager: undefined
+      dataManager: undefined,
+      propertyManager: undefined
     };
+
+    // Initialize private EnTT property
+    var $$entt = {};
+    Object.defineProperty(this, symbols.privateNamespace, {
+      configurable: false,
+      enumerable: false,
+      writable: false,
+      value: $$entt
+    });
 
     // Load previously cached configuration
     var classes = null;
@@ -182,13 +197,13 @@ var EnTT = function () {
     refs.changeManager = new _changeDetection2.default(refs);
     _changeDetection2.default.initialize(refs);
 
-    // Initialize properties with getters/setters
-    refs.propertyManager = new _properties2.default(refs);
-    _properties2.default.initialize(refs);
-
     // Initialize data management (Import/Export of data)
     refs.dataManager = new _dataManagement2.default(refs);
     _dataManagement2.default.initialize(refs);
+
+    // Initialize properties with getters/setters
+    refs.propertyManager = new _properties2.default(refs);
+    _properties2.default.initialize(refs);
 
     // EXTENSIONS HOOK: .onEntityInstantiate(...)
     // Lets extensions modify the entity after being constructed and before it is locked

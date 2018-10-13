@@ -4,6 +4,7 @@
 
 // Import dependencies
 import _ from 'lodash';
+import * as symbols from '../symbols';
 
 /**
  * Watching for changes
@@ -21,26 +22,24 @@ export default class ChangeDetection {
    */
   static initialize ({ entity, changeManager }) {
 
-    // Expose public .watch() method
+    // Expose public .watch() && [symbols.privateNamespace].watch() method
+    const watchFn = entity[symbols.privateNamespace].watch = (...args) => {
+      return changeManager.watch(...args);
+    };
     Object.defineProperty(entity, 'watch', {
       configurable: true,
       enumerable: false,
-      get: () => {
-        return (...args) => {
-          return changeManager.watch(...args);
-        };
-      }
+      get: () => { return watchFn; }
     });
 
-    // Expose public .update() method
+    // Expose public .update() && [symbols.privateNamespace].update() method
+    const updateFn = entity[symbols.privateNamespace].update = (...args) => {
+      return changeManager.update(...args);
+    };
     Object.defineProperty(entity, 'update', {
       configurable: true,
       enumerable: false,
-      get: () => {
-        return (...args) => {
-          return changeManager.update(...args);
-        };
-      }
+      get: () => { return updateFn; }
     });
 
   }

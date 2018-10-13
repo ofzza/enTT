@@ -5,6 +5,7 @@
 // Import dependencies
 import _ from 'lodash';
 import EnTT from '../entt';
+import * as symbols from '../symbols';
 
 /**
  * Data Management
@@ -33,14 +34,14 @@ export default class DataManagement {
     } else if (_.isFunction(EntityClass) && (EntityClass.prototype instanceof EnTT)) {
 
       // Cast as single EnTT instance if needed
-      return (data instanceof EntityClass ? data : (new EntityClass()).import(data, { importNonExportable: true }));
+      return (data instanceof EntityClass ? data : (new EntityClass())[symbols.privateNamespace].import(data, { importNonExportable: true }));
 
     } if (_.isArray(EntityClass) && _.isFunction(EntityClass[0]) && (EntityClass[0].prototype instanceof EnTT)) {
 
       // Cast as array of EnTT instances
       const InnerEntityClass = EntityClass[0];
       return _.map(data, (value) => {
-        return (value instanceof InnerEntityClass ? value : (new InnerEntityClass()).import(value, { importNonExportable: true }));
+        return (value instanceof InnerEntityClass ? value : (new InnerEntityClass())[symbols.privateNamespace].import(value, { importNonExportable: true }));
       });
 
     } else if (_.isObject(EntityClass) && _.isFunction(_.values(EntityClass)[0]) && (_.values(EntityClass)[0].prototype instanceof EnTT)) {
@@ -48,7 +49,7 @@ export default class DataManagement {
       // Cast as hashmap of EnTT instances
       const InnerEntityClass = _.values(EntityClass)[0];
       return _.reduce(data, (result, value, key) => {
-        result[key] = (value instanceof InnerEntityClass ? value : (new InnerEntityClass()).import(value, { importNonExportable: true }));
+        result[key] = (value instanceof InnerEntityClass ? value : (new InnerEntityClass())[symbols.privateNamespace].import(value, { importNonExportable: true }));
         return result;
       }, {});
 
@@ -80,20 +81,20 @@ export default class DataManagement {
     } else if (_.isFunction(EntityClass) && (EntityClass.prototype instanceof EnTT)) {
 
       // Uncast from single EnTT instance
-      return (data instanceof EnTT ? data.export() : data);
+      return (data instanceof EnTT ? data[symbols.privateNamespace].export() : data);
 
     } else if (_.isArray(EntityClass) && _.isFunction(EntityClass[0]) && (EntityClass[0].prototype instanceof EnTT)) {
 
       // Uncast from array of EnTT instances
       return _.map(data, (value) => {
-        return (value instanceof EnTT ? value.export() : value);
+        return (value instanceof EnTT ? value[symbols.privateNamespace].export() : value);
       });
 
     } else if (_.isObject(EntityClass) && _.isFunction(_.values(EntityClass)[0]) && (_.values(EntityClass)[0].prototype instanceof EnTT)) {
 
       // Uncast from hashmap of EnTT instances
       return _.reduce(data, (result, value, key) => {
-        result[key] = (value instanceof EnTT ? value.export() : value);
+        result[key] = (value instanceof EnTT ? value[symbols.privateNamespace].export() : value);
         return result;
       }, {});
 
@@ -112,37 +113,34 @@ export default class DataManagement {
    */
   static initialize ({ entity, dataManager }) {
 
-    // Export public import method
+    // Export public .import() && [symbols.privateNamespace].import() method
+    const importFn = entity[symbols.privateNamespace].import = (...args) => {
+      return dataManager.import(...args);
+    };
     Object.defineProperty(entity, 'import', {
       configurable: true,
       enumerable: false,
-      get: () => {
-        return (...args) => {
-          return dataManager.import(...args);
-        };
-      }
+      get: () => { return importFn; }
     });
 
-    // Export public export method
+    // Export public .export() && [symbols.privateNamespace].export() method
+    const exportFn = entity[symbols.privateNamespace].export = (...args) => {
+      return dataManager.export(...args);
+    };
     Object.defineProperty(entity, 'export', {
       configurable: true,
       enumerable: false,
-      get: () => {
-        return (...args) => {
-          return dataManager.export(...args);
-        };
-      }
+      get: () => { return exportFn; }
     });
 
-    // Export public clone method
+    // Export public .clone() && [symbols.privateNamespace].clone() method
+    const cloneFn = entity[symbols.privateNamespace].clone = (...args) => {
+      return dataManager.clone(...args);
+    };
     Object.defineProperty(entity, 'clone',  {
       configurable: true,
       enumerable: false,
-      get: () => {
-        return (...args) => {
-          return dataManager.clone(...args);
-        };
-      }
+      get: () => { return cloneFn; }
     });
 
   }
@@ -168,7 +166,7 @@ export default class DataManagement {
    */
   import (data = {}, { importNonExportable = false, cloneValues = false } = {}) {
     // Import data, and trigger change watchers when done
-    this.entity.update(() => {
+    this.entity[symbols.privateNamespace].update(() => {
       _.forEach(this.properties, (propertyConfiguration, key) => {
         // Check if exportable/importable and not readOnly
         if ((propertyConfiguration.exportable || importNonExportable) && !propertyConfiguration.readOnly) {
@@ -177,7 +175,7 @@ export default class DataManagement {
           // Check if cloning before import
           if (cloneValues) {
             value = _.cloneDeepWith(value, (value) => {
-              if (value instanceof EnTT) { return value.clone(); }
+              if (value instanceof EnTT) { return value[symbols.privateNamespace].clone(); }
             });
           }
           // Check if value needs to be cast
@@ -217,11 +215,11 @@ export default class DataManagement {
           // Export raw property values after deep-cloning it
           if (this.entity[key] instanceof EnTT) {
             // Clone entity instance
-            exported[exportPropertyName] = this.entity[key].clone();
+            exported[exportPropertyName] = this.entity[key][symbols.privateNamespace].clone();
           } else {
             // Deep clone value
             exported[exportPropertyName] = _.cloneDeepWith(this.entity[key], (value) => {
-              if (value instanceof EnTT) { return value.clone(); }
+              if (value instanceof EnTT) { return value[symbols.privateNamespace].clone(); }
             });
           }
         } else {
@@ -239,10 +237,9 @@ export default class DataManagement {
    * @returns {any} A clone of the instance containing hte same data
    */
   clone () {
-    return (new (this.entity.constructor)())
-      .import(
-        this.entity.export({ cloneValues: true })
-      );
+    const newEntity = (new (this.entity.constructor)()),
+          originalEntityExportedData = this.entity[symbols.privateNamespace].export({ cloneValues: true });
+    return newEntity[symbols.privateNamespace].import(originalEntityExportedData);
   }
 
 }

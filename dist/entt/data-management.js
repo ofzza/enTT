@@ -20,6 +20,12 @@ var _entt = require('../entt');
 
 var _entt2 = _interopRequireDefault(_entt);
 
+var _symbols = require('../symbols');
+
+var symbols = _interopRequireWildcard(_symbols);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -55,20 +61,20 @@ var DataManagement = function () {
       } else if (_lodash2.default.isFunction(EntityClass) && EntityClass.prototype instanceof _entt2.default) {
 
         // Cast as single EnTT instance if needed
-        return data instanceof EntityClass ? data : new EntityClass().import(data, { importNonExportable: true });
+        return data instanceof EntityClass ? data : new EntityClass()[symbols.privateNamespace].import(data, { importNonExportable: true });
       }if (_lodash2.default.isArray(EntityClass) && _lodash2.default.isFunction(EntityClass[0]) && EntityClass[0].prototype instanceof _entt2.default) {
 
         // Cast as array of EnTT instances
         var InnerEntityClass = EntityClass[0];
         return _lodash2.default.map(data, function (value) {
-          return value instanceof InnerEntityClass ? value : new InnerEntityClass().import(value, { importNonExportable: true });
+          return value instanceof InnerEntityClass ? value : new InnerEntityClass()[symbols.privateNamespace].import(value, { importNonExportable: true });
         });
       } else if (_lodash2.default.isObject(EntityClass) && _lodash2.default.isFunction(_lodash2.default.values(EntityClass)[0]) && _lodash2.default.values(EntityClass)[0].prototype instanceof _entt2.default) {
 
         // Cast as hashmap of EnTT instances
         var _InnerEntityClass = _lodash2.default.values(EntityClass)[0];
         return _lodash2.default.reduce(data, function (result, value, key) {
-          result[key] = value instanceof _InnerEntityClass ? value : new _InnerEntityClass().import(value, { importNonExportable: true });
+          result[key] = value instanceof _InnerEntityClass ? value : new _InnerEntityClass()[symbols.privateNamespace].import(value, { importNonExportable: true });
           return result;
         }, {});
       } else {
@@ -102,18 +108,18 @@ var DataManagement = function () {
       } else if (_lodash2.default.isFunction(EntityClass) && EntityClass.prototype instanceof _entt2.default) {
 
         // Uncast from single EnTT instance
-        return data instanceof _entt2.default ? data.export() : data;
+        return data instanceof _entt2.default ? data[symbols.privateNamespace].export() : data;
       } else if (_lodash2.default.isArray(EntityClass) && _lodash2.default.isFunction(EntityClass[0]) && EntityClass[0].prototype instanceof _entt2.default) {
 
         // Uncast from array of EnTT instances
         return _lodash2.default.map(data, function (value) {
-          return value instanceof _entt2.default ? value.export() : value;
+          return value instanceof _entt2.default ? value[symbols.privateNamespace].export() : value;
         });
       } else if (_lodash2.default.isObject(EntityClass) && _lodash2.default.isFunction(_lodash2.default.values(EntityClass)[0]) && _lodash2.default.values(EntityClass)[0].prototype instanceof _entt2.default) {
 
         // Uncast from hashmap of EnTT instances
         return _lodash2.default.reduce(data, function (result, value, key) {
-          result[key] = value instanceof _entt2.default ? value.export() : value;
+          result[key] = value instanceof _entt2.default ? value[symbols.privateNamespace].export() : value;
           return result;
         }, {});
       } else {
@@ -136,36 +142,39 @@ var DataManagement = function () {
           dataManager = _ref.dataManager;
 
 
-      // Export public import method
+      // Export public .import() && [symbols.privateNamespace].import() method
+      var importFn = entity[symbols.privateNamespace].import = function () {
+        return dataManager.import.apply(dataManager, arguments);
+      };
       Object.defineProperty(entity, 'import', {
         configurable: true,
         enumerable: false,
         get: function get() {
-          return function () {
-            return dataManager.import.apply(dataManager, arguments);
-          };
+          return importFn;
         }
       });
 
-      // Export public export method
+      // Export public .export() && [symbols.privateNamespace].export() method
+      var exportFn = entity[symbols.privateNamespace].export = function () {
+        return dataManager.export.apply(dataManager, arguments);
+      };
       Object.defineProperty(entity, 'export', {
         configurable: true,
         enumerable: false,
         get: function get() {
-          return function () {
-            return dataManager.export.apply(dataManager, arguments);
-          };
+          return exportFn;
         }
       });
 
-      // Export public clone method
+      // Export public .clone() && [symbols.privateNamespace].clone() method
+      var cloneFn = entity[symbols.privateNamespace].clone = function () {
+        return dataManager.clone.apply(dataManager, arguments);
+      };
       Object.defineProperty(entity, 'clone', {
         configurable: true,
         enumerable: false,
         get: function get() {
-          return function () {
-            return dataManager.clone.apply(dataManager, arguments);
-          };
+          return cloneFn;
         }
       });
     }
@@ -213,7 +222,7 @@ var DataManagement = function () {
           cloneValues = _ref3$cloneValues === undefined ? false : _ref3$cloneValues;
 
       // Import data, and trigger change watchers when done
-      this.entity.update(function () {
+      this.entity[symbols.privateNamespace].update(function () {
         _lodash2.default.forEach(_this.properties, function (propertyConfiguration, key) {
           // Check if exportable/importable and not readOnly
           if ((propertyConfiguration.exportable || importNonExportable) && !propertyConfiguration.readOnly) {
@@ -223,7 +232,7 @@ var DataManagement = function () {
             if (cloneValues) {
               value = _lodash2.default.cloneDeepWith(value, function (value) {
                 if (value instanceof _entt2.default) {
-                  return value.clone();
+                  return value[symbols.privateNamespace].clone();
                 }
               });
             }
@@ -275,12 +284,12 @@ var DataManagement = function () {
             // Export raw property values after deep-cloning it
             if (_this2.entity[key] instanceof _entt2.default) {
               // Clone entity instance
-              exported[exportPropertyName] = _this2.entity[key].clone();
+              exported[exportPropertyName] = _this2.entity[key][symbols.privateNamespace].clone();
             } else {
               // Deep clone value
               exported[exportPropertyName] = _lodash2.default.cloneDeepWith(_this2.entity[key], function (value) {
                 if (value instanceof _entt2.default) {
-                  return value.clone();
+                  return value[symbols.privateNamespace].clone();
                 }
               });
             }
@@ -302,7 +311,9 @@ var DataManagement = function () {
   }, {
     key: 'clone',
     value: function clone() {
-      return new this.entity.constructor().import(this.entity.export({ cloneValues: true }));
+      var newEntity = new this.entity.constructor(),
+          originalEntityExportedData = this.entity[symbols.privateNamespace].export({ cloneValues: true });
+      return newEntity[symbols.privateNamespace].import(originalEntityExportedData);
     }
   }]);
 

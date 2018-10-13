@@ -16,6 +16,12 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _symbols = require('../symbols');
+
+var symbols = _interopRequireWildcard(_symbols);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -42,25 +48,27 @@ var ChangeDetection = function () {
           changeManager = _ref.changeManager;
 
 
-      // Expose public .watch() method
+      // Expose public .watch() && [symbols.privateNamespace].watch() method
+      var watchFn = entity[symbols.privateNamespace].watch = function () {
+        return changeManager.watch.apply(changeManager, arguments);
+      };
       Object.defineProperty(entity, 'watch', {
         configurable: true,
         enumerable: false,
         get: function get() {
-          return function () {
-            return changeManager.watch.apply(changeManager, arguments);
-          };
+          return watchFn;
         }
       });
 
-      // Expose public .update() method
+      // Expose public .update() && [symbols.privateNamespace].update() method
+      var updateFn = entity[symbols.privateNamespace].update = function () {
+        return changeManager.update.apply(changeManager, arguments);
+      };
       Object.defineProperty(entity, 'update', {
         configurable: true,
         enumerable: false,
         get: function get() {
-          return function () {
-            return changeManager.update.apply(changeManager, arguments);
-          };
+          return updateFn;
         }
       });
     }

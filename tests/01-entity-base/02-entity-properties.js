@@ -151,6 +151,9 @@ module.exports = () => {
     class EntityClassWithOcluddedMethods extends EnTT {
       static get props () {
         return {
+          import: {},
+          export: {},
+          clone: {},
           watch: {},
           update: {}
         };
@@ -163,13 +166,118 @@ module.exports = () => {
       let e = new EntityClassWithOcluddedMethods();
 
       // Check properties initialized
+      assert.equal(e.import, null);
+      assert.equal(e.export, null);
+      assert.equal(e.clone, null);
       assert.equal(e.watch, null);
       assert.equal(e.update, null);
       // Check properties have working setters and getters
-      assert.doesNotThrow(() => { e.watch = 'foo'; });
-      assert.equal(e.watch, 'foo');
+      assert.doesNotThrow(() => { e.import = 'foo'; });
+      assert.equal(e.import, 'foo');
+      assert.doesNotThrow(() => { e.export = 'foo'; });
+      assert.equal(e.export, 'foo');
+      assert.doesNotThrow(() => { e.clone = 'foo'; });
+      assert.equal(e.clone, 'foo');
+      assert.doesNotThrow(() => { e.watch = 'bar'; });
+      assert.equal(e.watch, 'bar');
       assert.doesNotThrow(() => { e.update = 'bar'; });
       assert.equal(e.update, 'bar');
+
+    });
+
+    it('> Occluding methods shouldn\'t affect usage of EnTT static methods' , () => {
+
+      // Check static EnTT.cast() method still works
+      assert.doesNotThrow(() => { EntityClassWithOcluddedMethods.cast({}); });
+
+    });
+
+    // Define 3rd-level Entity class, with properties occluding existing Entity class methods (except .import())
+    class EntityClassWithOcluddedMethodsExceptImport extends EnTT {
+      static get props () {
+        return {
+          export: {},
+          clone: {},
+          watch: {},
+          update: {}
+        };
+      }
+    }
+    // Define 3rd-level Entity class, with properties occluding existing Entity class methods (except .export())
+    class EntityClassWithOcluddedMethodsExceptExport extends EnTT {
+      static get props () {
+        return {
+          import: {},
+          clone: {},
+          watch: {},
+          update: {}
+        };
+      }
+    }
+    // Define 3rd-level Entity class, with properties occluding existing Entity class methods (except .clone())
+    class EntityClassWithOcluddedMethodsExceptClone extends EnTT {
+      static get props () {
+        return {
+          import: {},
+          export: {},
+          watch: {},
+          update: {}
+        };
+      }
+    }
+    // Define 3rd-level Entity class, with properties occluding existing Entity class methods (except .watch())
+    class EntityClassWithOcluddedMethodsExceptWatch extends EnTT {
+      static get props () {
+        return {
+          import: {},
+          export: {},
+          clone: {},
+          update: {}
+        };
+      }
+    }
+    // Define 3rd-level Entity class, with properties occluding existing Entity class methods (except .update())
+    class EntityClassWithOcluddedMethodsExceptUpdate extends EnTT {
+      static get props () {
+        return {
+          import: {},
+          export: {},
+          clone: {},
+          watch: {}
+        };
+      }
+    }
+
+    it('> Occluding some methods shouldn\'t affect usage of others non-occluded methods' , () => {
+
+      // Instantiate Entity class with ocludded methods
+      let eImport = new EntityClassWithOcluddedMethodsExceptImport(),
+          eExport = new EntityClassWithOcluddedMethodsExceptExport(),
+          eClone  = new EntityClassWithOcluddedMethodsExceptClone(),
+          eWatch  = new EntityClassWithOcluddedMethodsExceptWatch(),
+          eUpdate = new EntityClassWithOcluddedMethodsExceptUpdate();
+
+      // Check non-occluded .import() method still works
+      assert.doesNotThrow(() => {
+        eImport.import({});
+      });
+      // Check non-occluded .export() method still works
+      assert.doesNotThrow(() => {
+        eExport.export();
+      });
+      // Check non-occluded .clone() method still works
+      assert.doesNotThrow(() => {
+        eClone.clone();
+      });
+      // Check non-occluded .update() method still works
+      assert.doesNotThrow(() => {
+        const cancelWatcher = eWatch.watch(() => {  });
+        cancelWatcher();
+      });
+      // Check non-occluded .watch() method still works
+      assert.doesNotThrow(() => {
+        eUpdate.update();
+      });
 
     });
 

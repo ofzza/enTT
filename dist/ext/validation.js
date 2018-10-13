@@ -11,11 +11,17 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _symbols = require('../symbols');
+
+var symbols = _interopRequireWildcard(_symbols);
+
 var _enttext = require('../enttext');
 
 var _enttext2 = _interopRequireDefault(_enttext);
 
 var _properties = require('../entt/properties');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -77,12 +83,15 @@ var ValidationExtension = function (_EnTTExt) {
       // Initialize validation errors storage
       var errors = {};
 
-      // Initialize the .validation property on the instance
+      // Export public .validation getter && [symbols.privateNamespace].getValidation() method
+      var validationFn = entity[symbols.privateNamespace].getValidation = function () {
+        return errors;
+      };
       Object.defineProperty(entity, 'validation', {
         configurable: false,
         enumerable: false,
         get: function get() {
-          return errors;
+          return validationFn();
         }
       });
 
@@ -146,10 +155,10 @@ function validateProperties(entity, properties, changedPropertyName, changedProp
       // Check if validation successful
       if (validation === undefined) {
         // Reset validation error
-        delete entity.validation[propertyName];
+        delete entity[symbols.privateNamespace].getValidation()[propertyName];
       } else {
         // Store validation error
-        entity.validation[propertyName] = new ValidationOutput({
+        entity[symbols.privateNamespace].getValidation()[propertyName] = new ValidationOutput({
           property: propertyName,
           value: validatedValue,
           message: validation

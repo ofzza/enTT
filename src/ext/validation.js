@@ -5,6 +5,7 @@
 
 // Import dependencies
 import _ from 'lodash';
+import * as symbols from '../symbols';
 import EnTTExt from '../enttext';
 import { EnTTBypassEverythingValue } from '../entt/properties';
 
@@ -42,11 +43,14 @@ export default class ValidationExtension extends EnTTExt {
     // Initialize validation errors storage
     const errors = {};
 
-    // Initialize the .validation property on the instance
+    // Export public .validation getter && [symbols.privateNamespace].getValidation() method
+    const validationFn = entity[symbols.privateNamespace].getValidation = () => {
+      return errors;
+    };
     Object.defineProperty(entity, 'validation', {
       configurable: false,
       enumerable: false,
-      get: () => { return errors; }
+      get: () => { return validationFn(); }
     });
 
     // Validate default property values
@@ -101,10 +105,10 @@ function validateProperties (entity, properties, changedPropertyName, changedPro
       // Check if validation successful
       if (validation === undefined) {
         // Reset validation error
-        delete entity.validation[propertyName];
+        delete entity[symbols.privateNamespace].getValidation()[propertyName];
       } else {
         // Store validation error
-        entity.validation[propertyName] = new ValidationOutput({
+        entity[symbols.privateNamespace].getValidation()[propertyName] = new ValidationOutput({
           property: propertyName,
           value: validatedValue,
           message: validation
