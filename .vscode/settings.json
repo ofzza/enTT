@@ -1,35 +1,20 @@
 {
-  "editor.fontLigatures": true,
-  "editor.fontFamily":
-    "Fira Code, Consolas, 'Courier New', monospace, 'Segoe UI Emoji'",
-  "editor.fontSize": 13,
-  "editor.tabSize": 2,
   "files.eol": "\n",
   "files.insertFinalNewline": true,
+  "editor.tabSize": 2,
   "files.exclude": {
-    "node_modules/": true,
-    "logs/": true,
-    "dist/": false
+    ".git": true,
+    "node_modules": true,
+    "dist": true
   },
-  "terminal.integrated.shell.windows": "C:\\Windows\\sysnative\\bash.exe",
-  "extensions.showRecommendationsOnlyOnDemand": true,
-  "explorer.openEditors.visible": 0,
-  "git.enableSmartCommit": true,
-  "gitlens.defaultDateStyle": "absolute",
-  "sync.gist": "23da2eed1981e4c0154078e38580aab3",
-  "sync.host": "",
-  "sync.pathPrefix": "",
-  "sync.quietSync": false,
-  "sync.askGistName": false,
-  "sync.removeExtensions": true,
-  "sync.syncExtensions": true,
-  "sync.autoDownload": false,
-  "sync.autoUpload": false,
-  "sync.lastUpload": "2018-06-09T22:55:05.610Z",
-  "sync.lastDownload": "",
-  "sync.forceDownload": false,
-  "window.zoomLevel": 0,
-  "workbench.colorTheme": "Visual Studio Dark",
-  "workbench.iconTheme": "material-icon-theme"
+
+  "todohighlight.isEnable": true,
+  "todohighlight.isCaseSensitive": true,
+
+  "cSpell.words": [
+    "region",
+    "endregion",
+    "entt",
+    "enttclass"
+  ]
 }
-  

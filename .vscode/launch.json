@@ -1,53 +1,20 @@
 {
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
-    // Launch: Tests
     {
-      "name": "Launch: Tests",
       "type": "node",
       "request": "launch",
-      "protocol": "inspector",
-      
-      "cwd": "${workspaceRoot}",
-      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-      "sourceMaps": true,
+      "name": "Jasmin Tests",
+      "program": "${workspaceRoot}\\node_modules\\jasmine\\bin\\jasmine.js",
       "args": [
-        "tests/*.js",
-        "--no-timeouts"
+        "--config=./jasmine.json"
       ],
-      "preLaunchTask": null,
-      "runtimeExecutable": null,
-      "runtimeArgs": [ "--nolazy" ],
-      "env": {
-          "NODE_ENV": "development"
-      },
       "console": "internalConsole",
       "outputCapture": "std",
-      "useWSL": false
-    },
-    {
-      "name": "Launch: Tests (WSL)",
-      "type": "node",
-      "request": "launch",
-      "protocol": "inspector",
-      
-      "cwd": "${workspaceRoot}",
-      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-      "sourceMaps": true,
-      "args": [
-        "tests/*.js",
-        "--no-timeouts"
-      ],
-      "preLaunchTask": null,
-      "runtimeExecutable": null,
-      "runtimeArgs": [ "--nolazy" ],
-      "env": {
-          "NODE_ENV": "development"
-      },
-      "console": "internalConsole",
-      "outputCapture": "std",
-      "useWSL": true
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }

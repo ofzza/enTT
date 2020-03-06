@@ -1,11 +1,13 @@
 {
   "name": "entt",
-  "version": "2.0.7",
-  "description": "Modular JS data-model base class, implementing often used functionality",
+  "version": "3.0.0",
+  "description": "Modular TS data-modeling solution, implementing import/export, validation and change detection",
   "main": "./dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "gulp build",
-    "test": "gulp test"
+    "build": "tsc",
+    "dev": "tsc -w",
+    "test": "npx jasmine --config=./jasmine.json"
   },
   "pre-commit": [
     "build",
@@ -19,6 +21,9 @@
     "entt",
     "entity",
     "data model",
+    "data-model",
+    "data modeling",
+    "data-modeling",
     "change detection",
     "validation"
   ],
@@ -28,34 +33,16 @@
     "url": "https://github.com/ofzza/enTT/issues"
   },
   "homepage": "https://github.com/ofzza/enTT#readme",
-  "devDependencies": {
-    "babel-core": "6.26.3",
-    "babel-preset-esnext": "1.1.3",
-    "del": "^3.0.0",
-    "eslint": "^4.19.1",
-    "gulp": "gulpjs/gulp#d693e49",
-    "gulp-babel": "^7.0.1",
-    "gulp-clean-css": "^3.9.4",
-    "gulp-eslint": "^4.0.2",
-    "gulp-htmlhint": "^2.1.1",
-    "gulp-htmlmin": "^4.0.0",
-    "gulp-jscs": "^4.1.0",
-    "gulp-less": "^3.5.0",
-    "gulp-lesshint": "^5.0.2",
-    "gulp-mocha": "^6.0.0",
-    "gulp-noop": "^1.0.0",
-    "gulp-sass": "^4.0.1",
-    "gulp-sass-lint": "^1.4.0",
-    "gulp-scss-lint": "^0.6.1",
-    "gulp-stylelint": "^7.0.0",
-    "gulp-uglify": "^3.0.0",
-    "jscs": "^3.0.7",
-    "minimist": "^1.2.0",
-    "pre-commit": "^1.2.2",
-    "stylelint": "^9.2.1"
-  },
   "dependencies": {
-    "colors": "^1.3.0",
-    "lodash": "^4.17.10"
+    "reflect-metadata": "^0.1.13",
+    "tslib": "^1.11.1"
+  },
+  "devDependencies": {
+    "@types/jasmine": "^3.5.8",
+    "jasmine": "^3.5.0",
+    "jasmine-spec-reporter": "^4.2.1",
+    "pre-commit": "^1.2.2",
+    "tslint": "^6.0.0",
+    "typescript": "^3.8.3"
   }
 }
