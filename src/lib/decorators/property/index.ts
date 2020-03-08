@@ -1,26 +1,26 @@
 // enTT lib @Property decorator
-// Configures an EnTT property
+// Configures an EnTT property's getters, setters and other basic descriptors
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import "reflect-metadata";
+import { _getClassMetadata } from '../../entt';
 
 // Define a unique symbol for Property decorator
-const symbol = Symbol("format");
+const symbol = Symbol("enTT @Property");
 
 /**
  * @Property() decorator, configures basic property behavior metadata
- * @param get Configures property getter
+ * @param get (Optional) Configures property getter
  * - If false, property won't have a getter.
  * - If true, property will have a simple, pass-through getter.
  * - If ((target: any, value: any) => any), the function will be called (with a reference to the entire EnTT instance
  *   and the property value being fetched) and it's returned value will be used as the value returned by the getter.
- * @param set Configures property setter
+ * @param set (Optional) Configures property setter
  * - If false, property won't have a setter.
  * - If true, property will have a simple, pass-through setter.
  * - If ((target: any, value: any) => any), the function will be called (with a reference to the entire EnTT instance
  *   and the property value being set) and it's returned value will be used as the value being stored for the property.
- * @param enumerable If the property is enumerable
+ * @param enumerable (Optional) If the property is enumerable
  */
 export function Property ({
   get        = true as ((target: any, value: any) => any) | boolean,
@@ -28,13 +28,29 @@ export function Property ({
   enumerable = true as boolean
 } = {}) {
 
-  // Return decorator metadata
-  return Reflect.metadata(symbol, {
-    get,
-    set,
-    enumerable
-  });
+  // Return decorator
+  return (target, key) => {
+    // Store @Property metadata
+    const decorators  = _getClassMetadata(target.constructor).decorators,
+          metadata    = decorators[symbol] || (decorators[symbol] = {});
+    if (!metadata[key]) {
+      metadata[key] = {
+        get,
+        set,
+        enumerable
+      };
+    }
+  }
 
+}
+
+/**
+ * Gets @Property decorator metadata store
+ * @param Class EnTT class containing the metadata
+ * @returns Stored @Property decorator metadata
+ */
+export function _readPropertyMetadata (Class) {
+  return _getClassMetadata(Class)?.decorators?.[symbol] || {};
 }
 
 /**
@@ -44,13 +60,13 @@ export function Property ({
  * @param store Private store for all property values
  * @returns Property descriptor
  */
-export function readPropertyDescriptor ({
+export function _readPropertyDescriptor ({
   target = undefined as any,
   key    = undefined as string | symbol,
   store  = undefined as object
 } = {}) {
-  // Get 
-  const metadata = Reflect.getMetadata(symbol, target, key) || {
+  // Get @Property metadata (or defaults)
+  const metadata = _readPropertyMetadata(target.constructor)[key] || {
     get:        true,
     set:        true,
     enumerable: true

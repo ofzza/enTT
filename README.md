@@ -11,4 +11,6 @@ To start using ```enTT``` in your project, simply install it from NPM by running
  npm install entt --save
  ```
 
-TODO: ...
+!TODO:
+
+- DOCS: Make sure to document how all EnTT properties must be initialized with a value, even if explicitly undefined!

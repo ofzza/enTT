@@ -2,26 +2,30 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { EnTT }  from '../../';
+import { assert } from '../../tests.init'
+import { EnTT, _getClassMetadata, _getInstanceMetadata }  from './';
 
 // Test ...
 describe("class EnTT", () => {
 
-  it('Initializes enTT metadata namespace on extending classes', () => {
+  it('Initializes enTT metadata namespaces on extending classes and instances', () => {
     class NonEnTT {}
     const nonEnTT = new NonEnTT();
-    expect(nonEnTT instanceof EnTT).toBeFalse();
-    expect((nonEnTT.constructor as any).__enTT__).toBeUndefined();
+    assert(!(nonEnTT instanceof EnTT));
+    assert(_getInstanceMetadata(nonEnTT) !== undefined);
+    assert(_getClassMetadata(nonEnTT.constructor) !== undefined);
 
     class NotInitializedEnTT extends EnTT {}
     const notInitializedEnTT = new NotInitializedEnTT();
-    expect(notInitializedEnTT instanceof EnTT).toBeTrue();
-    expect((notInitializedEnTT.constructor as any).__enTT__).toBeUndefined();
+    assert(notInitializedEnTT instanceof EnTT);
+    assert(_getInstanceMetadata(notInitializedEnTT) !== undefined);
+    assert(_getClassMetadata(notInitializedEnTT.constructor) !== undefined);
 
     class InitializedEnTT extends EnTT { constructor () { super(); super.entt(); } }
     const initializedEnTT = new InitializedEnTT();
-    expect(initializedEnTT instanceof EnTT).toBeTrue();
-    expect((initializedEnTT.constructor as any).__enTT__).not.toBeUndefined();
+    assert(initializedEnTT instanceof EnTT);
+    assert(_getInstanceMetadata(initializedEnTT) !== undefined);
+    assert(_getClassMetadata(initializedEnTT.constructor) !== undefined);
   });
 
 });

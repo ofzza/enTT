@@ -4,6 +4,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 // Import dependencies
+const tests_init_1 = require("../../../tests.init");
 const __1 = require("../../../");
 // Test ...
 describe('@Property', () => {
@@ -37,66 +38,66 @@ describe('@Property', () => {
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "setteronly", void 0);
     tslib_1.__decorate([
-        __1.Property({ get: (target, value) => `${target.plain}:${value && value.toUpperCase()}` }),
+        __1.Property({ get: (obj, value) => `${obj.plain}:${value && value.toUpperCase()}` }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "customgetter", void 0);
     tslib_1.__decorate([
-        __1.Property({ set: (target, value) => `${target.plain}:${value && value.toUpperCase()}` }),
+        __1.Property({ set: (obj, value) => `${obj.plain}:${value && value.toUpperCase()}` }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "customsetter", void 0);
     it('Replaces properties with dynamic counterparts', () => {
         const test = new Test();
-        expect(test.plain).toEqual('plain');
-        expect(Object.getOwnPropertyDescriptor(test, 'plain').get).toBeTruthy();
-        expect(Object.getOwnPropertyDescriptor(test, 'plain').get).toBeTruthy();
-        expect(Object.getOwnPropertyDescriptor(test, 'plain').set).toBeTruthy();
-        expect(Object.getOwnPropertyDescriptor(test, 'plain').enumerable).toEqual(true);
-        expect(test.enttized).toEqual('enttized');
-        expect(Object.getOwnPropertyDescriptor(test, 'enttized').get).toBeTruthy();
-        expect(Object.getOwnPropertyDescriptor(test, 'enttized').set).toBeTruthy();
-        expect(Object.getOwnPropertyDescriptor(test, 'enttized').enumerable).toEqual(true);
+        tests_init_1.assert(test.plain === 'plain');
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'plain').get);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'plain').get);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'plain').set);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'plain').enumerable === true);
+        tests_init_1.assert(test.enttized === 'enttized');
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'enttized').get);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'enttized').set);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'enttized').enumerable === true);
     });
     it('Sets property enumerable state', () => {
         const test = new Test();
-        expect(test.nonenumerable).toEqual('nonenumerable');
-        expect(Object.getOwnPropertyDescriptor(test, 'nonenumerable').get).toBeTruthy();
-        expect(Object.getOwnPropertyDescriptor(test, 'nonenumerable').set).toBeTruthy();
-        expect(Object.getOwnPropertyDescriptor(test, 'nonenumerable').enumerable).toEqual(false);
+        tests_init_1.assert(test.nonenumerable === 'nonenumerable');
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'nonenumerable').get);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'nonenumerable').set);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'nonenumerable').enumerable === false);
     });
     it('Can set property with only a getter', () => {
         const test = new Test();
-        expect(test.getteronly).toEqual('getteronly');
-        expect(Object.getOwnPropertyDescriptor(test, 'getteronly').get).toBeTruthy();
-        expect(Object.getOwnPropertyDescriptor(test, 'getteronly').set).toBeUndefined();
-        expect(Object.getOwnPropertyDescriptor(test, 'getteronly').enumerable).toEqual(true);
+        tests_init_1.assert(test.getteronly === 'getteronly');
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'getteronly').get);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'getteronly').set === undefined);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'getteronly').enumerable === true);
     });
     it('Can set property with only a setter', () => {
         const test = new Test();
-        expect(test.setteronly).not.toEqual('setteronly');
-        expect(Object.getOwnPropertyDescriptor(test, 'setteronly').get).toBeUndefined();
-        expect(Object.getOwnPropertyDescriptor(test, 'setteronly').set).toBeTruthy();
-        expect(Object.getOwnPropertyDescriptor(test, 'setteronly').enumerable).toEqual(true);
+        tests_init_1.assert(test.setteronly === undefined);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'setteronly').get === undefined);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'setteronly').set);
+        tests_init_1.assert(Object.getOwnPropertyDescriptor(test, 'setteronly').enumerable === true);
     });
     describe('Can set property with custom getter and setter', () => {
         it('Custom getter reflects changes to property value', () => {
             const test = new Test();
-            expect(test.customgetter).toEqual('plain:CUSTOMGETTER');
+            tests_init_1.assert(test.customgetter === 'plain:CUSTOMGETTER');
             test.customgetter = 'test';
-            expect(test.customgetter).toEqual('plain:TEST');
+            tests_init_1.assert(test.customgetter === 'plain:TEST');
         });
         it('Custom setter reflects changes to property value', () => {
             const test = new Test();
-            expect(test.customsetter).toEqual('customsetter');
+            tests_init_1.assert(test.customsetter === 'customsetter');
             test.customsetter = 'test';
-            expect(test.customsetter).toEqual('plain:TEST');
+            tests_init_1.assert(test.customsetter === 'plain:TEST');
         });
         it('Custom getter and setter reflect changes to other, referenced properties\' values', () => {
             const test = new Test();
             test.plain = 'no-longer-plain';
             test.customsetter = 'test';
             test.customgetter = 'test';
-            expect(test.customgetter).toEqual('no-longer-plain:TEST');
-            expect(test.customsetter).toEqual('no-longer-plain:TEST');
+            tests_init_1.assert(test.customgetter === 'no-longer-plain:TEST');
+            tests_init_1.assert(test.customsetter === 'no-longer-plain:TEST');
         });
     });
 });

@@ -1,35 +1,51 @@
 "use strict";
 // enTT lib @Property decorator
-// Configures an EnTT property
+// Configures an EnTT property's getters, setters and other basic descriptors
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
 // Import dependencies
-require("reflect-metadata");
+const entt_1 = require("../../entt");
 // Define a unique symbol for Property decorator
-const symbol = Symbol("format");
+const symbol = Symbol("enTT @Property");
 /**
  * @Property() decorator, configures basic property behavior metadata
- * @param get Configures property getter
+ * @param get (Optional) Configures property getter
  * - If false, property won't have a getter.
  * - If true, property will have a simple, pass-through getter.
  * - If ((target: any, value: any) => any), the function will be called (with a reference to the entire EnTT instance
  *   and the property value being fetched) and it's returned value will be used as the value returned by the getter.
- * @param set Configures property setter
+ * @param set (Optional) Configures property setter
  * - If false, property won't have a setter.
  * - If true, property will have a simple, pass-through setter.
  * - If ((target: any, value: any) => any), the function will be called (with a reference to the entire EnTT instance
  *   and the property value being set) and it's returned value will be used as the value being stored for the property.
- * @param enumerable If the property is enumerable
+ * @param enumerable (Optional) If the property is enumerable
  */
 function Property({ get = true, set = true, enumerable = true } = {}) {
-    // Return decorator metadata
-    return Reflect.metadata(symbol, {
-        get,
-        set,
-        enumerable
-    });
+    // Return decorator
+    return (target, key) => {
+        // Store @Property metadata
+        const decorators = entt_1._getClassMetadata(target.constructor).decorators, metadata = decorators[symbol] || (decorators[symbol] = {});
+        if (!metadata[key]) {
+            metadata[key] = {
+                get,
+                set,
+                enumerable
+            };
+        }
+    };
 }
 exports.Property = Property;
+/**
+ * Gets @Property decorator metadata store
+ * @param Class EnTT class containing the metadata
+ * @returns Stored @Property decorator metadata
+ */
+function _readPropertyMetadata(Class) {
+    var _a, _b;
+    return ((_b = (_a = entt_1._getClassMetadata(Class)) === null || _a === void 0 ? void 0 : _a.decorators) === null || _b === void 0 ? void 0 : _b[symbol]) || {};
+}
+exports._readPropertyMetadata = _readPropertyMetadata;
 /**
  * Fetches basic property behavior metadata
  * @param target Class to fetch property metadata for
@@ -37,9 +53,9 @@ exports.Property = Property;
  * @param store Private store for all property values
  * @returns Property descriptor
  */
-function readPropertyDescriptor({ target = undefined, key = undefined, store = undefined } = {}) {
-    // Get 
-    const metadata = Reflect.getMetadata(symbol, target, key) || {
+function _readPropertyDescriptor({ target = undefined, key = undefined, store = undefined } = {}) {
+    // Get @Property metadata (or defaults)
+    const metadata = _readPropertyMetadata(target.constructor)[key] || {
         get: true,
         set: true,
         enumerable: true
@@ -71,5 +87,5 @@ function readPropertyDescriptor({ target = undefined, key = undefined, store = u
         enumerable: !!metadata.enumerable
     };
 }
-exports.readPropertyDescriptor = readPropertyDescriptor;
+exports._readPropertyDescriptor = _readPropertyDescriptor;
 //# sourceMappingURL=index.js.map
