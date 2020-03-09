@@ -28,5 +28,14 @@ describe("class EnTT", () => {
     assert(_getClassMetadata(initializedEnTT.constructor) !== undefined);
   });
 
+  it('Allow occlusion of prototype methods', () => {
+
+    // TODO: check occlusion of: serialize
+    // TODO: check occlusion of: deserialize
+    // TODO: check occlusion of: valid
+    // TODO: check occlusion of: errors
+
+  });
+
 });
 

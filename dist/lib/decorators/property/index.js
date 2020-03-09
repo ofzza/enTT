@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Import dependencies
 const entt_1 = require("../../entt");
 // Define a unique symbol for Property decorator
-const symbol = Symbol("enTT @Property");
+const symbol = Symbol('@Property');
 /**
  * @Property() decorator, configures basic property behavior metadata
  * @param get (Optional) Configures property getter

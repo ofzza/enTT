@@ -1,4 +1,4 @@
-// enTT lib @Serialize decorator
+// enTT lib @Serializable decorator
 // Configures an EnTT property serialization behavior
 // ----------------------------------------------------------------------------
 
@@ -7,15 +7,15 @@ import { EnTT } from '../../../';
 import { _getClassMetadata, _getInstanceMetadata } from '../../entt'
 import { _readPropertyDescriptor } from '../property';
 
-// Define a unique symbol for Serialize decorator
-const symbol = Symbol("enTT @Serialize");
+// Define a unique symbol for Serializable decorator
+const symbol = Symbol('@Serializable');
 
 // Define supported types
 export type _rawDataType = 'object' | 'json';
 export type _castType =  (new() => any) | (Array<new() => any>) | Object;
 
 /**
- * @Serialize() decorator, configures property serialization behavior
+ * @Serializable() decorator, configures property serialization behavior
  * @param alias (Optional) Configures property getter
  * @param cast (Optional) Configures how serialized value is cast before being set. Supported shapes are:
  * - { cast: MyEnTTClass }, will cast property value as instance of MyEnTTClass
@@ -25,14 +25,14 @@ export type _castType =  (new() => any) | (Array<new() => any>) | Object;
  * - { cast: {MyEnTTClass} }, will cast property value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
  *    => { a: myEnTTClass, b: myEnTTClass, c: myEnTTClass, ... }
  */
-export function Serialize ({
+export function Serializable ({
   alias = undefined as string,
   cast  = undefined as _castType
 } = {}) {
 
   // Return decorator
   return (target, key) => {
-    // Store @Serialize metadata
+    // Store @Serializable metadata
     const decorators  = _getClassMetadata(target.constructor).decorators,
           metadata    = decorators[symbol] || (decorators[symbol] = {});
     if (!metadata[key]) {
@@ -47,11 +47,11 @@ export function Serialize ({
 }
 
 /**
- * Gets @Serialize decorator metadata store
+ * Gets @Serializable decorator metadata store
  * @param Class EnTT class containing the metadata
- * @returns Stored @Serialize decorator metadata
+ * @returns Stored @Serializable decorator metadata
  */
-export function _readSerializeMetadata (Class) {
+export function _readSerializableMetadata (Class) {
   return _getClassMetadata(Class)?.decorators?.[symbol] || {};
 }
 
@@ -67,10 +67,10 @@ export function _serialize <T> (source: T, type = 'object' as _rawDataType): any
   // Check if source's store should be source instead
   const instance = (source instanceof EnTT ? _getInstanceMetadata(source).store : source);
 
-  // Serialize
+  // Serializable
   if (instance && (instance instanceof Array || instance instanceof Object)) {
 
-    // Serialize array or object
+    // Serializable array or object
     const serialized = Object.keys(instance).reduce((serialized, key) => {
 
       // Check if property not a method
@@ -83,13 +83,13 @@ export function _serialize <T> (source: T, type = 'object' as _rawDataType): any
         // Check if property has or needs a getter
         if (hasGetter) {
 
-          // Get @Serialize metadata (or defaults)
-          const metadata = _readSerializeMetadata(source.constructor)[key] || {
+          // Get @Serializable metadata (or defaults)
+          const metadata = _readSerializableMetadata(source.constructor)[key] || {
             alias: undefined,
             cast:  undefined
           };
 
-          // Serialize value (EnTT instance or raw value)
+          // Serializable value (EnTT instance or raw value)
           serialized[metadata.alias || key] = _serialize(instance[key], 'object');
 
         }
@@ -121,7 +121,7 @@ export function _serialize <T> (source: T, type = 'object' as _rawDataType): any
  * @param type Type of value to deserialized form
  * @return Target with given value deserialized into it
  */
-export function _deserialize <T> (value = undefined as any, type = 'object' as _rawDataType, { target = undefined as T } = {}) {
+export function _deserialize <T> (value, type = 'object' as _rawDataType, { target = undefined as T } = {}) {
   
   // Convert value
   const source = _data2obj(value, type);
@@ -150,14 +150,14 @@ export function _deserialize <T> (value = undefined as any, type = 'object' as _
         // Check if property has or needs a getter
         if (hasSetter) {
 
-          // Get @Serialize metadata (or defaults)
+          // Get @Serializable metadata (or defaults)
           const properties = _getClassMetadata(target.constructor)?.decorators?.[symbol];
           const metadata = properties?.[key] || {
             alias: undefined,
             cast:  undefined
           };
 
-          // Serialize value (EnTT instance or raw value)
+          // Serializable value (EnTT instance or raw value)
           const alias = properties && (Object.values(properties) as any[]).find((prop) => (prop.alias === key))?.key || key;
           if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
             // Deserialize and cast array
@@ -225,7 +225,7 @@ export function _cast <T> (Class: (new() => T)) {
  * @param type Type to serialize to
  * @returns Given object, serialized into given type
  */
-function _obj2data (obj = undefined as any, type = 'object' as _rawDataType) {
+function _obj2data (obj, type = 'object' as _rawDataType) {
   if (type === 'object') {
     return obj;
   } else if (type === 'json') {
@@ -239,7 +239,7 @@ function _obj2data (obj = undefined as any, type = 'object' as _rawDataType) {
  * @param type Type to deserialize from
  * @returns Object, deserialized from given type
  */
-function _data2obj (str = undefined as any, type = 'object' as _rawDataType) {
+function _data2obj (str, type = 'object' as _rawDataType) {
   if (type === 'object') {
     return str;
   } else if (type === 'json') {

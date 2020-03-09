@@ -3,10 +3,12 @@
 
 // Import dependencies
 import { _readPropertyMetadata, _readPropertyDescriptor } from '../decorators/property';
-import { _rawDataType, _cast, _serialize, _deserialize } from '../decorators/serialize';
+import { _rawDataType, _cast, _serialize, _deserialize } from '../decorators/serializable';
+import { _readValidityMetadata, _validateProperty } from '../decorators/validate';
 
 // Define a unique symbol for Property decorator
-const symbol = Symbol('EnTT class');
+const symbol = Symbol('EnTT');
+export const _undefined = Symbol('undefined');
 
 /**
  * Main, extensible EnTT class definition
@@ -20,8 +22,9 @@ export class EnTT {
    * @param Class (Optional) Class to cast into
    * @returns Instance of the class with deserialized data
    */
-  public static cast (value = undefined as any, type = 'object' as _rawDataType, { Class = undefined as (new() => any) } = {}) {
-    const CastIntoClass = (Class || (this.constructor as (new() => any)));
+  public static cast (value, type = 'object' as _rawDataType, { Class = undefined as (new() => any) } = {}) {
+    // using @Serializable
+    const CastIntoClass = (Class || (this.prototype.constructor as (new() => any)));
     return _cast(CastIntoClass)(value, type);
   }
 
@@ -38,7 +41,10 @@ export class EnTT {
     const instanceMetadata = _getInstanceMetadata(this);
 
     // Replace properties with dynamic counterparts
-    _replacePropertiesWithGetterSetters.bind(this)({ store: instanceMetadata.store });
+    _replacePropertiesWithGetterSetters.bind(this)({
+      store:    instanceMetadata.store,
+      restore:  instanceMetadata.restore
+    });
 
   }
 
@@ -48,6 +54,7 @@ export class EnTT {
    * @returns Serialized value of requested type
    */
   public serialize (type = 'object' as _rawDataType) {
+    // using @Serializable
     return _serialize(this, type);
   }
 
@@ -58,7 +65,48 @@ export class EnTT {
    * @return Target with given value deserialized into it
    */
   public deserialize (value, type = 'object' as _rawDataType) {
+    // using @Serializable
     return _deserialize(value, type, { target: this });
+  }
+
+  /**
+   * Returns validation status of the instance
+   */
+  public get valid (): boolean {
+    // using @Validate
+    return _readValidityMetadata(this).valid as boolean;
+  }
+
+  /**
+   * Returns validation errors of all properties
+   */
+  public get errors (): Record<string, Error[]> {
+    // using @Validate
+    const errors = _readValidityMetadata(this).errors;
+    return Object.keys(errors)
+      .reduce((result, key) => {
+        result[key] = [...errors[key]];
+        return result;
+      }, {}) as Record<string, Error[]>;
+  }
+
+  /**
+   * Reverts property value(s) of requested property (or all properties if no property key specified) to last valid value
+   * @param key (Optional) Property key of the property to be reverted
+   */
+  public revert (key?: string) {
+    const store   = _getInstanceMetadata(this).store,
+          restore = _getInstanceMetadata(this).restore,
+          errors  = _readValidityMetadata(this).errors,
+          keys    = (key ? [key] : Object.keys(restore));
+    keys.forEach((key) => {
+      if (errors[key].length) {
+        // Undo to latest valid value
+        store[key] = restore[key];
+        // Revalidate
+        _validateProperty(this, key);
+      }
+    });
   }
 
 }
@@ -95,7 +143,9 @@ export function _getInstanceMetadata (instance) {
       enumerable: false,
       value: {
         // Initialize a private property values' store
-        store: {}
+        store: {},
+        // Initialize a private property values' store of last valid values
+        restore: {}
       }        
     });
   }
@@ -108,7 +158,8 @@ export function _getInstanceMetadata (instance) {
  * @param store Private store for all property values
  */
 function _replacePropertiesWithGetterSetters ({
-  store = undefined as object
+  store   = undefined as object,
+  restore = undefined as object,
 } = {}) {
   // Iterate over properties
   for (const key of Object.keys(this) ) {
@@ -116,16 +167,41 @@ function _replacePropertiesWithGetterSetters ({
     if (this.hasOwnProperty(key)) {
       if (typeof this[key] !== 'function') {
 
-        // Store initial value
-        store[key] = this[key];
+        // Get initial value
+        const value = this[key];
+
+        // Generate property descriptor (advised by @Property)
+        const descriptor = _readPropertyDescriptor({ target: this, key, store });
+        
+        // Wrap descriptor setter
+        if (descriptor.set) {
+          const previousSetter = descriptor.set;
+          descriptor.set = (value) => {
+            // Deffer to originally set up setter
+            previousSetter(value);
+            // Validate property (using @Validate)
+            const errors = _validateProperty(this, key);
+            // If valid, store as last validated value
+            if (!errors.length) {
+              restore[key] = store[key];
+            }
+          }
+        }
 
         // Replace property with a custom property
         Object.defineProperty(this, key, {
           // Default property configuration
           ...{ configurable: false },
           // @Property property overrides
-          ..._readPropertyDescriptor({ target: this, key, store })
+          ...descriptor
         });
+
+        // Store initial value (through property custom setter, if available)
+        if (descriptor.set) {
+          this[key] = value;
+        } else {
+          store[key] = value;
+        }
 
       }
     }

@@ -1,5 +1,5 @@
 "use strict";
-// enTT lib @Serialize decorator tests
+// enTT lib @Serializable decorator tests
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
@@ -8,7 +8,7 @@ const tests_init_1 = require("../../../tests.init");
 const __1 = require("../../../");
 const _1 = require("./");
 // Test ...
-describe('@Serialize', () => {
+describe('@Serializable', () => {
     // Initialize test data models
     const obj = {
         a: undefined,
@@ -56,7 +56,7 @@ describe('@Serialize', () => {
         }
     }
     tslib_1.__decorate([
-        __1.Serialize({ cast: InnerNonEnTT }),
+        __1.Serializable({ cast: InnerNonEnTT }),
         tslib_1.__metadata("design:type", Object)
     ], NonEnTT.prototype, "innernonentity", void 0);
     class InnerMostTest extends __1.EnTT {
@@ -75,7 +75,7 @@ describe('@Serialize', () => {
         }
     }
     tslib_1.__decorate([
-        __1.Serialize({ cast: NonEnTT }),
+        __1.Serializable({ cast: NonEnTT }),
         tslib_1.__metadata("design:type", Object)
     ], InnerMostTest.prototype, "nonentity", void 0);
     class InnerTest extends __1.EnTT {
@@ -94,7 +94,7 @@ describe('@Serialize', () => {
         }
     }
     tslib_1.__decorate([
-        __1.Serialize({ cast: InnerMostTest }),
+        __1.Serializable({ cast: InnerMostTest }),
         tslib_1.__metadata("design:type", Object)
     ], InnerTest.prototype, "innermost", void 0);
     class Test extends __1.EnTT {
@@ -133,19 +133,19 @@ describe('@Serialize', () => {
         }
     }
     tslib_1.__decorate([
-        __1.Serialize({ alias: 'aliased' }),
+        __1.Serializable({ alias: 'aliased' }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "notaliased", void 0);
     tslib_1.__decorate([
-        __1.Serialize({ cast: InnerTest }),
+        __1.Serializable({ cast: InnerTest }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "enttsingle", void 0);
     tslib_1.__decorate([
-        __1.Serialize({ cast: [InnerTest] }),
+        __1.Serializable({ cast: [InnerTest] }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "enttarrayliteral", void 0);
     tslib_1.__decorate([
-        __1.Serialize({ cast: { InnerTest } }),
+        __1.Serializable({ cast: { InnerTest } }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "enttobjectliteral", void 0);
     tslib_1.__decorate([
@@ -201,11 +201,19 @@ describe('@Serialize', () => {
             verifyAny(instance, serialized, { verifyConstructors: false, ignoreKeys });
             verifyAny(instance, reserialized, { verifyConstructors: false, ignoreKeys });
             verifyAny(instance, deserialized, { verifyConstructors: true, ignoreKeys });
+            const serializedDirectly = instance.serialize('object'), serializedIndirectly = _1._serialize(instance, 'object');
+            expect(serializedDirectly).toEqual(serializedIndirectly);
+            const deserializedDirectly = instance.deserialize(serializedDirectly, 'object'), deserializedIndirectly = _1._deserialize(serializedIndirectly, 'object', { target: new Test() });
+            expect(deserializedDirectly).toEqual(deserializedIndirectly);
         });
         it('Casts as EnTTs', () => {
             const instance = (new Test()).initialize(), ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], { serialized, deserialized } = verifySerialization(instance), cast = _1._cast(Test)(serialized);
             verifyAny(cast, instance, { verifyConstructors: true, ignoreKeys });
             verifyAny(cast, deserialized, { verifyConstructors: true, ignoreKeys });
+            const castExplicitlyDirectly = Test.cast(serialized, 'object', { Class: Test }), castImplicitlyDirectly = Test.cast(serialized, 'object'), castIndirectly = _1._cast(Test)(serialized);
+            expect(instance).toEqual(castExplicitlyDirectly);
+            expect(instance).toEqual(castImplicitlyDirectly);
+            expect(instance).toEqual(castIndirectly);
         });
     });
     describe('Works with multiple serialization target types', () => {
@@ -221,10 +229,14 @@ describe('@Serialize', () => {
         });
     });
 });
-// Verify serialization
-// TODO: test with and without bypass
+/**
+ * Verify serialization
+ * @param obj Object instance to be tested
+ * @param type Serialization target type
+ * @returns Serialized and deserialized representations of original object: { serialized, deserialized, reserialized }
+ */
 function verifySerialization(obj, type = 'object') {
-    // Serialize and deserialize and reserialize
+    // Serializable and deserialize and reserialize
     const serialized = _1._serialize(obj, type), deserialized = _1._deserialize(serialized, type, { target: (obj.constructor ? new (obj.constructor)() : {}) }), reserialized = _1._serialize(deserialized, type);
     // Check if serialized and deserialized have correct types
     tests_init_1.assert(!(serialized instanceof __1.EnTT));
@@ -239,8 +251,13 @@ function verifySerialization(obj, type = 'object') {
     // Return serialized, deserialized and reserialized for more processing
     return { serialized, deserialized, reserialized };
 }
-// Verify plain object, array of primitive value
-// TODO: verify typeof-s and instanceof-s
+/**
+ * Verify plain object, array of primitive value
+ * @param original Object being compared to
+ * @param exported Object being compared
+ * @param verifyConstructors If constructors should be verified as same (instances of same class)
+ * @params ignoreKeys Array of properties which are to be omitted from comparison
+ */
 function verifyAny(original, exported, { verifyConstructors = false, ignoreKeys = [] } = {}) {
     // Check if object or array
     if (original instanceof Array || original instanceof Object) {

@@ -1,13 +1,13 @@
-// enTT lib @Serialize decorator tests
+// enTT lib @Serializable decorator tests
 // ----------------------------------------------------------------------------
 
 // Import dependencies
 import { assert } from '../../../tests.init'
-import { EnTT, Property, Serialize }  from '../../../';
+import { EnTT, Property, Serializable }  from '../../../';
 import { _rawDataType, _cast, _serialize, _deserialize }  from './';
 
 // Test ...
-describe('@Serialize', () => {
+describe('@Serializable', () => {
 
   // Initialize test data models
   const obj = {
@@ -47,7 +47,7 @@ describe('@Serialize', () => {
   class NonEnTT {
     public z = undefined as string;                     // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
 
-    @Serialize({ cast: InnerNonEnTT })
+    @Serializable({ cast: InnerNonEnTT })
     public innernonentity = undefined as InnerNonEnTT;  // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
@@ -64,7 +64,7 @@ describe('@Serialize', () => {
 
     public y = undefined as string;           // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
 
-    @Serialize({ cast: NonEnTT })
+    @Serializable({ cast: NonEnTT })
     public nonentity = undefined as NonEnTT;  // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
@@ -81,7 +81,7 @@ describe('@Serialize', () => {
 
     public x = undefined as string;                 // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
     
-    @Serialize({ cast: InnerMostTest })
+    @Serializable({ cast: InnerMostTest })
     public innermost = undefined as InnerMostTest;  // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
@@ -104,16 +104,16 @@ describe('@Serialize', () => {
     public array      = [1, 2, 3, 4];
     public object     = { a: 1, b: 2, c: 3 };
 
-    @Serialize({ alias: 'aliased' })
+    @Serializable({ alias: 'aliased' })
     public notaliased = undefined as string;                        // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
 
-    @Serialize({ cast: InnerTest })
+    @Serializable({ cast: InnerTest })
     public enttsingle = undefined as InnerTest;                     // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
 
-    @Serialize({ cast: [ InnerTest ] })
+    @Serializable({ cast: [ InnerTest ] })
     public enttarrayliteral = undefined as InnerTest[];             // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
 
-    @Serialize({ cast: { InnerTest } })
+    @Serializable({ cast: { InnerTest } })
     public enttobjectliteral = undefined as any;                    // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
 
     @Property({ enumerable: false })
@@ -197,6 +197,14 @@ describe('@Serialize', () => {
       verifyAny(instance, serialized, { verifyConstructors: false, ignoreKeys });
       verifyAny(instance, reserialized, { verifyConstructors: false, ignoreKeys });
       verifyAny(instance, deserialized, { verifyConstructors: true, ignoreKeys });
+
+      const serializedDirectly = instance.serialize('object'),
+            serializedIndirectly = _serialize(instance, 'object');
+      expect(serializedDirectly).toEqual(serializedIndirectly);            
+
+      const deserializedDirectly = instance.deserialize(serializedDirectly, 'object'),
+            deserializedIndirectly = _deserialize(serializedIndirectly, 'object', { target: new Test() });
+      expect(deserializedDirectly).toEqual(deserializedIndirectly);            
     });
 
     it('Casts as EnTTs', () => {
@@ -206,6 +214,13 @@ describe('@Serialize', () => {
             cast = _cast(Test)(serialized);
       verifyAny(cast, instance, { verifyConstructors: true, ignoreKeys });
       verifyAny(cast, deserialized, { verifyConstructors: true, ignoreKeys });
+
+      const castExplicitlyDirectly = Test.cast(serialized, 'object', { Class: Test }),
+            castImplicitlyDirectly = Test.cast(serialized, 'object'),
+            castIndirectly = _cast(Test)(serialized);
+      expect(instance).toEqual(castExplicitlyDirectly);            
+      expect(instance).toEqual(castImplicitlyDirectly);            
+      expect(instance).toEqual(castIndirectly);            
     });
 
   });
@@ -234,10 +249,14 @@ describe('@Serialize', () => {
 
 });
 
-// Verify serialization
-// TODO: test with and without bypass
+/**
+ * Verify serialization
+ * @param obj Object instance to be tested
+ * @param type Serialization target type
+ * @returns Serialized and deserialized representations of original object: { serialized, deserialized, reserialized }
+ */
 function verifySerialization (obj, type = 'object' as _rawDataType) {
-  // Serialize and deserialize and reserialize
+  // Serializable and deserialize and reserialize
   const serialized   = _serialize(obj, type),
         deserialized = _deserialize(serialized, type, { target: (obj.constructor ? new (obj.constructor)() : {}) }),
         reserialized = _serialize(deserialized, type);
@@ -258,8 +277,14 @@ function verifySerialization (obj, type = 'object' as _rawDataType) {
   return { serialized, deserialized, reserialized };
 }
 
-// Verify plain object, array of primitive value
-// TODO: verify typeof-s and instanceof-s
+
+/**
+ * Verify plain object, array of primitive value
+ * @param original Object being compared to
+ * @param exported Object being compared
+ * @param verifyConstructors If constructors should be verified as same (instances of same class)
+ * @params ignoreKeys Array of properties which are to be omitted from comparison
+ */
 function verifyAny (original, exported, { verifyConstructors = false, ignoreKeys = [] } = {}) {
 
   // Check if object or array

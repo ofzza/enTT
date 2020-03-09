@@ -28,5 +28,11 @@ describe("class EnTT", () => {
         tests_init_1.assert(_1._getInstanceMetadata(initializedEnTT) !== undefined);
         tests_init_1.assert(_1._getClassMetadata(initializedEnTT.constructor) !== undefined);
     });
+    it('Allow occlusion of prototype methods', () => {
+        // TODO: check occlusion of: serialize
+        // TODO: check occlusion of: deserialize
+        // TODO: check occlusion of: valid
+        // TODO: check occlusion of: errors
+    });
 });
 //# sourceMappingURL=index.spec.js.map

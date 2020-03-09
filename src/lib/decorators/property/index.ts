@@ -6,7 +6,7 @@
 import { _getClassMetadata } from '../../entt';
 
 // Define a unique symbol for Property decorator
-const symbol = Symbol("enTT @Property");
+const symbol = Symbol('@Property');
 
 /**
  * @Property() decorator, configures basic property behavior metadata

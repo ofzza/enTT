@@ -80,7 +80,7 @@ describe('@Property', () => {
 
     it('Custom setter reflects changes to property value', () => {
       const test = new Test();
-      assert(test.customsetter === 'customsetter');
+      assert(test.customsetter === 'plain:CUSTOMSETTER');
       test.customsetter = 'test';
       assert(test.customsetter === 'plain:TEST');
     });
