@@ -14,6 +14,20 @@ const Yup = tslib_1.__importStar(require("yup"));
 // Test ...
 describe('@Validate', () => {
     // Initialize test data models
+    class InnerTest extends __1.EnTT {
+        constructor() {
+            super();
+            this.naturalNum = 1;
+            super.entt();
+        }
+    }
+    tslib_1.__decorate([
+        __1.Validate({
+            type: 'number',
+            provider: (obj, value) => ((typeof value === 'number') && (Math.trunc(value) === value) && (value > 0))
+        }),
+        tslib_1.__metadata("design:type", Object)
+    ], InnerTest.prototype, "naturalNum", void 0);
     class Test extends __1.EnTT {
         constructor() {
             super();
@@ -21,6 +35,9 @@ describe('@Validate', () => {
             this.joiNaturalNum = 2;
             this.joiBrowserNaturalNum = 3;
             this.yupNaturalNum = 4;
+            this.enttsingle = new InnerTest();
+            this.enttarrayliteral = [new InnerTest(), new InnerTest(), new InnerTest()];
+            this.enttobjectliteral = { a: new InnerTest(), b: new InnerTest(), c: new InnerTest() };
             super.entt();
         }
     }
@@ -67,6 +84,67 @@ describe('@Validate', () => {
             verifyNaturalNumProperty(Test, 'yupNaturalNum');
         });
     });
+    describe('Works with nested EnTTs', () => {
+        it('Nested single EnTT', () => {
+            const instance = new Test();
+            // Test invalid nested values
+            instance.enttsingle.naturalNum = '-3.14';
+            {
+                const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+                tests_init_1.assert(instance.valid === false);
+                tests_init_1.assert(errors.length === 2);
+            }
+            // Test valid nested values
+            instance.enttsingle.naturalNum = 1;
+            {
+                const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+                tests_init_1.assert(instance.valid === true);
+                tests_init_1.assert(errors.length === 0);
+            }
+        });
+        it('Nested EnTT array', () => {
+            const instance = new Test();
+            // Test invalid nested values
+            instance.enttarrayliteral.forEach((instance) => {
+                instance.naturalNum = '-3.14';
+            });
+            {
+                const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+                tests_init_1.assert(instance.valid === false);
+                tests_init_1.assert(errors.length === 6);
+            }
+            // Test valid nested values
+            instance.enttarrayliteral.forEach((instance) => {
+                instance.naturalNum = 1;
+            });
+            {
+                const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+                tests_init_1.assert(instance.valid === true);
+                tests_init_1.assert(errors.length === 0);
+            }
+        });
+        it('Nested EnTT hashmap', () => {
+            const instance = new Test();
+            // Test invalid nested values
+            Object.values(instance.enttobjectliteral).forEach((instance) => {
+                instance.naturalNum = '-3.14';
+            });
+            {
+                const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+                tests_init_1.assert(instance.valid === false);
+                tests_init_1.assert(errors.length === 6);
+            }
+            // Test valid nested values
+            Object.values(instance.enttobjectliteral).forEach((instance) => {
+                instance.naturalNum = 1;
+            });
+            {
+                const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+                tests_init_1.assert(instance.valid === true);
+                tests_init_1.assert(errors.length === 0);
+            }
+        });
+    });
 });
 /**
  * Verifies validation for natural number property
@@ -81,7 +159,7 @@ function verifyNaturalNumProperty(Class, key) {
         verifyNaturalNumPropertyErrors(instance, key);
         tests_init_1.assert(Object.keys(_1._validateObject(instance)).length === 0);
         tests_init_1.assert(instance.valid === true);
-        tests_init_1.assert(instance.errors[key].length === 0);
+        tests_init_1.assert(Object.values(instance.errors).length === 0);
     }
     // Explicitly test invalid object
     {
@@ -90,11 +168,13 @@ function verifyNaturalNumProperty(Class, key) {
         instance[key] = '-3.14';
         tests_init_1.assert(Object.keys(_1._validateObject(instance)).length === 1);
         tests_init_1.assert(instance.valid === false);
+        tests_init_1.assert(Object.values(instance.errors).length === 1);
+        tests_init_1.assert(!!instance.errors[key]);
         tests_init_1.assert(instance.errors[key].length === 2);
         // Revert invalid value
         instance.revert(key);
         tests_init_1.assert(instance.valid === true);
-        tests_init_1.assert(instance.errors[key].length === 0);
+        tests_init_1.assert(Object.values(instance.errors).length === 0);
     }
     // Implicitly test invalid object
     {
@@ -102,11 +182,13 @@ function verifyNaturalNumProperty(Class, key) {
         // Set invalid value
         instance[key] = '-3.14';
         tests_init_1.assert(instance.valid === false);
+        tests_init_1.assert(Object.values(instance.errors).length === 1);
+        tests_init_1.assert(!!instance.errors[key]);
         tests_init_1.assert(instance.errors[key].length === 2);
         // Revert invalid value
         instance.revert(key);
         tests_init_1.assert(instance.valid === true);
-        tests_init_1.assert(instance.errors[key].length === 0);
+        tests_init_1.assert(Object.values(instance.errors).length === 0);
     }
 }
 /**

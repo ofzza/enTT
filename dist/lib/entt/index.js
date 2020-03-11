@@ -38,7 +38,8 @@ class EnTT {
         // Replace properties with dynamic counterparts
         _replacePropertiesWithGetterSetters.bind(this)({
             store: instanceMetadata.store,
-            restore: instanceMetadata.restore
+            restore: instanceMetadata.restore,
+            children: instanceMetadata.children
         });
     }
     /**
@@ -62,22 +63,19 @@ class EnTT {
     }
     /**
      * Returns validation status of the instance
+     * @returns If instance is validated
      */
     get valid() {
         // using @Validate
-        return validate_1._readValidityMetadata(this).valid;
+        return validate_1._isValid(this);
     }
     /**
      * Returns validation errors of all properties
+     * @returns A hashmap of arrays of errors per property
      */
     get errors() {
         // using @Validate
-        const errors = validate_1._readValidityMetadata(this).errors;
-        return Object.keys(errors)
-            .reduce((result, key) => {
-            result[key] = [...errors[key]];
-            return result;
-        }, {});
+        return validate_1._getValidationErrors(this);
     }
     /**
      * Reverts property value(s) of requested property (or all properties if no property key specified) to last valid value
@@ -130,7 +128,9 @@ function _getInstanceMetadata(instance) {
                 // Initialize a private property values' store
                 store: {},
                 // Initialize a private property values' store of last valid values
-                restore: {}
+                restore: {},
+                // Array of child EnTT instances
+                children: []
             }
         });
     }
@@ -142,7 +142,7 @@ exports._getInstanceMetadata = _getInstanceMetadata;
  * Replaces properties with dynamic counterparts
  * @param store Private store for all property values
  */
-function _replacePropertiesWithGetterSetters({ store = undefined, restore = undefined, } = {}) {
+function _replacePropertiesWithGetterSetters({ store = undefined, restore = undefined, children = undefined } = {}) {
     // Iterate over properties
     for (const key of Object.keys(this)) {
         // Check if own property
@@ -156,7 +156,7 @@ function _replacePropertiesWithGetterSetters({ store = undefined, restore = unde
                 if (descriptor.set) {
                     const previousSetter = descriptor.set;
                     descriptor.set = (value) => {
-                        // Deffer to originally set up setter
+                        // Deffer to originally set up setter and store value
                         previousSetter(value);
                         // Validate property (using @Validate)
                         const errors = validate_1._validateProperty(this, key);
@@ -164,6 +164,14 @@ function _replacePropertiesWithGetterSetters({ store = undefined, restore = unde
                         if (!errors.length) {
                             restore[key] = store[key];
                         }
+                        // Remove previously found children of this property
+                        for (let i = children.length - 1; i >= 0; i--) {
+                            if (children[i].path[0] === key) {
+                                children.splice(i, 1);
+                            }
+                        }
+                        // Search newly added children of this property
+                        children.push(...findChildEnTTs([key], store[key]));
                     };
                 }
                 // Replace property with a custom property
@@ -178,5 +186,26 @@ function _replacePropertiesWithGetterSetters({ store = undefined, restore = unde
             }
         }
     }
+}
+/**
+ * Finds akk EnTT instances nested within the given child
+ * @param value Value being searched for EnTTs
+ * @returns Array of found EnTT children
+ */
+function findChildEnTTs(path, value) {
+    // Find child EnTTs
+    const children = [];
+    if (value instanceof EnTT) {
+        children.push({
+            path,
+            child: value
+        });
+    }
+    else if ((value instanceof Array) || (value instanceof Object)) {
+        for (const key of Object.keys(value)) {
+            children.push(...findChildEnTTs([...path, key], value[key]));
+        }
+    }
+    return children;
 }
 //# sourceMappingURL=index.js.map

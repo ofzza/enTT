@@ -4,7 +4,7 @@
 // Import dependencies
 import { _readPropertyMetadata, _readPropertyDescriptor } from '../decorators/property';
 import { _rawDataType, _cast, _serialize, _deserialize } from '../decorators/serializable';
-import { _readValidityMetadata, _validateProperty } from '../decorators/validate';
+import { _readValidityMetadata, _validateProperty, _isValid, _getValidationErrors } from '../decorators/validate';
 
 // Define a unique symbol for Property decorator
 const symbol = Symbol('EnTT');
@@ -43,7 +43,8 @@ export class EnTT {
     // Replace properties with dynamic counterparts
     _replacePropertiesWithGetterSetters.bind(this)({
       store:    instanceMetadata.store,
-      restore:  instanceMetadata.restore
+      restore:  instanceMetadata.restore,
+      children: instanceMetadata.children
     });
 
   }
@@ -71,23 +72,20 @@ export class EnTT {
 
   /**
    * Returns validation status of the instance
+   * @returns If instance is validated
    */
   public get valid (): boolean {
     // using @Validate
-    return _readValidityMetadata(this).valid as boolean;
+    return _isValid(this);
   }
 
   /**
    * Returns validation errors of all properties
+   * @returns A hashmap of arrays of errors per property
    */
   public get errors (): Record<string, Error[]> {
     // using @Validate
-    const errors = _readValidityMetadata(this).errors;
-    return Object.keys(errors)
-      .reduce((result, key) => {
-        result[key] = [...errors[key]];
-        return result;
-      }, {}) as Record<string, Error[]>;
+    return _getValidationErrors(this);
   }
 
   /**
@@ -145,7 +143,9 @@ export function _getInstanceMetadata (instance) {
         // Initialize a private property values' store
         store: {},
         // Initialize a private property values' store of last valid values
-        restore: {}
+        restore: {},
+        // Array of child EnTT instances
+        children: []
       }        
     });
   }
@@ -158,8 +158,9 @@ export function _getInstanceMetadata (instance) {
  * @param store Private store for all property values
  */
 function _replacePropertiesWithGetterSetters ({
-  store   = undefined as object,
-  restore = undefined as object,
+  store    = undefined as object,
+  restore  = undefined as object,
+  children = undefined as object[]
 } = {}) {
   // Iterate over properties
   for (const key of Object.keys(this) ) {
@@ -177,14 +178,27 @@ function _replacePropertiesWithGetterSetters ({
         if (descriptor.set) {
           const previousSetter = descriptor.set;
           descriptor.set = (value) => {
-            // Deffer to originally set up setter
+
+            // Deffer to originally set up setter and store value
             previousSetter(value);
+
             // Validate property (using @Validate)
             const errors = _validateProperty(this, key);
+
             // If valid, store as last validated value
             if (!errors.length) {
               restore[key] = store[key];
             }
+
+            // Remove previously found children of this property
+            for (let i = children.length - 1; i >= 0; i--) {
+              if ((children[i] as any).path[0] === key) {
+                children.splice(i, 1);
+              }
+            }
+            // Search newly added children of this property
+            children.push(...findChildEnTTs([key], store[key]));
+
           }
         }
 
@@ -206,4 +220,25 @@ function _replacePropertiesWithGetterSetters ({
       }
     }
   }
+}
+
+/**
+ * Finds akk EnTT instances nested within the given child
+ * @param value Value being searched for EnTTs
+ * @returns Array of found EnTT children
+ */
+function findChildEnTTs (path, value) {
+  // Find child EnTTs
+  const children = [];
+  if (value instanceof EnTT) {
+    children.push({
+      path,
+      child: value
+    });
+  } else if ((value instanceof Array) || (value instanceof Object)) {
+    for (const key of Object.keys(value)) {
+      children.push(...findChildEnTTs([...path, key], value[key]));
+    }
+  }
+  return children;
 }

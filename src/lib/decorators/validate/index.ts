@@ -169,3 +169,66 @@ export function _validateProperty (target, key, value = _undefined as any): Erro
   return errors;
 
 }
+
+/**
+ * Returns validation status of the instance
+ * @param target target instance being validated
+ * @returns If instance is validated
+ */
+export function _isValid (target): boolean {
+  // using @Validate
+
+  // Return if local invalid
+  const valid = _readValidityMetadata(target).valid as boolean;
+  if (!valid) { return false; }
+
+  // Return if any of children invalid
+  for (const c  of _getInstanceMetadata(target).children) {
+    if (!c.child.valid) { return false; }
+  }
+
+  // Return valid by default
+  return true;
+
+}
+
+/**
+ * Returns validation errors of all properties
+ * @param target target instance being validated
+ * @returns A hashmap of arrays of errors per property
+ */
+export function _getValidationErrors (target): Record<string, Error[]> {
+  // using @Validate  // TODO: Track every child's path
+
+  // Initialize all errors
+  const allErrors = {};
+
+  // Read local errors
+  const errors = _readValidityMetadata(target).errors;
+  Object.keys(errors)
+    .forEach((key) => {
+      // Add local errors per each property
+      if (errors[key].length) {
+        if (!allErrors[key]) { allErrors[key] = []; }
+        allErrors[key] = [...errors[key]];
+      }
+    });
+
+  // Read children
+  for (const c of _getInstanceMetadata(target).children) {
+    // Add child errors per each property
+    const childErrors = c.child.errors;
+    Object.keys(childErrors)
+      .forEach((childKey) => {
+        if (childErrors[childKey].length) {
+          const compositeKey = `${c.path.join('.')}.${childKey}`;
+          if (!allErrors[compositeKey]) { allErrors[compositeKey] = []; }
+          allErrors[compositeKey].push(...childErrors[childKey]);
+        }
+      });
+  }
+
+  // Return all found errors
+  return allErrors;
+
+}

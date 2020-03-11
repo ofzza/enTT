@@ -15,6 +15,16 @@ import * as Yup from 'yup';
 describe('@Validate', () => {
 
   // Initialize test data models
+  class InnerTest extends EnTT {
+    constructor () { super(); super.entt(); }
+
+    @Validate({
+      type: 'number',
+      provider: (obj, value) => ((typeof value === 'number') && (Math.trunc(value) === value) && (value > 0))
+    })
+    public naturalNum = 1;
+  }
+
   class Test extends EnTT {
     constructor () { super(); super.entt(); }
 
@@ -41,6 +51,12 @@ describe('@Validate', () => {
       provider: Yup.number().strict().integer().min(1)
     })
     public yupNaturalNum = 4;
+
+    public enttsingle = new InnerTest();
+
+    public enttarrayliteral = [new InnerTest(), new InnerTest(), new InnerTest()];
+
+    public enttobjectliteral = { a: new InnerTest(), b: new InnerTest(), c: new InnerTest() }; 
   }
 
   // Run tests
@@ -64,6 +80,72 @@ describe('@Validate', () => {
 
   });
 
+  describe('Works with nested EnTTs', () => {
+
+    it('Nested single EnTT', () => {
+      const instance = new Test();
+      // Test invalid nested values
+      (instance.enttsingle.naturalNum as any) = '-3.14';
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === false);
+        assert(errors.length === 2);
+      }
+      // Test valid nested values
+      (instance.enttsingle.naturalNum as any) = 1;
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === true);
+        assert(errors.length === 0);
+      }
+    });
+
+    it('Nested EnTT array', () => {
+      const instance = new Test();
+      // Test invalid nested values
+      instance.enttarrayliteral.forEach((instance) => {
+        (instance.naturalNum as any) = '-3.14'
+      });
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === false);
+        assert(errors.length === 6);
+      }
+      // Test valid nested values
+      instance.enttarrayliteral.forEach((instance) => {
+        (instance.naturalNum as any) = 1
+      });
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === true);
+        assert(errors.length === 0);
+      }
+    });
+
+    it('Nested EnTT hashmap', () => {
+      const instance = new Test();
+      // Test invalid nested values
+      Object.values(instance.enttobjectliteral).forEach((instance) => {
+        (instance.naturalNum as any) = '-3.14'
+      });
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === false);
+        assert(errors.length === 6);
+      }
+      // Test valid nested values
+      Object.values(instance.enttobjectliteral).forEach((instance) => {
+        (instance.naturalNum as any) = 1
+      });
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === true);
+        assert(errors.length === 0);
+      }
+    });
+
+  });
+
 });
 
 /**
@@ -79,7 +161,7 @@ function verifyNaturalNumProperty (Class, key) {
     verifyNaturalNumPropertyErrors(instance, key);
     assert(Object.keys(_validateObject(instance)).length === 0);
     assert(instance.valid === true);
-    assert(instance.errors[key].length === 0);
+    assert(Object.values(instance.errors).length === 0);
   }
   // Explicitly test invalid object
   {
@@ -88,11 +170,13 @@ function verifyNaturalNumProperty (Class, key) {
     (instance as any)[key] = '-3.14';
     assert(Object.keys(_validateObject(instance)).length === 1);
     assert(instance.valid === false);
+    assert(Object.values(instance.errors).length === 1);
+    assert(!!instance.errors[key]);
     assert(instance.errors[key].length === 2);
     // Revert invalid value
     instance.revert(key);
     assert(instance.valid === true);
-    assert(instance.errors[key].length === 0);
+    assert(Object.values(instance.errors).length === 0);
   }
   // Implicitly test invalid object
   {
@@ -100,11 +184,13 @@ function verifyNaturalNumProperty (Class, key) {
     // Set invalid value
     (instance as any)[key] = '-3.14';
     assert(instance.valid === false);
+    assert(Object.values(instance.errors).length === 1);
+    assert(!!instance.errors[key]);
     assert(instance.errors[key].length === 2);
     // Revert invalid value
     instance.revert(key);
     assert(instance.valid === true);
-    assert(instance.errors[key].length === 0);
+    assert(Object.values(instance.errors).length === 0);
   }  
 }
 

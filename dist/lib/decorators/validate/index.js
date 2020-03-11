@@ -153,4 +153,66 @@ function _validateProperty(target, key, value = entt_1._undefined) {
     return errors;
 }
 exports._validateProperty = _validateProperty;
+/**
+ * Returns validation status of the instance
+ * @param target target instance being validated
+ * @returns If instance is validated
+ */
+function _isValid(target) {
+    // using @Validate
+    // Return if local invalid
+    const valid = _readValidityMetadata(target).valid;
+    if (!valid) {
+        return false;
+    }
+    // Return if any of children invalid
+    for (const c of entt_1._getInstanceMetadata(target).children) {
+        if (!c.child.valid) {
+            return false;
+        }
+    }
+    // Return valid by default
+    return true;
+}
+exports._isValid = _isValid;
+/**
+ * Returns validation errors of all properties
+ * @param target target instance being validated
+ * @returns A hashmap of arrays of errors per property
+ */
+function _getValidationErrors(target) {
+    // using @Validate  // TODO: Track every child's path
+    // Initialize all errors
+    const allErrors = {};
+    // Read local errors
+    const errors = _readValidityMetadata(target).errors;
+    Object.keys(errors)
+        .forEach((key) => {
+        // Add local errors per each property
+        if (errors[key].length) {
+            if (!allErrors[key]) {
+                allErrors[key] = [];
+            }
+            allErrors[key] = [...errors[key]];
+        }
+    });
+    // Read children
+    for (const c of entt_1._getInstanceMetadata(target).children) {
+        // Add child errors per each property
+        const childErrors = c.child.errors;
+        Object.keys(childErrors)
+            .forEach((childKey) => {
+            if (childErrors[childKey].length) {
+                const compositeKey = `${c.path.join('.')}.${childKey}`;
+                if (!allErrors[compositeKey]) {
+                    allErrors[compositeKey] = [];
+                }
+                allErrors[compositeKey].push(...childErrors[childKey]);
+            }
+        });
+    }
+    // Return all found errors
+    return allErrors;
+}
+exports._getValidationErrors = _getValidationErrors;
 //# sourceMappingURL=index.js.map
