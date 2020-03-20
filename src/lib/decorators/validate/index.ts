@@ -132,7 +132,7 @@ export function _validateProperty (target, key, value = _undefined as any): Erro
 
     // Validate using YUP validation
     try {
-      metadata.provider.validateSync(value);
+      metadata.provider.validateSync(value, { context: target });
     } catch (err) {
       err.errors.forEach((err) => {
         const msg = (err.substr(0, 5) === 'this ' ? `Value ${JSON.stringify(value)} ${err.substr(5)}` : err);
@@ -143,7 +143,7 @@ export function _validateProperty (target, key, value = _undefined as any): Erro
   } else if ((typeof metadata.provider === 'object') && (typeof metadata.provider.validate === 'function')) {
 
     // Validate using attached .validate() method
-    const err = metadata.provider.validate(value).error;
+    const err = metadata.provider.validate(value, { context: target }).error;
     if (err && err.isJoi) {
 
       // Process JOI errors result

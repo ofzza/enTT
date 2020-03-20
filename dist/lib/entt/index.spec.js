@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tests_init_1 = require("../../tests.init");
 const _1 = require("./");
 // Test ...
-describe("class EnTT", () => {
+describe('class EnTT', () => {
     it('Initializes enTT metadata namespaces on extending classes and instances', () => {
         class NonEnTT {
         }

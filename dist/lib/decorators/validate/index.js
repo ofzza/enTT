@@ -122,7 +122,7 @@ function _validateProperty(target, key, value = entt_1._undefined) {
     else if ((typeof metadata.provider === 'object') && (typeof metadata.provider.validate === 'function') && metadata.provider.__isYupSchema__) {
         // Validate using YUP validation
         try {
-            metadata.provider.validateSync(value);
+            metadata.provider.validateSync(value, { context: target });
         }
         catch (err) {
             err.errors.forEach((err) => {
@@ -133,7 +133,7 @@ function _validateProperty(target, key, value = entt_1._undefined) {
     }
     else if ((typeof metadata.provider === 'object') && (typeof metadata.provider.validate === 'function')) {
         // Validate using attached .validate() method
-        const err = metadata.provider.validate(value).error;
+        const err = metadata.provider.validate(value, { context: target }).error;
         if (err && err.isJoi) {
             // Process JOI errors result
             err.details.forEach((err) => {

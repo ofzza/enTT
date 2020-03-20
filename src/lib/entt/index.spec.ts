@@ -6,7 +6,7 @@ import { assert } from '../../tests.init'
 import { EnTT, _getClassMetadata, _getInstanceMetadata }  from './';
 
 // Test ...
-describe("class EnTT", () => {
+describe('class EnTT', () => {
 
   it('Initializes enTT metadata namespaces on extending classes and instances', () => {
     class NonEnTT {}

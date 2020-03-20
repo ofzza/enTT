@@ -27,10 +27,10 @@ describe('@Serializable', () => {
     };
     class InnerNonEnTT {
         constructor() {
-            this.w = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.false = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.null = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.undefined = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!) 
+            this.w = undefined;
+            this.false = undefined;
+            this.null = undefined;
+            this.undefined = undefined;
         }
         // Using post-constructor initialization of values to avoid values already being there on deserialization,
         // preventing a fair check of serialization/deserialization
@@ -44,8 +44,8 @@ describe('@Serializable', () => {
     }
     class NonEnTT {
         constructor() {
-            this.z = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.innernonentity = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+            this.z = undefined;
+            this.innernonentity = undefined;
         }
         // Using post-constructor initialization of values to avoid values already being there on deserialization,
         // preventing a fair check of serialization/deserialization
@@ -62,8 +62,8 @@ describe('@Serializable', () => {
     class InnerMostTest extends __1.EnTT {
         constructor() {
             super();
-            this.y = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.nonentity = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+            this.y = undefined;
+            this.nonentity = undefined;
             super.entt();
         }
         // Using post-constructor initialization of values to avoid values already being there on deserialization,
@@ -81,8 +81,8 @@ describe('@Serializable', () => {
     class InnerTest extends __1.EnTT {
         constructor() {
             super();
-            this.x = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.innermost = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+            this.x = undefined;
+            this.innermost = undefined;
             super.entt();
         }
         // Using post-constructor initialization of values to avoid values already being there on deserialization,
@@ -107,15 +107,15 @@ describe('@Serializable', () => {
             this.string = 'abcde';
             this.array = [1, 2, 3, 4];
             this.object = { a: 1, b: 2, c: 3 };
-            this.notaliased = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.enttsingle = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.enttarrayliteral = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.enttobjectliteral = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.nonenumerable = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.getteronly = 'getteronly'; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.setteronly = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.customgetter = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-            this.customsetter = undefined; // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+            this.notaliased = undefined;
+            this.enttsingle = undefined;
+            this.enttarrayliteral = undefined;
+            this.enttobjectliteral = undefined;
+            this.nonenumerable = undefined;
+            this.getteronly = 'getteronly';
+            this.setteronly = undefined;
+            this.customgetter = undefined;
+            this.customsetter = undefined;
             super.entt();
         }
         // Using post-constructor initialization of values to avoid values already being there on deserialization,

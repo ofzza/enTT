@@ -11,10 +11,10 @@ describe('@Serializable', () => {
 
   // Initialize test data models
   const obj = {
-    a:         undefined as string,   // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-    false:     undefined as boolean,  // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-    null:      undefined as any,      // Must be manually initialized, or property won't exist (TODO: Make sure to document this!),
-    undefined: undefined as any,      // Must be manually initialized, or property won't exist (TODO: Make sure to document this!),
+    a:         undefined as string,
+    false:     undefined as boolean,
+    null:      undefined as any,
+    undefined: undefined as any,
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
@@ -28,10 +28,10 @@ describe('@Serializable', () => {
   }
 
   class InnerNonEnTT {
-    public w         = undefined as string;   // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-    public false     = undefined as boolean;  // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-    public null      = undefined as any;      // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
-    public undefined = undefined as any;      // Must be manually initialized, or property won't exist (TODO: Make sure to document this!) 
+    public w         = undefined as string;
+    public false     = undefined as boolean;
+    public null      = undefined as any;
+    public undefined = undefined as any;
    
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
@@ -45,10 +45,10 @@ describe('@Serializable', () => {
   }
 
   class NonEnTT {
-    public z = undefined as string;                     // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public z = undefined as string;
 
     @Serializable({ cast: InnerNonEnTT })
-    public innernonentity = undefined as InnerNonEnTT;  // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public innernonentity = undefined as InnerNonEnTT;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
@@ -62,10 +62,10 @@ describe('@Serializable', () => {
   class InnerMostTest extends EnTT {
     constructor () { super(); super.entt(); }
 
-    public y = undefined as string;           // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public y = undefined as string;
 
     @Serializable({ cast: NonEnTT })
-    public nonentity = undefined as NonEnTT;  // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public nonentity = undefined as NonEnTT;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
@@ -79,10 +79,10 @@ describe('@Serializable', () => {
   class InnerTest extends EnTT {
     constructor () { super(); super.entt(); }
 
-    public x = undefined as string;                 // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public x = undefined as string;
     
     @Serializable({ cast: InnerMostTest })
-    public innermost = undefined as InnerMostTest;  // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public innermost = undefined as InnerMostTest;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
@@ -105,31 +105,31 @@ describe('@Serializable', () => {
     public object     = { a: 1, b: 2, c: 3 };
 
     @Serializable({ alias: 'aliased' })
-    public notaliased = undefined as string;                        // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public notaliased = undefined as string;
 
     @Serializable({ cast: InnerTest })
-    public enttsingle = undefined as InnerTest;                     // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public enttsingle = undefined as InnerTest;
 
     @Serializable({ cast: [ InnerTest ] })
-    public enttarrayliteral = undefined as InnerTest[];             // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public enttarrayliteral = undefined as InnerTest[];
 
     @Serializable({ cast: { InnerTest } })
-    public enttobjectliteral = undefined as any;                    // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public enttobjectliteral = undefined as any;
 
     @Property({ enumerable: false })
-    public nonenumerable = undefined as string;                     // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public nonenumerable = undefined as string;
 
     @Property({ set: false })
-    public getteronly = 'getteronly' as string;                     // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public getteronly = 'getteronly' as string;
 
     @Property({ get: false })
-    public setteronly = undefined as string;                        // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public setteronly = undefined as string;
 
     @Property({ get: (obj, value) => `${obj.nonenumerable}:${value && value.toUpperCase()}` })
-    public customgetter = undefined as string;                      // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public customgetter = undefined as string;
 
     @Property({ set: (obj, value) => `${obj.nonenumerable}:${value && value.toUpperCase()}` })
-    public customsetter = undefined as string;                      // Must be manually initialized, or property won't exist (TODO: Make sure to document this!)
+    public customsetter = undefined as string;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
