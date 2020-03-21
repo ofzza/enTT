@@ -119,9 +119,23 @@ describe('README examples', () => {
                 deserialized.deserialize(serialized);
                 tests_init_1.assert(deserialized.firstName === 'John');
                 tests_init_1.assert(deserialized.lastName === 'Doe');
-                const cast = MyPersonClass.cast(serialized);
-                tests_init_1.assert(cast.firstName === 'John');
-                tests_init_1.assert(cast.lastName === 'Doe');
+                const castSingle = MyPersonClass.cast(serialized);
+                tests_init_1.assert(castSingle instanceof MyPersonClass);
+                tests_init_1.assert(castSingle.firstName === 'John');
+                tests_init_1.assert(castSingle.lastName === 'Doe');
+                const castArray = MyPersonClass.cast([serialized, serialized, serialized], 'object', { Class: [MyPersonClass] });
+                tests_init_1.assert(castArray[0] instanceof MyPersonClass);
+                tests_init_1.assert(castArray[0].firstName === 'John');
+                tests_init_1.assert(castArray[0].lastName === 'Doe');
+                const castHashmap = MyPersonClass.cast({ a: serialized, b: serialized, c: serialized }, 'object', { Class: { MyPersonClass } });
+                tests_init_1.assert(castHashmap.a instanceof MyPersonClass);
+                tests_init_1.assert(castHashmap.a.firstName === 'John');
+                tests_init_1.assert(castHashmap.a.lastName === 'Doe');
+                MyPersonClass.cast(Promise.resolve(serialized)).then((castPromise) => {
+                    tests_init_1.assert(castPromise instanceof MyPersonClass);
+                    tests_init_1.assert(castPromise.firstName === 'John');
+                    tests_init_1.assert(castPromise.lastName === 'Doe');
+                });
             });
         });
         describe('Aliasing property names', () => {

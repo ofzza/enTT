@@ -1,31 +1,51 @@
 // enTT lib main, extensible class
 // ----------------------------------------------------------------------------
 
+// Import and (re)export internals
+import { _undefined, _symbolEnTT, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from './internals';
+export { _undefined, _symbolEnTT, _EnTTRoot, _getClassMetadata, _getInstanceMetadata };
+
 // Import dependencies
-import { _readPropertyMetadata, _readPropertyDescriptor } from '../decorators/property';
+import { _readPropertyMetadata, _readPropertyDescriptor } from '../decorators/property/internals';
 import { _rawDataType, _cast, _serialize, _deserialize } from '../decorators/serializable';
 import { _readValidityMetadata, _validateProperty, _isValid, _getValidationErrors } from '../decorators/validate';
-
-// Define a unique symbol for Property decorator
-const symbol = Symbol('EnTT');
-export const _undefined = Symbol('undefined');
 
 /**
  * Main, extensible EnTT class definition
  */
-export class EnTT {
+export class EnTT extends _EnTTRoot {
 
   /**
    * Casts a value of given type as an instance of a parent EnTT Class
-   * @param value Value being cast
+   * @param value Value (or structure of values) being cast, or (alternatively) a Promise about to resolve such a value
    * @param type Type of value being cast
-   * @param Class (Optional) Class to cast into
-   * @returns Instance of the class with deserialized data
+   * @param Class Casting target class, or structure:
+   * - MyEnTTClass, will cast value as instance of MyEnTTClass
+   *    => new myEnTTClass()
+   * - [MyEnTTClass], will cast value (assumed to be an array) as an array of instances of MyEnTTClass
+   *    => [ new myEnTTClass(), new myEnTTClass(), new myEnTTClass(), ... ]
+   * - {MyEnTTClass}, will cast value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
+   *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
+   * @returns Instance (or structure of instances) of the class with deserialized data, or (alternatively) a Promise about to resolve to such an instance
    */
-  public static cast (value, type = 'object' as _rawDataType, { Class = undefined as (new() => any) } = {}) {
-    // using @Serializable
+  public static cast (value, type = 'object' as _rawDataType, { Class = undefined as ((new() => EnTT) | (new() => EnTT)[] | Record<any, (new() => EnTT)>) } = {}) {
+    // using @Serializable    
+    // Get casting target class
     const CastIntoClass = (Class || (this.prototype.constructor as (new() => any)));
-    return _cast(CastIntoClass)(value, type);
+    // Check if value is a Promise
+    if (value instanceof Promise) {
+      // Return promise of cast, resolved value
+      return new Promise((resolve, reject) => {
+        value
+          .then((value) => {
+            resolve(EnTT.cast(value, type, { Class: CastIntoClass }));
+          })
+          .catch(reject)
+      });
+    } else {
+      // Cast value
+      return _cast(CastIntoClass)(value, type);
+    }
   }
 
   /**
@@ -110,50 +130,6 @@ export class EnTT {
 }
 
 /**
- * Initializes and gets stored EnTT class metadata
- * @param Class EnTT class containing the metadata
- * @returns Stored EnTT class metadata
- */
-export function _getClassMetadata (Class) {
-  // Initialize metadata on the derived class
-  if (Class && !Class[symbol]) {
-    Object.defineProperty(Class, symbol, {
-      enumerable: false,
-      value: {
-        // Initialize a private decorators store
-        decorators: {}
-      }        
-    });
-  }
-  // Return metadata reference
-  return Class[symbol] || {};
-}
-
-/**
- * Initializes and gets stored EnTT instance metadata
- * @param instance EnTT instance containing the metadata
- * @returns Stored EnTT instance metadata
- */
-export function _getInstanceMetadata (instance) {
-  // Initialize metadata on the instance (non-enumerable an hidden-ish)
-  if (instance && !instance[symbol]) {
-    Object.defineProperty(instance, symbol, {
-      enumerable: false,
-      value: {
-        // Initialize a private property values' store
-        store: {},
-        // Initialize a private property values' store of last valid values
-        restore: {},
-        // Array of child EnTT instances
-        children: []
-      }        
-    });
-  }
-  // Return metadata reference
-  return instance[symbol] || {};
-}
-
-/**
  * Replaces properties with dynamic counterparts
  * @param store Private store for all property values
  */
@@ -197,7 +173,7 @@ function _replacePropertiesWithGetterSetters ({
               }
             }
             // Search newly added children of this property
-            children.push(...findChildEnTTs([key], store[key]));
+            children.push(..._findChildEnTTs([key], store[key]));
 
           }
         }
@@ -227,7 +203,7 @@ function _replacePropertiesWithGetterSetters ({
  * @param value Value being searched for EnTTs
  * @returns Array of found EnTT children
  */
-function findChildEnTTs (path, value) {
+function _findChildEnTTs (path, value) {
   // Find child EnTTs
   const children = [];
   if (value instanceof EnTT) {
@@ -237,7 +213,7 @@ function findChildEnTTs (path, value) {
     });
   } else if ((value instanceof Array) || (value instanceof Object)) {
     for (const key of Object.keys(value)) {
-      children.push(...findChildEnTTs([...path, key], value[key]));
+      children.push(..._findChildEnTTs([...path, key], value[key]));
     }
   }
   return children;

@@ -119,9 +119,23 @@ describe('README examples', () => {
         assert(deserialized.firstName === 'John');
         assert(deserialized.lastName === 'Doe');
       
-        const cast = MyPersonClass.cast(serialized);
-        assert(cast.firstName === 'John');
-        assert(cast.lastName === 'Doe');                
+        const castSingle = MyPersonClass.cast(serialized);
+        assert(castSingle instanceof MyPersonClass);
+        assert(castSingle.firstName === 'John');
+        assert(castSingle.lastName === 'Doe');                
+        const castArray = MyPersonClass.cast([ serialized, serialized, serialized ], 'object', { Class: [MyPersonClass] });
+        assert(castArray[0] instanceof MyPersonClass);
+        assert(castArray[0].firstName === 'John');
+        assert(castArray[0].lastName === 'Doe');                
+        const castHashmap = MyPersonClass.cast({ a: serialized, b: serialized, c: serialized }, 'object', { Class: {MyPersonClass} });
+        assert(castHashmap.a instanceof MyPersonClass);
+        assert(castHashmap.a.firstName === 'John');
+        assert(castHashmap.a.lastName === 'Doe');
+        MyPersonClass.cast(Promise.resolve(serialized)).then((castPromise) => {
+          assert(castPromise instanceof MyPersonClass);
+          assert(castPromise.firstName === 'John');
+          assert(castPromise.lastName === 'Doe');                
+        })
       });
 
     });

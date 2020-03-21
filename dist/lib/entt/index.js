@@ -2,28 +2,53 @@
 // enTT lib main, extensible class
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
+// Import and (re)export internals
+const internals_1 = require("./internals");
+exports._undefined = internals_1._undefined;
+exports._symbolEnTT = internals_1._symbolEnTT;
+exports._EnTTRoot = internals_1._EnTTRoot;
+exports._getClassMetadata = internals_1._getClassMetadata;
+exports._getInstanceMetadata = internals_1._getInstanceMetadata;
 // Import dependencies
-const property_1 = require("../decorators/property");
+const internals_2 = require("../decorators/property/internals");
 const serializable_1 = require("../decorators/serializable");
 const validate_1 = require("../decorators/validate");
-// Define a unique symbol for Property decorator
-const symbol = Symbol('EnTT');
-exports._undefined = Symbol('undefined');
 /**
  * Main, extensible EnTT class definition
  */
-class EnTT {
+class EnTT extends internals_1._EnTTRoot {
     /**
      * Casts a value of given type as an instance of a parent EnTT Class
-     * @param value Value being cast
+     * @param value Value (or structure of values) being cast, or (alternatively) a Promise about to resolve such a value
      * @param type Type of value being cast
-     * @param Class (Optional) Class to cast into
-     * @returns Instance of the class with deserialized data
+     * @param Class Casting target class, or structure:
+     * - MyEnTTClass, will cast value as instance of MyEnTTClass
+     *    => new myEnTTClass()
+     * - [MyEnTTClass], will cast value (assumed to be an array) as an array of instances of MyEnTTClass
+     *    => [ new myEnTTClass(), new myEnTTClass(), new myEnTTClass(), ... ]
+     * - {MyEnTTClass}, will cast value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
+     *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
+     * @returns Instance (or structure of instances) of the class with deserialized data, or (alternatively) a Promise about to resolve to such an instance
      */
     static cast(value, type = 'object', { Class = undefined } = {}) {
-        // using @Serializable
+        // using @Serializable    
+        // Get casting target class
         const CastIntoClass = (Class || this.prototype.constructor);
-        return serializable_1._cast(CastIntoClass)(value, type);
+        // Check if value is a Promise
+        if (value instanceof Promise) {
+            // Return promise of cast, resolved value
+            return new Promise((resolve, reject) => {
+                value
+                    .then((value) => {
+                    resolve(EnTT.cast(value, type, { Class: CastIntoClass }));
+                })
+                    .catch(reject);
+            });
+        }
+        else {
+            // Cast value
+            return serializable_1._cast(CastIntoClass)(value, type);
+        }
     }
     /**
      * Initializes EnTT features for the extending class - should be called in extending class' constructor, right after "super()".
@@ -32,9 +57,9 @@ class EnTT {
      */
     entt() {
         // Initialize metadata on the derived class
-        const classMetadata = _getClassMetadata(this.constructor);
+        const classMetadata = internals_1._getClassMetadata(this.constructor);
         // Initialize metadata on the instance (non-enumerable an hidden-ish)
-        const instanceMetadata = _getInstanceMetadata(this);
+        const instanceMetadata = internals_1._getInstanceMetadata(this);
         // Replace properties with dynamic counterparts
         _replacePropertiesWithGetterSetters.bind(this)({
             store: instanceMetadata.store,
@@ -82,7 +107,7 @@ class EnTT {
      * @param key (Optional) Property key of the property to be reverted
      */
     revert(key) {
-        const store = _getInstanceMetadata(this).store, restore = _getInstanceMetadata(this).restore, errors = validate_1._readValidityMetadata(this).errors, keys = (key ? [key] : Object.keys(restore));
+        const store = internals_1._getInstanceMetadata(this).store, restore = internals_1._getInstanceMetadata(this).restore, errors = validate_1._readValidityMetadata(this).errors, keys = (key ? [key] : Object.keys(restore));
         keys.forEach((key) => {
             if (errors[key].length) {
                 // Undo to latest valid value
@@ -94,50 +119,6 @@ class EnTT {
     }
 }
 exports.EnTT = EnTT;
-/**
- * Initializes and gets stored EnTT class metadata
- * @param Class EnTT class containing the metadata
- * @returns Stored EnTT class metadata
- */
-function _getClassMetadata(Class) {
-    // Initialize metadata on the derived class
-    if (Class && !Class[symbol]) {
-        Object.defineProperty(Class, symbol, {
-            enumerable: false,
-            value: {
-                // Initialize a private decorators store
-                decorators: {}
-            }
-        });
-    }
-    // Return metadata reference
-    return Class[symbol] || {};
-}
-exports._getClassMetadata = _getClassMetadata;
-/**
- * Initializes and gets stored EnTT instance metadata
- * @param instance EnTT instance containing the metadata
- * @returns Stored EnTT instance metadata
- */
-function _getInstanceMetadata(instance) {
-    // Initialize metadata on the instance (non-enumerable an hidden-ish)
-    if (instance && !instance[symbol]) {
-        Object.defineProperty(instance, symbol, {
-            enumerable: false,
-            value: {
-                // Initialize a private property values' store
-                store: {},
-                // Initialize a private property values' store of last valid values
-                restore: {},
-                // Array of child EnTT instances
-                children: []
-            }
-        });
-    }
-    // Return metadata reference
-    return instance[symbol] || {};
-}
-exports._getInstanceMetadata = _getInstanceMetadata;
 /**
  * Replaces properties with dynamic counterparts
  * @param store Private store for all property values
@@ -151,7 +132,7 @@ function _replacePropertiesWithGetterSetters({ store = undefined, restore = unde
                 // Get initial value
                 const value = this[key];
                 // Generate property descriptor (advised by @Property)
-                const descriptor = property_1._readPropertyDescriptor({ target: this, key, store });
+                const descriptor = internals_2._readPropertyDescriptor({ target: this, key, store });
                 // Wrap descriptor setter
                 if (descriptor.set) {
                     const previousSetter = descriptor.set;
@@ -171,7 +152,7 @@ function _replacePropertiesWithGetterSetters({ store = undefined, restore = unde
                             }
                         }
                         // Search newly added children of this property
-                        children.push(...findChildEnTTs([key], store[key]));
+                        children.push(..._findChildEnTTs([key], store[key]));
                     };
                 }
                 // Replace property with a custom property
@@ -192,7 +173,7 @@ function _replacePropertiesWithGetterSetters({ store = undefined, restore = unde
  * @param value Value being searched for EnTTs
  * @returns Array of found EnTT children
  */
-function findChildEnTTs(path, value) {
+function _findChildEnTTs(path, value) {
     // Find child EnTTs
     const children = [];
     if (value instanceof EnTT) {
@@ -203,7 +184,7 @@ function findChildEnTTs(path, value) {
     }
     else if ((value instanceof Array) || (value instanceof Object)) {
         for (const key of Object.keys(value)) {
-            children.push(...findChildEnTTs([...path, key], value[key]));
+            children.push(..._findChildEnTTs([...path, key], value[key]));
         }
     }
     return children;

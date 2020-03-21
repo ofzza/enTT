@@ -3,13 +3,15 @@ enTT
 
 ```enTT```, read as "Entity", is an extensible TypeScript data-modeling solution with some of the typically required functionality, such as change-detection, easy import/export, composition/decomposition, data validation, etc., all available out of the box and easy to use.
 
-
 # Get enTT
 
 To start using ```enTT``` in your project, simply install it from NPM by running the following in your terminal:
  ```sh
  > npm install entt --save
  ```
+
+Alternatively, get an extended implementation:
+- RxJS extension: [enTT-RxJS](https://github.com/ofzza/enTT-RxJS)
 
 # Using enTT
 
@@ -161,7 +163,7 @@ class MyEntityClass extends EnTT {
 
   public deserialize (value: object|string, type = 'object' as 'object'|'json') => void
 
-  public static cast (value: object|string, type = 'object' as 'object'|'json') => MyEntityClass
+  public static cast (value: object|string, type = 'object' as ('object'|'json'), { Class = undefined as ((new() => EnTT) | (new() => EnTT)[] | Record<any, (new() => EnTT)>) } = {}) => MyEntityClass
 }
 ```
 
@@ -190,12 +192,28 @@ Without any customization, all properties can be serialized and deserialized:
 
   const deserialized = new MyPersonClass();
   deserialized.deserialize(serialized);
-  console.log(deserialized.firstName);  // Outputs: "John"
-  console.log(deserialized.lastName);   // Outputs: "Doe"
+  console.log(deserialized.firstName);                  // Outputs: "John"
+  console.log(deserialized.lastName);                   // Outputs: "Doe"
 
-  const cast = MyPersonClass.cast(serialized);
-  console.log(cast.firstName);          // Outputs: "John"
-  console.log(cast.lastName);           // Outputs: "Doe" 
+  const castSingle = MyPersonClass.cast(serialized);
+  console.log(castSingle instanceof MyPersonClass)      // Outputs: true
+  console.log(castSingle.firstName);                    // Outputs: "John"
+  console.log(castSingle.lastName);                     // Outputs: "Doe"
+  
+  const castArray = MyPersonClass.cast([ serialized, serialized, serialized ], 'object', { Class: [MyPersonClass] });
+  console.log(castArray[0] instanceof MyPersonClass)    // Outputs: true
+  console.log(castArray[0].firstName);                  // Outputs: "John"
+  console.log(castArray[0].lastName);                   // Outputs: "Doe" 
+  
+  const castHashmap = MyPersonClass.cast({ a: serialized, b: serialized, c: serialized }, 'object', { Class: {MyPersonClass} });
+  console.log(castHashmap.a instanceof MyPersonClass)   // Outputs: true
+  console.log(castHashmap.a.firstName);                 // Outputs: "John"
+  console.log(castHashmap.a.lastName);                  // Outputs: "Doe"
+
+  const castPromise = await MyPersonClass.cast(Promise.resolve(serialized));
+  console.log(castPromise instanceof MyPersonClass)     // Outputs: true
+  console.log(castPromise.firstName);                   // Outputs: "John"
+  console.log(castPromise.lastName);                    // Outputs: "Doe"
 ```
 </details>
 

@@ -3,7 +3,8 @@
 
 // Import dependencies
 import { assert } from '../../tests.init'
-import { EnTT, _getClassMetadata, _getInstanceMetadata }  from './';
+import { EnTT }  from '../../';
+import {  _getClassMetadata, _getInstanceMetadata }  from './';
 
 // Test ...
 describe('class EnTT', () => {

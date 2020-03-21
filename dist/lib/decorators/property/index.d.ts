@@ -1,14 +1,5 @@
-// enTT lib @Property decorator
-// Configures an EnTT property's getters, setters and other basic descriptors
-// ----------------------------------------------------------------------------
-
-// Import and (re)export internals
 import { _symbolProperty, _readPropertyMetadata, _readPropertyDescriptor } from './internals';
 export { _symbolProperty, _readPropertyMetadata, _readPropertyDescriptor };
-
-// Import dependencies
-import { _getClassMetadata } from '../../entt/internals';
-
 /**
  * @Property() decorator, configures basic property behavior metadata
  * @param get (Optional) Configures property getter
@@ -23,25 +14,8 @@ import { _getClassMetadata } from '../../entt/internals';
  *   and the property value being set) and it's returned value will be used as the value being stored for the property.
  * @param enumerable (Optional) If the property is enumerable
  */
-export function Property ({
-  get        = true as ((target: any, value: any) => any) | boolean,
-  set        = true as ((target: any, value: any) => any) | boolean,
-  enumerable = true as boolean
-} = {}) {
-
-  // Return decorator
-  return (target, key) => {
-    // Store @Property metadata
-    const decorators  = _getClassMetadata(target.constructor).decorators,
-          metadata    = decorators[_symbolProperty] || (decorators[_symbolProperty] = {});
-    if (!metadata[key]) {
-      metadata[key] = {
-        get,
-        set,
-        enumerable
-      };
-    }
-  }
-
-}
-
+export declare function Property({ get, set, enumerable }?: {
+    get?: boolean | ((target: any, value: any) => any);
+    set?: boolean | ((target: any, value: any) => any);
+    enumerable?: boolean;
+}): (target: any, key: any) => void;

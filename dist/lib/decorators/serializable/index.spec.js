@@ -177,9 +177,17 @@ describe('@Serializable', () => {
             verifyAny(instance, deserialized, { verifyConstructors: true });
         });
         it('Casts as Objects', () => {
-            const instance = obj.initialize(), { serialized, deserialized } = verifySerialization(instance), cast = _1._cast(Object)(serialized);
-            verifyAny(cast, instance, { verifyConstructors: true });
-            verifyAny(cast, deserialized, { verifyConstructors: true });
+            const instance = obj.initialize(), { serialized, deserialized } = verifySerialization(instance), castSingle = _1._cast(Object)(serialized), castArray = _1._cast([Object])([serialized, serialized, serialized]), castHashmap = _1._cast({ Object })({ a: serialized, b: serialized, c: serialized });
+            verifyAny(castSingle, instance, { verifyConstructors: true });
+            verifyAny(castSingle, deserialized, { verifyConstructors: true });
+            tests_init_1.assert(castArray instanceof Array);
+            tests_init_1.assert(castArray.length === 3);
+            verifyAny(castArray[0], instance, { verifyConstructors: true });
+            verifyAny(castArray[0], deserialized, { verifyConstructors: true });
+            tests_init_1.assert(castHashmap instanceof Object);
+            tests_init_1.assert(Object.keys(castHashmap).length === 3);
+            verifyAny(castHashmap.a, instance, { verifyConstructors: true });
+            verifyAny(castHashmap.a, deserialized, { verifyConstructors: true });
         });
     });
     describe('Works with non-EnTT class instances', () => {
@@ -190,9 +198,17 @@ describe('@Serializable', () => {
             verifyAny(instance, deserialized, { verifyConstructors: true });
         });
         it('Casts as non-EnTTs', () => {
-            const instance = (new NonEnTT()).initialize(), { serialized, deserialized } = verifySerialization(instance), cast = _1._cast(NonEnTT)(serialized);
-            verifyAny(cast, instance, { verifyConstructors: true });
-            verifyAny(cast, deserialized, { verifyConstructors: true });
+            const instance = (new NonEnTT()).initialize(), { serialized, deserialized } = verifySerialization(instance), castSingle = _1._cast(NonEnTT)(serialized), castArray = _1._cast([NonEnTT])([serialized, serialized, serialized]), castHashmap = _1._cast({ NonEnTT })({ a: serialized, b: serialized, c: serialized });
+            verifyAny(castSingle, instance, { verifyConstructors: true });
+            verifyAny(castSingle, deserialized, { verifyConstructors: true });
+            tests_init_1.assert(castArray instanceof Array);
+            tests_init_1.assert(castArray.length === 3);
+            verifyAny(castArray[0], instance, { verifyConstructors: true });
+            verifyAny(castArray[0], deserialized, { verifyConstructors: true });
+            tests_init_1.assert(castHashmap instanceof Object);
+            tests_init_1.assert(Object.keys(castHashmap).length === 3);
+            verifyAny(castHashmap.a, instance, { verifyConstructors: true });
+            verifyAny(castHashmap.a, deserialized, { verifyConstructors: true });
         });
     });
     describe('Works with EnTT class instances', () => {
@@ -207,9 +223,17 @@ describe('@Serializable', () => {
             expect(deserializedDirectly).toEqual(deserializedIndirectly);
         });
         it('Casts as EnTTs', () => {
-            const instance = (new Test()).initialize(), ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], { serialized, deserialized } = verifySerialization(instance), cast = _1._cast(Test)(serialized);
-            verifyAny(cast, instance, { verifyConstructors: true, ignoreKeys });
-            verifyAny(cast, deserialized, { verifyConstructors: true, ignoreKeys });
+            const instance = (new Test()).initialize(), ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], { serialized, deserialized } = verifySerialization(instance), castSingle = _1._cast(Test)(serialized), castArray = _1._cast([Test])([serialized, serialized, serialized]), castHashmap = _1._cast({ Test })({ a: serialized, b: serialized, c: serialized });
+            verifyAny(castSingle, instance, { verifyConstructors: true, ignoreKeys });
+            verifyAny(castSingle, deserialized, { verifyConstructors: true, ignoreKeys });
+            tests_init_1.assert(castArray instanceof Array);
+            tests_init_1.assert(castArray.length === 3);
+            verifyAny(castArray[0], instance, { verifyConstructors: true });
+            verifyAny(castArray[0], deserialized, { verifyConstructors: true });
+            tests_init_1.assert(castHashmap instanceof Object);
+            tests_init_1.assert(Object.keys(castHashmap).length === 3);
+            verifyAny(castHashmap.a, instance, { verifyConstructors: true });
+            verifyAny(castHashmap.a, deserialized, { verifyConstructors: true });
             const castExplicitlyDirectly = Test.cast(serialized, 'object', { Class: Test }), castImplicitlyDirectly = Test.cast(serialized, 'object'), castIndirectly = _1._cast(Test)(serialized);
             expect(instance).toEqual(castExplicitlyDirectly);
             expect(instance).toEqual(castImplicitlyDirectly);

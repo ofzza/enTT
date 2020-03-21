@@ -161,9 +161,19 @@ describe('@Serializable', () => {
     it('Casts as Objects', () => {
       const instance = obj.initialize(),
             { serialized, deserialized } = verifySerialization(instance),
-            cast = _cast(Object)(serialized);
-      verifyAny(cast, instance, { verifyConstructors: true });
-      verifyAny(cast, deserialized, { verifyConstructors: true });
+            castSingle  = _cast(Object)(serialized),
+            castArray   = _cast<Object>([Object])([ serialized, serialized, serialized ]),
+            castHashmap = _cast<Object>({Object})({ a: serialized, b: serialized, c: serialized });
+      verifyAny(castSingle, instance, { verifyConstructors: true });
+      verifyAny(castSingle, deserialized, { verifyConstructors: true });
+      assert(castArray instanceof Array);
+      assert(castArray.length === 3);
+      verifyAny(castArray[0], instance, { verifyConstructors: true });
+      verifyAny(castArray[0], deserialized, { verifyConstructors: true });
+      assert(castHashmap instanceof Object);
+      assert(Object.keys(castHashmap).length === 3);
+      verifyAny(castHashmap.a, instance, { verifyConstructors: true });
+      verifyAny(castHashmap.a, deserialized, { verifyConstructors: true });
     });
 
   });
@@ -181,9 +191,19 @@ describe('@Serializable', () => {
     it('Casts as non-EnTTs', () => {
       const instance = (new NonEnTT()).initialize(),
             { serialized, deserialized } = verifySerialization(instance),
-            cast = _cast(NonEnTT)(serialized);
-      verifyAny(cast, instance, { verifyConstructors: true });
-      verifyAny(cast, deserialized, { verifyConstructors: true });
+            castSingle  = _cast(NonEnTT)(serialized),
+            castArray   = _cast<Object>([NonEnTT])([ serialized, serialized, serialized ]),
+            castHashmap = _cast<Object>({NonEnTT})({ a: serialized, b: serialized, c: serialized });
+      verifyAny(castSingle, instance, { verifyConstructors: true });
+      verifyAny(castSingle, deserialized, { verifyConstructors: true });
+      assert(castArray instanceof Array);
+      assert(castArray.length === 3);
+      verifyAny(castArray[0], instance, { verifyConstructors: true });
+      verifyAny(castArray[0], deserialized, { verifyConstructors: true });
+      assert(castHashmap instanceof Object);
+      assert(Object.keys(castHashmap).length === 3);
+      verifyAny(castHashmap.a, instance, { verifyConstructors: true });
+      verifyAny(castHashmap.a, deserialized, { verifyConstructors: true });
     });
 
   });
@@ -211,9 +231,19 @@ describe('@Serializable', () => {
       const instance = (new Test()).initialize(),
             ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'],
             { serialized, deserialized } = verifySerialization(instance),
-            cast = _cast(Test)(serialized);
-      verifyAny(cast, instance, { verifyConstructors: true, ignoreKeys });
-      verifyAny(cast, deserialized, { verifyConstructors: true, ignoreKeys });
+            castSingle  = _cast(Test)(serialized),
+            castArray   = _cast<Object>([Test])([ serialized, serialized, serialized ]),
+            castHashmap = _cast<Object>({Test})({ a: serialized, b: serialized, c: serialized });
+      verifyAny(castSingle, instance, { verifyConstructors: true, ignoreKeys });
+      verifyAny(castSingle, deserialized, { verifyConstructors: true, ignoreKeys });
+      assert(castArray instanceof Array);
+      assert(castArray.length === 3);
+      verifyAny(castArray[0], instance, { verifyConstructors: true });
+      verifyAny(castArray[0], deserialized, { verifyConstructors: true });
+      assert(castHashmap instanceof Object);
+      assert(Object.keys(castHashmap).length === 3);
+      verifyAny(castHashmap.a, instance, { verifyConstructors: true });
+      verifyAny(castHashmap.a, deserialized, { verifyConstructors: true });
 
       const castExplicitlyDirectly = Test.cast(serialized, 'object', { Class: Test }),
             castImplicitlyDirectly = Test.cast(serialized, 'object'),
