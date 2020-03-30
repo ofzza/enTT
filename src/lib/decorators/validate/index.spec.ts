@@ -4,7 +4,7 @@
 // Import dependencies
 import { assert } from '../../../tests.init';
 import { EnTT, Validate }  from '../../../';
-import { _validateObject, _validateProperty } from './'
+import { _validateObject, _validateProperty } from './internals'
 
 // Import validation providers
 import * as Joi from '@hapi/joi';

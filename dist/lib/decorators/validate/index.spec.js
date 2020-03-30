@@ -6,7 +6,7 @@ const tslib_1 = require("tslib");
 // Import dependencies
 const tests_init_1 = require("../../../tests.init");
 const __1 = require("../../../");
-const _1 = require("./");
+const internals_1 = require("./internals");
 // Import validation providers
 const Joi = tslib_1.__importStar(require("@hapi/joi"));
 const JoiBrowser = tslib_1.__importStar(require("joi-browser"));
@@ -157,7 +157,7 @@ function verifyNaturalNumProperty(Class, key) {
         const instance = new Class();
         // Test initial, valid values
         verifyNaturalNumPropertyErrors(instance, key);
-        tests_init_1.assert(Object.keys(_1._validateObject(instance)).length === 0);
+        tests_init_1.assert(Object.keys(internals_1._validateObject(instance)).length === 0);
         tests_init_1.assert(instance.valid === true);
         tests_init_1.assert(Object.values(instance.errors).length === 0);
     }
@@ -166,7 +166,7 @@ function verifyNaturalNumProperty(Class, key) {
         const instance = new Class();
         // Set invalid value and manually run validation
         instance[key] = '-3.14';
-        tests_init_1.assert(Object.keys(_1._validateObject(instance)).length === 1);
+        tests_init_1.assert(Object.keys(internals_1._validateObject(instance)).length === 1);
         tests_init_1.assert(instance.valid === false);
         tests_init_1.assert(Object.values(instance.errors).length === 1);
         tests_init_1.assert(!!instance.errors[key]);
@@ -198,22 +198,22 @@ function verifyNaturalNumProperty(Class, key) {
  */
 function verifyNaturalNumPropertyErrors(instance, key) {
     {
-        const errors = _1._validateProperty(instance, key, 1);
+        const errors = internals_1._validateProperty(instance, key, 1);
         tests_init_1.assert(errors.length === 0);
     }
     {
-        const errors = _1._validateProperty(instance, key, '1');
+        const errors = internals_1._validateProperty(instance, key, '1');
         tests_init_1.assert(errors.length === 2);
         tests_init_1.assert(errors[0] instanceof Error);
         tests_init_1.assert(errors[1] instanceof Error);
     }
     {
-        const errors = _1._validateProperty(instance, key, -3);
+        const errors = internals_1._validateProperty(instance, key, -3);
         tests_init_1.assert(errors.length === 1);
         tests_init_1.assert(errors[0] instanceof Error);
     }
     {
-        const errors = _1._validateProperty(instance, key, -3.14);
+        const errors = internals_1._validateProperty(instance, key, -3.14);
         tests_init_1.assert(errors.length === 1);
         tests_init_1.assert(errors[0] instanceof Error);
     }

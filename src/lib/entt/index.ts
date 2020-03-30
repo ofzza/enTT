@@ -3,12 +3,11 @@
 
 // Import and (re)export internals
 import { _undefined, _symbolEnTT, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from './internals';
-export { _undefined, _symbolEnTT, _EnTTRoot, _getClassMetadata, _getInstanceMetadata };
 
 // Import dependencies
 import { _readPropertyMetadata, _readPropertyDescriptor } from '../decorators/property/internals';
-import { _rawDataType, _cast, _serialize, _deserialize } from '../decorators/serializable';
-import { _readValidityMetadata, _validateProperty, _isValid, _getValidationErrors } from '../decorators/validate';
+import { _rawDataType, _cast, _serialize, _deserialize } from '../decorators/serializable/internals';
+import { EnttValidationError, _readValidityMetadata, _validateProperty, _isValid, _getValidationErrors } from '../decorators/validate/internals';
 
 /**
  * Main, extensible EnTT class definition
@@ -103,7 +102,7 @@ export class EnTT extends _EnTTRoot {
    * Returns validation errors of all properties
    * @returns A hashmap of arrays of errors per property
    */
-  public get errors (): Record<string, Error[]> {
+  public get errors (): Record<string, EnttValidationError[]> {
     // using @Validate
     return _getValidationErrors(this);
   }

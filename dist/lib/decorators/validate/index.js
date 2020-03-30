@@ -5,12 +5,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // Import and (re)export internals
 const internals_1 = require("./internals");
-exports._symbolValidate = internals_1._symbolValidate;
-exports._readValidityMetadata = internals_1._readValidityMetadata;
-exports._validateObject = internals_1._validateObject;
-exports._validateProperty = internals_1._validateProperty;
-exports._isValid = internals_1._isValid;
-exports._getValidationErrors = internals_1._getValidationErrors;
+exports.EnttValidationError = internals_1.EnttValidationError;
 // Import dependencies
 const internals_2 = require("../../entt/internals");
 /**

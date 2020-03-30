@@ -3,7 +3,7 @@
 
 // Import dependencies
 import { assert } from './tests.init'
-import { EnTT, Property, Serializable, Validate } from './';
+import { EnTT, Property, Serializable, Validate, EnttValidationError } from './';
 
 // Import validation providers
 import * as Joi from '@hapi/joi';
@@ -334,10 +334,18 @@ describe('README examples', () => {
               provider: (obj, value) => {
                 const errs = [];
                 if (value < obj.born) {
-                  errs.push(new Error('Graduation year must be greater than birth date!'));
+                  errs.push(new EnttValidationError({
+                    type:    'custom',
+                    message: 'Graduation year must be greater than birth date!',
+                    context: {}
+                  }));
                 }
                 if (value >= obj.born) {
-                  errs.push(new Error('Graduation year must be smaller than 2100!'));
+                  errs.push(new EnttValidationError({
+                    type:    'custom',
+                    message: 'Graduation year must be smaller than 2100!',
+                    context: {}
+                  }));
                 }
                 return errs;
               }
@@ -359,6 +367,7 @@ describe('README examples', () => {
           instance.graduated = 1949;
           assert(instance.valid === false);
           assert(instance.errors['graduated'].length === 1);
+          assert(instance.errors['graduated'][0].type === 'custom');
         });
 
       });

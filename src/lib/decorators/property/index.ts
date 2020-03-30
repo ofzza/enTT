@@ -4,7 +4,6 @@
 
 // Import and (re)export internals
 import { _symbolProperty, _readPropertyMetadata, _readPropertyDescriptor } from './internals';
-export { _symbolProperty, _readPropertyMetadata, _readPropertyDescriptor };
 
 // Import dependencies
 import { _getClassMetadata } from '../../entt/internals';

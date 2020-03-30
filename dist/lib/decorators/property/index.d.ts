@@ -1,5 +1,3 @@
-import { _symbolProperty, _readPropertyMetadata, _readPropertyDescriptor } from './internals';
-export { _symbolProperty, _readPropertyMetadata, _readPropertyDescriptor };
 /**
  * @Property() decorator, configures basic property behavior metadata
  * @param get (Optional) Configures property getter

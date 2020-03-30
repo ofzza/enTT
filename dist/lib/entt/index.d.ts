@@ -1,6 +1,6 @@
-import { _undefined, _symbolEnTT, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from './internals';
-export { _undefined, _symbolEnTT, _EnTTRoot, _getClassMetadata, _getInstanceMetadata };
-import { _rawDataType } from '../decorators/serializable';
+import { _EnTTRoot } from './internals';
+import { _rawDataType } from '../decorators/serializable/internals';
+import { EnttValidationError } from '../decorators/validate/internals';
 /**
  * Main, extensible EnTT class definition
  */
@@ -49,7 +49,7 @@ export declare class EnTT extends _EnTTRoot {
      * Returns validation errors of all properties
      * @returns A hashmap of arrays of errors per property
      */
-    get errors(): Record<string, Error[]>;
+    get errors(): Record<string, EnttValidationError[]>;
     /**
      * Reverts property value(s) of requested property (or all properties if no property key specified) to last valid value
      * @param key (Optional) Property key of the property to be reverted

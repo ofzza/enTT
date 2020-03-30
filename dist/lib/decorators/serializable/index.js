@@ -5,11 +5,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // Import and (re)export internals
 const internals_1 = require("./internals");
-exports._symbolSerializable = internals_1._symbolSerializable;
-exports._readSerializableMetadata = internals_1._readSerializableMetadata;
-exports._serialize = internals_1._serialize;
-exports._deserialize = internals_1._deserialize;
-exports._cast = internals_1._cast;
 // Import dependencies
 const internals_2 = require("../../entt/internals");
 /**

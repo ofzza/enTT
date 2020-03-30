@@ -4,7 +4,6 @@
 
 // Import and (re)export internals
 import { _symbolSerializable, _rawDataType, _castType, _readSerializableMetadata, _serialize, _deserialize, _cast } from './internals';
-export { _symbolSerializable, _rawDataType, _castType,_readSerializableMetadata, _serialize, _deserialize, _cast };
 
 // Import dependencies
 import { _getClassMetadata } from '../../entt/internals';

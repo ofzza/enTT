@@ -3,8 +3,8 @@
 // ----------------------------------------------------------------------------
 
 // Import and (re)export internals
-import { _symbolValidate, _primitiveTypeName, _readValidityMetadata, _validateObject, _validateProperty, _isValid, _getValidationErrors } from './internals';
-export { _symbolValidate, _primitiveTypeName, _readValidityMetadata, _validateObject, _validateProperty, _isValid, _getValidationErrors };
+import { EnttValidationError, _symbolValidate, _primitiveTypeName, _readValidityMetadata, _validateObject, _validateProperty, _isValid, _getValidationErrors } from './internals';
+export { EnttValidationError };
 
 // Import dependencies
 import { _getClassMetadata } from '../../entt/internals';

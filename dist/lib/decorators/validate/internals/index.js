@@ -7,6 +7,24 @@ const internals_1 = require("../../../entt/internals");
 // Define a unique symbol for Serializable decorator
 exports._symbolValidate = Symbol('@Validate');
 /**
+ * Richer error class used for describing validation errors
+ */
+class EnttValidationError extends Error {
+    /**
+     * Creates an instance of JoiError.
+     * @param type Unique key enumerating the type of validation error
+     * @param message User friendly, verbose error message
+     * @param context Context of the error message, containing values involved in validation
+     */
+    constructor({ type = null, message = null, context = {} } = {}) {
+        super(message);
+        // Set properties
+        this.type = type;
+        this.context = context;
+    }
+}
+exports.EnttValidationError = EnttValidationError;
+/**
  * Initializes and returns validity store for the instance
  * @param target EnTT class instance containing the validity data
  * @returns Instance's validity store
@@ -60,7 +78,7 @@ function _validateProperty(target, key, value = internals_1._undefined) {
     // Validate by type, if available
     if (metadata.type) {
         if (typeof value !== metadata.type) {
-            errors.push(new Error(`Value ${JSON.stringify(value)} is not of required type "${metadata.type}"!`));
+            errors.push(new EnttValidationError({ message: `Value ${JSON.stringify(value)} is not of required type "${metadata.type}"!` }));
         }
     }
     // Validate using valifation provider, if available
@@ -70,11 +88,11 @@ function _validateProperty(target, key, value = internals_1._undefined) {
         if (err !== undefined && err !== null && err !== true) {
             if (err === false) {
                 // Generic error
-                errors.push(new Error(`Value ${JSON.stringify(value)} not allowed!`));
+                errors.push(new EnttValidationError({ message: `Value ${JSON.stringify(value)} not allowed!` }));
             }
             else if (typeof err === 'string') {
                 // Create error from string
-                errors.push(new Error(err));
+                errors.push(new EnttValidationError({ message: err }));
             }
             else if (err instanceof Error) {
                 // Take error
@@ -85,7 +103,7 @@ function _validateProperty(target, key, value = internals_1._undefined) {
                 err.forEach((err) => {
                     if (typeof err === 'string') {
                         // Create error from string
-                        errors.push(new Error(err));
+                        errors.push(new EnttValidationError({ message: err }));
                     }
                     else if (err instanceof Error) {
                         // Take error
@@ -101,9 +119,9 @@ function _validateProperty(target, key, value = internals_1._undefined) {
             metadata.provider.validateSync(value, { context: target });
         }
         catch (err) {
-            err.errors.forEach((err) => {
-                const msg = (err.substr(0, 5) === 'this ' ? `Value ${JSON.stringify(value)} ${err.substr(5)}` : err);
-                errors.push(new Error(msg));
+            err.errors.forEach((msg) => {
+                msg = (msg.substr(0, 5) === 'this ' ? `Value ${JSON.stringify(value)} ${msg.substr(5)}` : msg);
+                errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
             });
         }
     }
@@ -114,7 +132,7 @@ function _validateProperty(target, key, value = internals_1._undefined) {
             // Process JOI errors result
             err.details.forEach((err) => {
                 const msg = err.message.replace(/"value"/g, `Value ${JSON.stringify(value)}`);
-                errors.push(new Error(msg));
+                errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
             });
         }
         else if (err instanceof Error) {

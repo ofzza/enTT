@@ -378,7 +378,7 @@ class MyEntityClass extends EnTT {
 
   public get valid () => boolean
 
-  public errors () => Record<string, Error[]>
+  public errors () => Record<string, EnttValidationError[]>
 
 }
 ```
@@ -430,10 +430,26 @@ Simplest, and very limited way of validating property values is by their type. Y
   console.log(instance.valid);  // Outputs: false
   console.log(instance.errors);
   // Outputs: {
-  //    aBoolean: [ new Error('Value undefined is not of required type "boolean"!') ]
-  //    aNumber:  [ new Error('Value undefined is not of required type "number"!') ]
-  //    aString:  [ new Error('Value undefined is not of required type "string"!') ]
-  //    anObject: [ new Error('Value undefined is not of required type "object"!') ]
+  //    aBoolean: [
+  //      new EnttValidationError({
+  //        message: 'Value undefined is not of required type "boolean"!'
+  //      })
+  //    ]
+  //    aNumber:  [
+  //      new EnttValidationError({
+  //        message: 'Value undefined is not of required type "number"!'
+  //      })
+  //    ]
+  //    aString:  [
+  //      new EnttValidationError({
+  //        message: 'Value undefined is not of required type "string"!'
+  //      })
+  //    ]
+  //    anObject: [
+  //      new EnttValidationError({
+  //        message: 'Value undefined is not of required type "object"!'
+  //      })
+  //    ]
   // }
 
 ```
@@ -468,10 +484,18 @@ The most basic custom validator is just a function evaluating the validity of a 
       provider: (obj, value) => {
         const errs = [];
         if (value < obj.born) {
-          errs.push(new Error('Graduation year must be greater than birth date!'));
+          errs.push(new EnttValidationError({
+            type:    'custom',
+            message: 'Graduation year must be greater than birth date!',
+            context: {}
+          }));
         }
         if (value >= obj.born) {
-          errs.push(new Error('Graduation year must be smaller than 2100!'));
+          errs.push(new EnttValidationError({
+            type:    'custom',
+            message: 'Graduation year must be smaller than 2100!',
+            context: {}
+          }));
         }
         return errs;
       }
@@ -484,14 +508,22 @@ The most basic custom validator is just a function evaluating the validity of a 
   console.log(instance.valid);  // Outputs: false
   console.log(instance.errors);
   // Outputs: {
-  //    born: [ new Error('Value undefined not allowed!') ]  
+  //    born: [
+  //      new EnttValidationError({
+  //        message: 'Value undefined not allowed!'
+  //      })
+  //    ]  
   // }
 
   instance.born = 1800;
   console.log(instance.valid);  // Outputs: false
   console.log(instance.errors);
   // Outputs: {
-  //    born: [ new Error('Value 1800 not allowed!') ]
+  //    born: [
+  //      new EnttValidationError({
+  //        message: 'Value 1800 not allowed!'
+  //      })
+  //    ]
   // }
 
   instance.born = 1950;
@@ -499,7 +531,12 @@ The most basic custom validator is just a function evaluating the validity of a 
   console.log(instance.valid);  // Outputs: false
   console.log(instance.errors);
   // Outputs: {
-  //    graduated: [ new Error('Graduation year must be greater than birth date!') ]
+  //    graduated: [
+  //      new EnttValidationError({
+  //        type: 'custom',
+  //        message: 'Graduation year must be greater than birth date!'
+  //      })
+  //    ]
   // }
 
 ```
@@ -536,16 +573,36 @@ import * as Joi from '@hapi/joi';
   console.log(instance.valid);  // Outputs: false
   console.log(instance.errors);
   // Outputs: {
-  //    born:      [ new Error('Value undefined is required') ]  
-  //    graduated: [ new Error('Value undefined is required') ]  
+  //    born: [
+  //      new EnttValidationError({
+  //        type: 'any.required',
+  //        message: 'Value undefined is required'
+  //      })
+  //    ],  
+  //    graduated: [
+  //      new EnttValidationError({
+  //        type: 'any.required',
+  //        message: 'Value undefined is required'
+  //      })
+  //    ]  
   // }
 
   instance.born = 1800;
   console.log(instance.valid);  // Outputs: false
   console.log(instance.errors);
   // Outputs: {
-  //    born:      [ new Error('Value 1800 must be larger than or equal to 1900') ]  
-  //    graduated: [ new Error('Value undefined is required') ]  
+  //    born: [
+  //      new EnttValidationError({
+  //        type: 'number.min',
+  //        message: 'Value 1800 must be larger than or equal to 1900'
+  //      })
+  //    ],  
+  //    graduated: [
+  //      new EnttValidationError({
+  //        type: 'any.required',
+  //        message: 'Value undefined is required'
+  //      })
+  //    ]  
   // }
 
   instance.born = 1950;
@@ -553,7 +610,12 @@ import * as Joi from '@hapi/joi';
   console.log(instance.valid);  // Outputs: false
   console.log(instance.errors);
   // Outputs: {
-  //    graduated: [ new Error('Value 1949 limit references "ref:global:.born" which must be a number') ]  
+  //    graduated: [
+  //      new EnttValidationError({
+  //        type: 'any.ref',
+  //        message: 'Value 1949 limit references "ref:global:.born" which must be a number'
+  //      })
+  //    ]  
   // }
 
 ```
@@ -590,16 +652,36 @@ import * as Yup from 'yup';
   console.log(instance.valid);  // Outputs: false
   console.log(instance.errors);
   // Outputs: {
-  //    born:      [ new Error('Value undefined is a required field') ]  
-  //    graduated: [ new Error('Value undefined is a required field') ]  
+  //    born: [
+  //      new EnttValidationError({
+  //        type: 'required',
+  //        message: 'Value undefined is a required field' 
+  //      })
+  //    ],  
+  //    graduated: [
+  //      new EnttValidationError({
+  //        type: 'required',
+  //        message: 'Value undefined is a required field'
+  //      })
+  //    ]  
   // }
 
   instance.born = 1800;
   console.log(instance.valid);  // Outputs: false
   console.log(instance.errors);
   // Outputs: {
-  //    born:      [ new Error('Value 1800 must be greater than or equal to 1900') ]  
-  //    graduated: [ new Error('Value undefined is a required field') ]  
+  //    born: [
+  //      new EnttValidationError({
+  //        type: 'min',
+  //        message: 'Value 1800 must be greater than or equal to 1900'
+  //      })
+  //    ],
+  //    graduated: [
+  //      new EnttValidationError({
+  //        type: 'required',
+  //        message: 'Value undefined is a required field'
+  //      })
+  //    ]  
   // }
 
   instance.born = 1950;
@@ -607,7 +689,12 @@ import * as Yup from 'yup';
   console.log(instance.valid);  // Outputs: false
   console.log(instance.errors);
   // Outputs: {
-  //    graduated: [ new Error('Value 1949 must be greater than or equal to 1950') ]  
+  //    graduated: [
+  //      new EnttValidationError({
+  //        type: 'min',
+  //        message: 'Value 1949 must be greater than or equal to 1950'
+  //      })
+  //    ]  
   // }
 
 ```
@@ -644,8 +731,18 @@ When nesting EnTT classes, invalid nested instances will automatically invalidat
   console.log(instance.valid);  // Outputs: false
   console.log(instance.errors);
   // Outputs: {
-  //    aBoolean:       [ new Error('Value "abc" must be a `boolean` type, but the final value was: `"abc"`.') ]  
-  //    nested.aNumber: [ new Error('Value "abc" must be a `number` type, but the final value was: `"abc"`.') ]  
+  //    aBoolean: [
+  //      new EnttValidationError({
+  //        type: 'typeError',
+  //        message: 'Value "abc" must be a `boolean` type, but the final value was: `"abc"`.'
+  //      })
+  //    ],  
+  //    nested.aNumber: [
+  //      new EnttValidationError({
+  //        type: 'typeError',
+  //        message: 'Value "abc" must be a `number` type, but the final value was: `"abc"`.'
+  //      })
+  //    ]  
   // }
 
 ```

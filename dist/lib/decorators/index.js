@@ -9,4 +9,5 @@ var serializable_1 = require("./serializable");
 exports.Serializable = serializable_1.Serializable;
 var validate_1 = require("./validate");
 exports.Validate = validate_1.Validate;
+exports.EnttValidationError = validate_1.EnttValidationError;
 //# sourceMappingURL=index.js.map

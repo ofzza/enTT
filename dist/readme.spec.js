@@ -327,10 +327,18 @@ describe('README examples', () => {
                             provider: (obj, value) => {
                                 const errs = [];
                                 if (value < obj.born) {
-                                    errs.push(new Error('Graduation year must be greater than birth date!'));
+                                    errs.push(new _1.EnttValidationError({
+                                        type: 'custom',
+                                        message: 'Graduation year must be greater than birth date!',
+                                        context: {}
+                                    }));
                                 }
                                 if (value >= obj.born) {
-                                    errs.push(new Error('Graduation year must be smaller than 2100!'));
+                                    errs.push(new _1.EnttValidationError({
+                                        type: 'custom',
+                                        message: 'Graduation year must be smaller than 2100!',
+                                        context: {}
+                                    }));
                                 }
                                 return errs;
                             }
@@ -348,6 +356,7 @@ describe('README examples', () => {
                     instance.graduated = 1949;
                     tests_init_1.assert(instance.valid === false);
                     tests_init_1.assert(instance.errors['graduated'].length === 1);
+                    tests_init_1.assert(instance.errors['graduated'][0].type === 'custom');
                 });
             });
             describe('JOI validator', () => {

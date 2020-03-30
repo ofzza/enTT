@@ -4,7 +4,7 @@
 // Import dependencies
 import { assert } from '../../../tests.init'
 import { EnTT, Property, Serializable }  from '../../../';
-import { _rawDataType, _cast, _serialize, _deserialize }  from './';
+import { _rawDataType, _cast, _serialize, _deserialize }  from './internals';
 
 // Test ...
 describe('@Serializable', () => {

@@ -11,6 +11,36 @@ export const _symbolValidate = Symbol('@Validate');
 export type _primitiveTypeName = 'boolean' | 'string' | 'number' | 'object';
 
 /**
+ * Richer error class used for describing validation errors
+ */
+export class EnttValidationError extends Error {
+  
+  /**
+   * Unique key enumerating the type of validation error
+   */
+  public type: string;
+  
+  /**
+   * Context of the error message, containing values involved in validation
+   */
+  public context: any;
+
+  /**
+   * Creates an instance of JoiError.
+   * @param type Unique key enumerating the type of validation error
+   * @param message User friendly, verbose error message
+   * @param context Context of the error message, containing values involved in validation
+   */
+  constructor ({ type = null as string, message = null as string, context = {} as any } = {}) {
+    super(message);
+
+    // Set properties
+    this.type = type;
+    this.context = context;
+  }
+}
+
+/**
  * Initializes and returns validity store for the instance
  * @param target EnTT class instance containing the validity data
  * @returns Instance's validity store
@@ -28,7 +58,7 @@ export function _readValidityMetadata (target) {
  * @param target Object instance to validate all properties of
  * @returns Hashmap of all properties having validation errors
  */
-export function _validateObject (target): Record<string, Error[]> {
+export function _validateObject (target): Record<string, EnttValidationError[]> {
   // Validate all properties
   const keys = Object.keys(_getClassMetadata(target.constructor)?.decorators?.[_symbolValidate] || {});
   return keys.reduce((errors, key) => {
@@ -47,7 +77,7 @@ export function _validateObject (target): Record<string, Error[]> {
  * @param value (Optional) Property value being validated; if not present, current property value will be validated instead
  * @returns Array of validation errors
  */
-export function _validateProperty (target, key, value = _undefined as any): Error[] {
+export function _validateProperty (target, key, value = _undefined as any): EnttValidationError[] {
 
   // Get property metadata
   const metadata = _getClassMetadata(target.constructor)?.decorators?.[_symbolValidate]?.[key];
@@ -65,7 +95,7 @@ export function _validateProperty (target, key, value = _undefined as any): Erro
   // Validate by type, if available
   if (metadata.type) {
     if (typeof value !== metadata.type) {
-      errors.push(new Error(`Value ${JSON.stringify(value)} is not of required type "${metadata.type}"!`));
+      errors.push(new EnttValidationError({ message: `Value ${JSON.stringify(value)} is not of required type "${metadata.type}"!` }));
     }
   }
 
@@ -77,10 +107,10 @@ export function _validateProperty (target, key, value = _undefined as any): Erro
     if (err !== undefined && err !== null && err !== true) {      
       if (err === false) {
         // Generic error
-        errors.push(new Error(`Value ${JSON.stringify(value)} not allowed!`));
+        errors.push(new EnttValidationError({ message: `Value ${JSON.stringify(value)} not allowed!` }));
       } else if (typeof err === 'string') {
         // Create error from string
-        errors.push(new Error(err));
+        errors.push(new EnttValidationError({ message: err }));
       } else if (err instanceof Error) {
         // Take error
         errors.push(err);
@@ -89,7 +119,7 @@ export function _validateProperty (target, key, value = _undefined as any): Erro
         err.forEach((err) => {
           if (typeof err === 'string') {
             // Create error from string
-            errors.push(new Error(err));
+            errors.push(new EnttValidationError({ message: err }));
           } else if (err instanceof Error) {
             // Take error
             errors.push(err);
@@ -104,9 +134,9 @@ export function _validateProperty (target, key, value = _undefined as any): Erro
     try {
       metadata.provider.validateSync(value, { context: target });
     } catch (err) {
-      err.errors.forEach((err) => {
-        const msg = (err.substr(0, 5) === 'this ' ? `Value ${JSON.stringify(value)} ${err.substr(5)}` : err);
-        errors.push(new Error(msg));
+      err.errors.forEach((msg) => {
+        msg = (msg.substr(0, 5) === 'this ' ? `Value ${JSON.stringify(value)} ${msg.substr(5)}` : msg);
+        errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
       });
     }
 
@@ -119,7 +149,7 @@ export function _validateProperty (target, key, value = _undefined as any): Erro
       // Process JOI errors result
       err.details.forEach((err) => {
         const msg = err.message.replace(/"value"/g, `Value ${JSON.stringify(value)}`);
-        errors.push(new Error(msg));
+        errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
       });
 
     } else if (err instanceof Error) {
@@ -167,7 +197,7 @@ export function _isValid (target): boolean {
  * @param target target instance being validated
  * @returns A hashmap of arrays of errors per property
  */
-export function _getValidationErrors (target): Record<string, Error[]> {
+export function _getValidationErrors (target): Record<string, EnttValidationError[]> {
   // using @Validate  // TODO: Track every child's path
 
   // Initialize all errors

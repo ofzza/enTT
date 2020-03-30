@@ -4,7 +4,7 @@
 // Import dependencies
 import { assert } from '../../tests.init'
 import { EnTT }  from '../../';
-import {  _getClassMetadata, _getInstanceMetadata }  from './';
+import {  _getClassMetadata, _getInstanceMetadata }  from './internals';
 
 // Test ...
 describe('class EnTT', () => {
