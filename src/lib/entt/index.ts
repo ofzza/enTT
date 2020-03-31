@@ -17,7 +17,6 @@ export class EnTT extends _EnTTRoot {
   /**
    * Casts a value of given type as an instance of a parent EnTT Class
    * @param value Value (or structure of values) being cast, or (alternatively) a Promise about to resolve such a value
-   * @param type Type of value being cast
    * @param Class Casting target class, or structure:
    * - MyEnTTClass, will cast value as instance of MyEnTTClass
    *    => new myEnTTClass()
@@ -25,9 +24,10 @@ export class EnTT extends _EnTTRoot {
    *    => [ new myEnTTClass(), new myEnTTClass(), new myEnTTClass(), ... ]
    * - {MyEnTTClass}, will cast value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
    *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
+   * @param type Type of value being cast
    * @returns Instance (or structure of instances) of the class with deserialized data, or (alternatively) a Promise about to resolve to such an instance
    */
-  public static cast (value, type = 'object' as _rawDataType, { Class = undefined as ((new() => EnTT) | (new() => EnTT)[] | Record<any, (new() => EnTT)>) } = {}) {
+  public static cast (value, { Class = undefined as ((new() => EnTT) | (new() => EnTT)[] | Record<any, (new() => EnTT)>), type = 'object' as _rawDataType } = {}) {
     // using @Serializable    
     // Get casting target class
     const CastIntoClass = (Class || (this.prototype.constructor as (new() => any)));
@@ -37,7 +37,7 @@ export class EnTT extends _EnTTRoot {
       return new Promise((resolve, reject) => {
         value
           .then((value) => {
-            resolve(EnTT.cast(value, type, { Class: CastIntoClass }));
+            resolve(EnTT.cast(value, { Class: CastIntoClass, type }));
           })
           .catch(reject)
       });

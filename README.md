@@ -163,7 +163,7 @@ class MyEntityClass extends EnTT {
 
   public deserialize (value: object|string, type = 'object' as 'object'|'json') => void
 
-  public static cast (value: object|string, type = 'object' as ('object'|'json'), { Class = undefined as ((new() => EnTT) | (new() => EnTT)[] | Record<any, (new() => EnTT)>) } = {}) => MyEntityClass
+  public static cast (value: object|string, { Class = undefined as ((new() => EnTT) | (new() => EnTT)[] | Record<any, (new() => EnTT)>), type = 'object' as ('object'|'json') } = {}) => MyEntityClass
 }
 ```
 
@@ -200,12 +200,12 @@ Without any customization, all properties can be serialized and deserialized:
   console.log(castSingle.firstName);                    // Outputs: "John"
   console.log(castSingle.lastName);                     // Outputs: "Doe"
   
-  const castArray = MyPersonClass.cast([ serialized, serialized, serialized ], 'object', { Class: [MyPersonClass] });
+  const castArray = MyPersonClass.cast([ serialized, serialized, serialized ], { Class: [MyPersonClass] });
   console.log(castArray[0] instanceof MyPersonClass)    // Outputs: true
   console.log(castArray[0].firstName);                  // Outputs: "John"
   console.log(castArray[0].lastName);                   // Outputs: "Doe" 
   
-  const castHashmap = MyPersonClass.cast({ a: serialized, b: serialized, c: serialized }, 'object', { Class: {MyPersonClass} });
+  const castHashmap = MyPersonClass.cast({ a: serialized, b: serialized, c: serialized }, { Class: {MyPersonClass} });
   console.log(castHashmap.a instanceof MyPersonClass)   // Outputs: true
   console.log(castHashmap.a.firstName);                 // Outputs: "John"
   console.log(castHashmap.a.lastName);                  // Outputs: "Doe"

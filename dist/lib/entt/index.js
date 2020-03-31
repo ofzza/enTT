@@ -15,7 +15,6 @@ class EnTT extends internals_1._EnTTRoot {
     /**
      * Casts a value of given type as an instance of a parent EnTT Class
      * @param value Value (or structure of values) being cast, or (alternatively) a Promise about to resolve such a value
-     * @param type Type of value being cast
      * @param Class Casting target class, or structure:
      * - MyEnTTClass, will cast value as instance of MyEnTTClass
      *    => new myEnTTClass()
@@ -23,9 +22,10 @@ class EnTT extends internals_1._EnTTRoot {
      *    => [ new myEnTTClass(), new myEnTTClass(), new myEnTTClass(), ... ]
      * - {MyEnTTClass}, will cast value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
      *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
+     * @param type Type of value being cast
      * @returns Instance (or structure of instances) of the class with deserialized data, or (alternatively) a Promise about to resolve to such an instance
      */
-    static cast(value, type = 'object', { Class = undefined } = {}) {
+    static cast(value, { Class = undefined, type = 'object' } = {}) {
         // using @Serializable    
         // Get casting target class
         const CastIntoClass = (Class || this.prototype.constructor);
@@ -35,7 +35,7 @@ class EnTT extends internals_1._EnTTRoot {
             return new Promise((resolve, reject) => {
                 value
                     .then((value) => {
-                    resolve(EnTT.cast(value, type, { Class: CastIntoClass }));
+                    resolve(EnTT.cast(value, { Class: CastIntoClass, type }));
                 })
                     .catch(reject);
             });

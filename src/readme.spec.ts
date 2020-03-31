@@ -123,11 +123,11 @@ describe('README examples', () => {
         assert(castSingle instanceof MyPersonClass);
         assert(castSingle.firstName === 'John');
         assert(castSingle.lastName === 'Doe');                
-        const castArray = MyPersonClass.cast([ serialized, serialized, serialized ], 'object', { Class: [MyPersonClass] });
+        const castArray = MyPersonClass.cast([ serialized, serialized, serialized ], { Class: [MyPersonClass] });
         assert(castArray[0] instanceof MyPersonClass);
         assert(castArray[0].firstName === 'John');
         assert(castArray[0].lastName === 'Doe');                
-        const castHashmap = MyPersonClass.cast({ a: serialized, b: serialized, c: serialized }, 'object', { Class: {MyPersonClass} });
+        const castHashmap = MyPersonClass.cast({ a: serialized, b: serialized, c: serialized }, { Class: {MyPersonClass} });
         assert(castHashmap.a instanceof MyPersonClass);
         assert(castHashmap.a.firstName === 'John');
         assert(castHashmap.a.lastName === 'Doe');

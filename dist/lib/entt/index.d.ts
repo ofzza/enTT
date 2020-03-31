@@ -8,7 +8,6 @@ export declare class EnTT extends _EnTTRoot {
     /**
      * Casts a value of given type as an instance of a parent EnTT Class
      * @param value Value (or structure of values) being cast, or (alternatively) a Promise about to resolve such a value
-     * @param type Type of value being cast
      * @param Class Casting target class, or structure:
      * - MyEnTTClass, will cast value as instance of MyEnTTClass
      *    => new myEnTTClass()
@@ -16,10 +15,12 @@ export declare class EnTT extends _EnTTRoot {
      *    => [ new myEnTTClass(), new myEnTTClass(), new myEnTTClass(), ... ]
      * - {MyEnTTClass}, will cast value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
      *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
+     * @param type Type of value being cast
      * @returns Instance (or structure of instances) of the class with deserialized data, or (alternatively) a Promise about to resolve to such an instance
      */
-    static cast(value: any, type?: _rawDataType, { Class }?: {
+    static cast(value: any, { Class, type }?: {
         Class?: (new () => EnTT) | (new () => EnTT)[] | Record<any, new () => EnTT>;
+        type?: _rawDataType;
     }): any;
     /**
      * Initializes EnTT features for the extending class - should be called in extending class' constructor, right after "super()".
