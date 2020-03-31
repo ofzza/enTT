@@ -29,8 +29,7 @@ export declare function _deserialize<T>(value: any, type?: _rawDataType, { targe
 /**
  * Returns a casting function that casts a value of given type as an instance of a given Class
  * @param T Class type to cast into
- * @param Class Class to cast into, or single
- * @param Class Casting target class, or structure:
+ * @param into Casting target class, or structure:
  * - MyEnTTClass, will cast value as instance of MyEnTTClass
  *    => new myEnTTClass()
  * - [MyEnTTClass], will cast value (assumed to be an array) as an array of instances of MyEnTTClass
@@ -39,4 +38,4 @@ export declare function _deserialize<T>(value: any, type?: _rawDataType, { targe
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  * @returns A casting function
  */
-export declare function _cast<T>(Class: ((new () => T) | (new () => T)[] | Record<any, (new () => T)>)): ((value: any, type?: _rawDataType) => any);
+export declare function _cast<T>(into: ((new () => T) | (new () => T)[] | Record<any, (new () => T)>)): ((value: any, type?: _rawDataType) => any);

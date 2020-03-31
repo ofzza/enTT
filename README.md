@@ -200,12 +200,12 @@ Without any customization, all properties can be serialized and deserialized:
   console.log(castSingle.firstName);                    // Outputs: "John"
   console.log(castSingle.lastName);                     // Outputs: "Doe"
   
-  const castArray = MyPersonClass.cast([ serialized, serialized, serialized ], { Class: [MyPersonClass] });
+  const castArray = MyPersonClass.cast([ serialized, serialized, serialized ], { into: [MyPersonClass] });
   console.log(castArray[0] instanceof MyPersonClass)    // Outputs: true
   console.log(castArray[0].firstName);                  // Outputs: "John"
   console.log(castArray[0].lastName);                   // Outputs: "Doe" 
   
-  const castHashmap = MyPersonClass.cast({ a: serialized, b: serialized, c: serialized }, { Class: {MyPersonClass} });
+  const castHashmap = MyPersonClass.cast({ a: serialized, b: serialized, c: serialized }, { into: {MyPersonClass} });
   console.log(castHashmap.a instanceof MyPersonClass)   // Outputs: true
   console.log(castHashmap.a.firstName);                 // Outputs: "John"
   console.log(castHashmap.a.lastName);                  // Outputs: "Doe"

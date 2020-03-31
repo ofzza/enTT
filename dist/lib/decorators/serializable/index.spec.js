@@ -234,7 +234,7 @@ describe('@Serializable', () => {
             tests_init_1.assert(Object.keys(castHashmap).length === 3);
             verifyAny(castHashmap.a, instance, { verifyConstructors: true });
             verifyAny(castHashmap.a, deserialized, { verifyConstructors: true });
-            const castExplicitlyDirectly = Test.cast(serialized, { Class: Test }), castImplicitlyDirectly = Test.cast(serialized), castIndirectly = internals_1._cast(Test)(serialized);
+            const castExplicitlyDirectly = Test.cast(serialized, { into: Test }), castImplicitlyDirectly = Test.cast(serialized), castIndirectly = internals_1._cast(Test)(serialized);
             expect(instance).toEqual(castExplicitlyDirectly);
             expect(instance).toEqual(castImplicitlyDirectly);
             expect(instance).toEqual(castIndirectly);

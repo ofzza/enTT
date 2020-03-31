@@ -170,8 +170,7 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
 /**
  * Returns a casting function that casts a value of given type as an instance of a given Class
  * @param T Class type to cast into
- * @param Class Class to cast into, or single
- * @param Class Casting target class, or structure:
+ * @param into Casting target class, or structure:
  * - MyEnTTClass, will cast value as instance of MyEnTTClass
  *    => new myEnTTClass()
  * - [MyEnTTClass], will cast value (assumed to be an array) as an array of instances of MyEnTTClass
@@ -180,9 +179,9 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  * @returns A casting function
  */
-export function _cast <T> (Class: ((new() => T) | (new() => T)[] | Record<any, (new() => T)>)): ((value: any, type?:_rawDataType) => any) {
+export function _cast <T> (into: ((new() => T) | (new() => T)[] | Record<any, (new() => T)>)): ((value: any, type?:_rawDataType) => any) {
   // Check casting target
-  if (Class && (Class instanceof Array) && (Class.length === 1) && (typeof Class[0] === 'function')) {
+  if (into && (into instanceof Array) && (into.length === 1) && (typeof into[0] === 'function')) {
 
     /**
      * Casts a array of values of given type as an array of instances of a given Class
@@ -191,10 +190,10 @@ export function _cast <T> (Class: ((new() => T) | (new() => T)[] | Record<any, (
      * @returns Array of instances of the class with deserialized data
      */
     return (value = undefined as T[], type = 'object' as _rawDataType) => {
-      return value.map(value => _deserialize<T>(value, type, { target: new (Class[0])() }));
+      return value.map(value => _deserialize<T>(value, type, { target: new (into[0])() }));
     }
 
-  } else if (Class && (Class instanceof Object) && (Object.values(Class).length === 1) && (typeof Object.values(Class)[0] === 'function')) {
+  } else if (into && (into instanceof Object) && (Object.values(into).length === 1) && (typeof Object.values(into)[0] === 'function')) {
 
     /**
      * Casts a hashmap of values of given type as a hashmap of instances of a given Class
@@ -204,12 +203,12 @@ export function _cast <T> (Class: ((new() => T) | (new() => T)[] | Record<any, (
      */
     return (value = undefined as Record<any, T>, type = 'object' as _rawDataType) => {
       return Object.keys(value).reduce((hashmap, key) => {
-        hashmap[key] = _deserialize<T>(value[key], type, { target: new (Object.values(Class)[0])() });
+        hashmap[key] = _deserialize<T>(value[key], type, { target: new (Object.values(into)[0])() });
         return hashmap;
       }, {});
     }
 
-  } else if (Class && (typeof Class === 'function')) {
+  } else if (into && (typeof into === 'function')) {
 
     /**
      * Casts a value of given type as an instance of a given Class
@@ -218,7 +217,7 @@ export function _cast <T> (Class: ((new() => T) | (new() => T)[] | Record<any, (
      * @returns Instance of the class with deserialized data
      */
     return (value = undefined as T, type = 'object' as _rawDataType) => {
-      return _deserialize<T>(value, type, { target: new Class() });
+      return _deserialize<T>(value, type, { target: new into() });
     }
 
   } else {

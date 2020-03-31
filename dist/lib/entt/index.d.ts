@@ -8,7 +8,7 @@ export declare class EnTT extends _EnTTRoot {
     /**
      * Casts a value of given type as an instance of a parent EnTT Class
      * @param value Value (or structure of values) being cast, or (alternatively) a Promise about to resolve such a value
-     * @param Class Casting target class, or structure:
+     * @param into Casting target class, or structure:
      * - MyEnTTClass, will cast value as instance of MyEnTTClass
      *    => new myEnTTClass()
      * - [MyEnTTClass], will cast value (assumed to be an array) as an array of instances of MyEnTTClass
@@ -18,8 +18,8 @@ export declare class EnTT extends _EnTTRoot {
      * @param type Type of value being cast
      * @returns Instance (or structure of instances) of the class with deserialized data, or (alternatively) a Promise about to resolve to such an instance
      */
-    static cast(value: any, { Class, type }?: {
-        Class?: (new () => EnTT) | (new () => EnTT)[] | Record<any, new () => EnTT>;
+    static cast(value: any, { into, type }?: {
+        into?: (new () => EnTT) | (new () => EnTT)[] | Record<any, new () => EnTT>;
         type?: _rawDataType;
     }): any;
     /**
