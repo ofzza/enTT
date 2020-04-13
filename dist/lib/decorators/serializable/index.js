@@ -18,7 +18,7 @@ const internals_2 = require("../../entt/internals");
  * - { cast: {MyEnTTClass} }, will cast property value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  */
-function Serializable({ alias = undefined, cast = undefined } = {}) {
+function Serializable({ serialize = true, alias = undefined, cast = undefined } = {}) {
     // Return decorator
     return (target, key) => {
         // Store @Serializable metadata
@@ -26,6 +26,7 @@ function Serializable({ alias = undefined, cast = undefined } = {}) {
         if (!metadata[key]) {
             metadata[key] = {
                 key,
+                serialize,
                 alias,
                 cast
             };

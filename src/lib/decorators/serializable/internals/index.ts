@@ -5,7 +5,7 @@
 import { _undefined, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from '../../../entt/internals';
 import { _readPropertyDescriptor } from '../../property/internals';
 
-// Define a unique symbol for Serializable decorator
+// Define a unique symbols for Serializable decorator
 export const _symbolSerializable = Symbol('@Serializable');
 
 // Define supported types
@@ -51,12 +51,18 @@ export function _serialize <T> (source: T, type = 'object' as _rawDataType): any
 
           // Get @Serializable metadata (or defaults)
           const metadata = _readSerializableMetadata(source.constructor)[key] || {
-            alias: undefined,
-            cast:  undefined
+            serialize: true,
+            alias:     undefined,
+            cast:      undefined
           };
 
-          // Serializable value (EnTT instance or raw value)
-          serialized[metadata.alias || key] = _serialize(instance[key], 'object');
+          // Check if property is serializable
+          if (metadata.serialize) {
+
+            // Serializable value (EnTT instance or raw value)
+            serialized[metadata.alias || key] = _serialize(instance[key], 'object');
+
+          }
 
         }
 
@@ -119,31 +125,37 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
           // Get @Serializable metadata (or defaults)
           const properties = _getClassMetadata(target.constructor)?.decorators?.[_symbolSerializable];
           const metadata = properties?.[key] || {
-            alias: undefined,
-            cast:  undefined
+            serialize: true,
+            alias:     undefined,
+            cast:      undefined
           };
 
-          // Serializable value (EnTT instance or raw value)
-          const alias = properties && (Object.values(properties) as any[]).find((prop) => (prop.alias === key))?.key || key;
-          if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
-            // Deserialize and cast array
-            deserialized[alias] = source[key]
-              .map((value) => {
-                return _deserialize(value, 'object', { target: new (metadata.cast[0])() })
-              });
-          } else if (metadata.cast && (metadata.cast instanceof Object) && (Object.values(metadata.cast).length === 1) && (typeof Object.values(metadata.cast)[0] === 'function')) {
-            // Deserialize and cast hashmap
-            deserialized[alias] = Object.keys(source[key])
-              .reduce((deserialized, k) => {
-                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)() });
-                return deserialized;
-              }, {});
-          } else if (metadata.cast && (typeof metadata.cast === 'function')) {
-            // Deserialize and cast
-            deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)() });
-          } else {
-            // Deserialize without casting
-            deserialized[alias] = _deserialize(source[key], 'object');
+          // Check if property is serializable
+          if (metadata.serialize) {
+
+            // Serializable value (EnTT instance or raw value)
+            const alias = properties && (Object.values(properties) as any[]).find((prop) => (prop.alias === key))?.key || key;
+            if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
+              // Deserialize and cast array
+              deserialized[alias] = source[key]
+                .map((value) => {
+                  return _deserialize(value, 'object', { target: new (metadata.cast[0])() })
+                });
+            } else if (metadata.cast && (metadata.cast instanceof Object) && (Object.values(metadata.cast).length === 1) && (typeof Object.values(metadata.cast)[0] === 'function')) {
+              // Deserialize and cast hashmap
+              deserialized[alias] = Object.keys(source[key])
+                .reduce((deserialized, k) => {
+                  deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)() });
+                  return deserialized;
+                }, {});
+            } else if (metadata.cast && (typeof metadata.cast === 'function')) {
+              // Deserialize and cast
+              deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)() });
+            } else {
+              // Deserialize without casting
+              deserialized[alias] = _deserialize(source[key], 'object');
+            }
+
           }
 
         }

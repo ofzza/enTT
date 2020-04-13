@@ -151,7 +151,7 @@ function _replacePropertiesWithGetterSetters({ store = undefined, restore = unde
                     };
                 }
                 // Replace property with a custom property
-                Object.defineProperty(this, key, Object.assign({ configurable: false }, descriptor));
+                Object.defineProperty(this, key, Object.assign({ configurable: true }, descriptor));
                 // Store initial value (through property custom setter, if available)
                 if (descriptor.set) {
                     this[key] = value;

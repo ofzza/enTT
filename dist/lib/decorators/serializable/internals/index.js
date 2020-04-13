@@ -4,7 +4,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // Import dependencies
 const internals_1 = require("../../../entt/internals");
-// Define a unique symbol for Serializable decorator
+// Define a unique symbols for Serializable decorator
 exports._symbolSerializable = Symbol('@Serializable');
 /**
  * Gets @Serializable decorator metadata store
@@ -39,11 +39,15 @@ function _serialize(source, type = 'object') {
                 if (hasGetter) {
                     // Get @Serializable metadata (or defaults)
                     const metadata = _readSerializableMetadata(source.constructor)[key] || {
+                        serialize: true,
                         alias: undefined,
                         cast: undefined
                     };
-                    // Serializable value (EnTT instance or raw value)
-                    serialized[metadata.alias || key] = _serialize(instance[key], 'object');
+                    // Check if property is serializable
+                    if (metadata.serialize) {
+                        // Serializable value (EnTT instance or raw value)
+                        serialized[metadata.alias || key] = _serialize(instance[key], 'object');
+                    }
                 }
             }
             // Return serialized
@@ -90,33 +94,37 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
                     // Get @Serializable metadata (or defaults)
                     const properties = (_b = (_a = internals_1._getClassMetadata(target.constructor)) === null || _a === void 0 ? void 0 : _a.decorators) === null || _b === void 0 ? void 0 : _b[exports._symbolSerializable];
                     const metadata = (properties === null || properties === void 0 ? void 0 : properties[key]) || {
+                        serialize: true,
                         alias: undefined,
                         cast: undefined
                     };
-                    // Serializable value (EnTT instance or raw value)
-                    const alias = properties && ((_c = Object.values(properties).find((prop) => (prop.alias === key))) === null || _c === void 0 ? void 0 : _c.key) || key;
-                    if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
-                        // Deserialize and cast array
-                        deserialized[alias] = source[key]
-                            .map((value) => {
-                            return _deserialize(value, 'object', { target: new (metadata.cast[0])() });
-                        });
-                    }
-                    else if (metadata.cast && (metadata.cast instanceof Object) && (Object.values(metadata.cast).length === 1) && (typeof Object.values(metadata.cast)[0] === 'function')) {
-                        // Deserialize and cast hashmap
-                        deserialized[alias] = Object.keys(source[key])
-                            .reduce((deserialized, k) => {
-                            deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0])() });
-                            return deserialized;
-                        }, {});
-                    }
-                    else if (metadata.cast && (typeof metadata.cast === 'function')) {
-                        // Deserialize and cast
-                        deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)() });
-                    }
-                    else {
-                        // Deserialize without casting
-                        deserialized[alias] = _deserialize(source[key], 'object');
+                    // Check if property is serializable
+                    if (metadata.serialize) {
+                        // Serializable value (EnTT instance or raw value)
+                        const alias = properties && ((_c = Object.values(properties).find((prop) => (prop.alias === key))) === null || _c === void 0 ? void 0 : _c.key) || key;
+                        if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
+                            // Deserialize and cast array
+                            deserialized[alias] = source[key]
+                                .map((value) => {
+                                return _deserialize(value, 'object', { target: new (metadata.cast[0])() });
+                            });
+                        }
+                        else if (metadata.cast && (metadata.cast instanceof Object) && (Object.values(metadata.cast).length === 1) && (typeof Object.values(metadata.cast)[0] === 'function')) {
+                            // Deserialize and cast hashmap
+                            deserialized[alias] = Object.keys(source[key])
+                                .reduce((deserialized, k) => {
+                                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0])() });
+                                return deserialized;
+                            }, {});
+                        }
+                        else if (metadata.cast && (typeof metadata.cast === 'function')) {
+                            // Deserialize and cast
+                            deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)() });
+                        }
+                        else {
+                            // Deserialize without casting
+                            deserialized[alias] = _deserialize(source[key], 'object');
+                        }
                     }
                 }
             }

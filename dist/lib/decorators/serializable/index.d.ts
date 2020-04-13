@@ -10,7 +10,8 @@ import { _castType } from './internals';
  * - { cast: {MyEnTTClass} }, will cast property value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  */
-export declare function Serializable({ alias, cast }?: {
+export declare function Serializable({ serialize, alias, cast }?: {
+    serialize?: boolean;
     alias?: string;
     cast?: _castType;
 }): (target: any, key: any) => void;

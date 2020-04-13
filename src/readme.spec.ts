@@ -174,6 +174,40 @@ describe('README examples', () => {
 
     });
 
+    describe('Not-Serializable properties', () => {
+
+      it('Example', () => {
+              
+        class MyAuthenticationClass extends EnTT {
+          constructor () { super(); super.entt(); }
+      
+          @Serializable({ serialize: true })
+          public password = undefined as string;
+          
+          @Serializable({ serialize: false })
+          public repeatPassword = undefined as string;
+        }
+      
+        const instance = new MyAuthenticationClass();
+        instance.password = '123';
+        instance.repeatPassword = '123';
+      
+        const serialized = instance.serialize();
+        assert(JSON.stringify(serialized) === JSON.stringify({ password: "123" }));
+      
+        const deserialized = new MyAuthenticationClass();
+        deserialized.deserialize({ ...serialized, repeatPassword: '123' });
+        assert(deserialized.password === '123');
+        assert(deserialized.repeatPassword === undefined);
+      
+        const cast = MyAuthenticationClass.cast(serialized);
+        assert(deserialized.password === '123');
+        assert(deserialized.repeatPassword === undefined);
+
+      });
+
+    });
+
     describe('Preserving nested class instances', () => {
 
       it('Example', () => {

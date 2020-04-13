@@ -147,6 +147,21 @@ describe('@Serializable', () => {
 
   }
 
+  class ExtendedTestEntity extends Test {
+    constructor () { super(); super.entt(); }
+
+    @Serializable({ serialize: false })
+    public dontserialize = undefined as string;
+
+    // Using post-constructor initialization of values to avoid values already being there on deserialization,
+    // preventing a fair check of serialization/deserialization
+    initialize () {
+      super.initialize();
+      this.dontserialize = 'dontserialize';
+      return this;
+    }
+  }
+
   // Run tests
   describe('Works with non-EnTT objects', () => {
 
@@ -255,6 +270,21 @@ describe('@Serializable', () => {
 
   });
 
+  describe('Works with extended EnTT class instances', () => {
+    it('Serializes and Deserializes extended EnTT class instances', () => {
+      const instance = (new ExtendedTestEntity()).initialize(),
+            ignoreKeys = ['dontserialize', 'notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'],
+            { serialized, deserialized, reserialized } = verifySerialization(instance, 'object', { skipDeserializeCheck: true });
+      verifyAny(instance, serialized, { verifyConstructors: false, ignoreKeys });
+      verifyAny(instance, reserialized, { verifyConstructors: false, ignoreKeys });
+      verifyAny(instance, deserialized, { verifyConstructors: true, ignoreKeys });
+
+      const serializedDirectly = instance.serialize('object'),
+            serializedIndirectly = _serialize(instance, 'object');
+      expect(serializedDirectly).toEqual(serializedIndirectly);
+    });
+  });
+
   describe('Works with multiple serialization target types', () => {
 
     it('Works with JS object target', () => {
@@ -283,9 +313,10 @@ describe('@Serializable', () => {
  * Verify serialization
  * @param obj Object instance to be tested
  * @param type Serialization target type
+ * @param skipDeserializeCheck If true, comparison between original instance and deserialized instance will be skipped
  * @returns Serialized and deserialized representations of original object: { serialized, deserialized, reserialized }
  */
-function verifySerialization (obj, type = 'object' as _rawDataType) {
+function verifySerialization (obj, type = 'object' as _rawDataType, { skipDeserializeCheck = false } = {}) {
   // Serializable and deserialize and reserialize
   const serialized   = _serialize(obj, type),
         deserialized = _deserialize(serialized, type, { target: (obj.constructor ? new (obj.constructor)() : {}) }),
@@ -299,7 +330,7 @@ function verifySerialization (obj, type = 'object' as _rawDataType) {
   // Check if serialized and reserialized didn't lose data
   expect(serialized).toEqual(reserialized);
   // If original object was constructable, check if original object is same as deserialized one
-  if (obj.constructor && obj.constructor !== Object) {
+  if (obj.constructor && (obj.constructor !== Object) && !skipDeserializeCheck) {
     expect(obj).toEqual(deserialized);
   }
 

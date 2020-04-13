@@ -20,8 +20,9 @@ import { _getClassMetadata } from '../../entt/internals';
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  */
 export function Serializable ({
-  alias = undefined as string,
-  cast  = undefined as _castType
+  serialize = true as boolean,
+  alias     = undefined as string,
+  cast      = undefined as _castType
 } = {}) {
 
   // Return decorator
@@ -32,6 +33,7 @@ export function Serializable ({
     if (!metadata[key]) {
       metadata[key] = {
         key,
+        serialize,
         alias,
         cast
       };

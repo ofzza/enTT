@@ -180,7 +180,7 @@ function _replacePropertiesWithGetterSetters ({
         // Replace property with a custom property
         Object.defineProperty(this, key, {
           // Default property configuration
-          ...{ configurable: false },
+          ...{ configurable: true },
           // @Property property overrides
           ...descriptor
         });

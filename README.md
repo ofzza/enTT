@@ -270,6 +270,38 @@ Any property can define an alias to be used when serializing and deserializing d
 ```
 </details>
 
+### Not-Serializable properties
+
+Any property can be defined not participating in serialization, like so:
+
+```ts
+@Serializable({ serialize: false })
+```
+
+<details><summary>EXAMPLE</summary>
+
+```ts
+  import { EnTT } from 'entt';
+
+  class MyAuthenticationClass extends EnTT {
+    constructor () { super(); super.entt(); }
+
+    @Serializable({ serialize: true })
+    public password = undefined as string;
+    
+    @Serializable({ serialize: false })
+    public repeatPassword = undefined as string;
+  }
+
+  const instance = new MyAuthenticationClass();
+  instance.password = '123';
+  instance.repeatPassword = '123';
+
+  const serialized = instance.serialize();
+  console.log(serialized);  // Outputs: { password: '123' }
+```
+</details>
+
 ### Preserving nested class instances
 
 Any property can hold nested instances of other EnTT classes, either directly or in an array or a hashmap. If this is the case, it is possible to configure the property as such so that when deserializing all the nested EnTT instances will be cast into their correct classes, like so:
