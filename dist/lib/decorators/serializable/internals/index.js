@@ -4,6 +4,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // Import dependencies
 const internals_1 = require("../../../entt/internals");
+const internals_2 = require("../../validate/internals");
 // Define a unique symbols for Serializable decorator
 exports._symbolSerializable = Symbol('@Serializable');
 /**
@@ -131,6 +132,8 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
             // Return deserialized
             return deserialized;
         }, instance);
+        // Revalidate instance
+        internals_2._validateObject(target);
         // Return deserialized target
         return target;
     }

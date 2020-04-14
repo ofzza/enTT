@@ -4,6 +4,7 @@
 // Import dependencies
 import { _undefined, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from '../../../entt/internals';
 import { _readPropertyDescriptor } from '../../property/internals';
+import { _validateObject } from '../../validate/internals';
 
 // Define a unique symbols for Serializable decorator
 export const _symbolSerializable = Symbol('@Serializable');
@@ -166,6 +167,9 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
       return deserialized
 
     }, instance);
+
+    // Revalidate instance
+    _validateObject(target);
 
     // Return deserialized target
     return target;
