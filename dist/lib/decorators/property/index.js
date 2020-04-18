@@ -31,7 +31,7 @@ function Property({ get = undefined, set = undefined, enumerable = undefined } =
     // Return decorator
     return (target, key) => {
         var _a, _b, _c;
-        // Store @Serializable metadata (configured value, or else inherited value, or else default value)
+        // Store decorator metadata (configured value, or else inherited value, or else default value)
         const metadata = internals_2._getDecoratorMetadata(target.constructor, internals_1._symbolProperty);
         metadata[key] = {
             key,

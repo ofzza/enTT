@@ -96,4 +96,40 @@ describe('@Property', () => {
 
   });
 
+  it('Allows overriding when extending EnTT classes', () => {
+
+    class TestBase extends EnTT {
+      constructor () { super(); super.entt(); }
+      
+      @Property({
+        enumerable: false,
+        set: false,
+        get: false
+      })
+      public prop = undefined as any;
+    }
+
+    class Test extends TestBase {
+      constructor () { super(); super.entt(); }
+      
+      @Property({
+        enumerable: true,
+        set: (obj, value) => value && value.toUpperCase(),
+        get: (obj, value) => `!${value && value.toUpperCase()}!`
+      })
+      public prop = undefined as any;
+    }
+
+    const base = new TestBase();
+    assert(Object.keys(base).length === 0);
+    expect(() => { base.prop = 'test'; }).toThrow();
+    assert(base.prop === undefined);
+
+    const test = new Test();
+    assert(Object.keys(test).length === 1);
+    test.prop = 'test';
+    assert(test.prop === '!TEST!');
+
+  });
+
 });

@@ -146,6 +146,48 @@ describe('@Validate', () => {
 
   });
 
+  it('Allows overriding when extending EnTT classes', () => {
+
+    class TestBase extends EnTT {
+      constructor () { super(); this.entt(); }
+      
+      @Validate({ type: 'boolean' })
+      public propA = true as any;
+
+      @Validate({ provider: (target, value) => !!value })
+      public propB = true as any;
+    }
+
+    class Test extends TestBase {
+      constructor () { super(); this.entt(); }
+      
+      @Validate({ type: 'number' })
+      public propA = 0 as any;
+
+      @Validate({ provider: (target, value) => (value < 10) })
+      public propB = 0 as any;
+    }
+
+    const base = new TestBase();
+    assert(base.valid === true);
+    assert(base.valid === true);
+    base.propA = false;
+    assert(base.valid === true);
+    base.propB = false;
+    assert(base.valid === false);
+
+    const test = new Test();
+    assert(test.valid === true);
+    assert(test.valid === true);
+    test.propA = false;
+    assert(test.valid === false);
+    assert(test.errors.propA.length === 1);
+    test.propB = 100;
+    assert(test.valid === false);
+    assert(test.errors.propB.length === 1);
+
+  });
+
 });
 
 /**

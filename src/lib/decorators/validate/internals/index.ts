@@ -65,6 +65,8 @@ export function _validateObject (target): Record<string, EnttValidationError[]> 
     const propertyErrors = _validateProperty(target, key);
     if (propertyErrors && propertyErrors.length) {
       errors[key] = propertyErrors;
+    } else {
+      delete errors[key];
     }
     return errors;
   }, {});

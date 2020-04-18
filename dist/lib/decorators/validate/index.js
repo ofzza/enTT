@@ -26,7 +26,7 @@ function Validate({ type = undefined, provider = undefined } = {}) {
     // Return decorator
     return (target, key) => {
         var _a, _b;
-        // Store @Serializable metadata (configured value, or else inherited value, or else default value)
+        // Store decorator metadata (configured value, or else inherited value, or else default value)
         const metadata = internals_2._getDecoratorMetadata(target.constructor, internals_1._symbolValidate);
         metadata[key] = {
             key,

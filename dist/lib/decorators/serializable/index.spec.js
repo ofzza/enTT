@@ -280,6 +280,59 @@ describe('@Serializable', () => {
             tests_init_1.assert(typeof serialized === 'string');
         });
     });
+    it('Allows overriding when extending EnTT classes', () => {
+        class Inner extends __1.EnTT {
+            constructor() {
+                super();
+                this.prop = true;
+                super.entt();
+            }
+        }
+        class TestBase extends __1.EnTT {
+            constructor() {
+                super();
+                this.propA = true;
+                this.propB = undefined;
+                super.entt();
+            }
+        }
+        tslib_1.__decorate([
+            __1.Serializable({ serialize: false }),
+            tslib_1.__metadata("design:type", Object)
+        ], TestBase.prototype, "propA", void 0);
+        tslib_1.__decorate([
+            __1.Serializable({ alias: 'propB1', cast: Inner }),
+            tslib_1.__metadata("design:type", Object)
+        ], TestBase.prototype, "propB", void 0);
+        class Test extends TestBase {
+            constructor() {
+                super();
+                this.propA = true;
+                this.propB = undefined;
+                super.entt();
+            }
+        }
+        tslib_1.__decorate([
+            __1.Serializable({ serialize: true }),
+            tslib_1.__metadata("design:type", Object)
+        ], Test.prototype, "propA", void 0);
+        tslib_1.__decorate([
+            __1.Serializable({ alias: 'propB2', cast: [Inner] }),
+            tslib_1.__metadata("design:type", Object)
+        ], Test.prototype, "propB", void 0);
+        const base = new TestBase();
+        base.deserialize({ propA: false, propB1: { prop: true } });
+        tests_init_1.assert(base.propA === true);
+        tests_init_1.assert(base.propB instanceof Inner);
+        tests_init_1.assert(base.propB.prop === true);
+        const test = new Test();
+        test.deserialize({ propA: false, propB2: [{ prop: true }, { prop: false }] });
+        tests_init_1.assert(test.propA === false);
+        tests_init_1.assert(test.propB instanceof Array);
+        tests_init_1.assert(test.propB.length === 2);
+        tests_init_1.assert(test.propB[0].prop === true);
+        tests_init_1.assert(test.propB[1].prop === false);
+    });
 });
 /**
  * Verify serialization

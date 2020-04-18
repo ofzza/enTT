@@ -124,8 +124,9 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
         if (hasSetter) {
 
           // Get @Serializable metadata (or defaults)
-          const properties = _getDecoratorMetadata(target.constructor, _symbolSerializable);
-          const metadata = properties?.[key] || {
+          const properties = _getDecoratorMetadata(target.constructor, _symbolSerializable),
+                alias = properties && (Object.values(properties) as any[]).find((prop) => (prop.alias === key))?.key || key;
+          const metadata = properties?.[alias] || {
             serialize: true,
             alias:     undefined,
             cast:      undefined
@@ -135,7 +136,7 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
           if (metadata.serialize) {
 
             // Serializable value (EnTT instance or raw value)
-            const alias = properties && (Object.values(properties) as any[]).find((prop) => (prop.alias === key))?.key || key;
+            
             if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
               // Deserialize and cast array
               deserialized[alias] = source[key]

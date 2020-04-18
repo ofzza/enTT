@@ -92,8 +92,8 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
                 // Check if property has or needs a getter
                 if (hasSetter) {
                     // Get @Serializable metadata (or defaults)
-                    const properties = internals_1._getDecoratorMetadata(target.constructor, exports._symbolSerializable);
-                    const metadata = (properties === null || properties === void 0 ? void 0 : properties[key]) || {
+                    const properties = internals_1._getDecoratorMetadata(target.constructor, exports._symbolSerializable), alias = properties && ((_a = Object.values(properties).find((prop) => (prop.alias === key))) === null || _a === void 0 ? void 0 : _a.key) || key;
+                    const metadata = (properties === null || properties === void 0 ? void 0 : properties[alias]) || {
                         serialize: true,
                         alias: undefined,
                         cast: undefined
@@ -101,7 +101,6 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
                     // Check if property is serializable
                     if (metadata.serialize) {
                         // Serializable value (EnTT instance or raw value)
-                        const alias = properties && ((_a = Object.values(properties).find((prop) => (prop.alias === key))) === null || _a === void 0 ? void 0 : _a.key) || key;
                         if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
                             // Deserialize and cast array
                             deserialized[alias] = source[key]

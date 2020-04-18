@@ -87,6 +87,7 @@ class EnTT extends internals_1._EnTTRoot {
      */
     get valid() {
         // using @Validate
+        internals_4._validateObject(this);
         return internals_4._isValid(this);
     }
     /**
@@ -95,6 +96,7 @@ class EnTT extends internals_1._EnTTRoot {
      */
     get errors() {
         // using @Validate
+        internals_4._validateObject(this);
         return internals_4._getValidationErrors(this);
     }
     /**
@@ -107,8 +109,6 @@ class EnTT extends internals_1._EnTTRoot {
             if (errors[key].length) {
                 // Undo to latest valid value
                 store[key] = restore[key];
-                // Revalidate
-                internals_4._validateProperty(this, key);
             }
         });
     }

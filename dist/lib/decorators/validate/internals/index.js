@@ -50,6 +50,9 @@ function _validateObject(target) {
         if (propertyErrors && propertyErrors.length) {
             errors[key] = propertyErrors;
         }
+        else {
+            delete errors[key];
+        }
         return errors;
     }, {});
 }

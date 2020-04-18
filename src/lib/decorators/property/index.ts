@@ -37,7 +37,7 @@ export function Property ({
 
   // Return decorator
   return (target, key) => {
-    // Store @Serializable metadata (configured value, or else inherited value, or else default value)
+    // Store decorator metadata (configured value, or else inherited value, or else default value)
     const metadata = _getDecoratorMetadata(target.constructor, _symbolProperty);
     metadata[key] = {
       key,

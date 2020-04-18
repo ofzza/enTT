@@ -100,5 +100,45 @@ describe('@Property', () => {
             tests_init_1.assert(test.customsetter === 'no-longer-plain:TEST');
         });
     });
+    it('Allows overriding when extending EnTT classes', () => {
+        class TestBase extends __1.EnTT {
+            constructor() {
+                super();
+                this.prop = undefined;
+                super.entt();
+            }
+        }
+        tslib_1.__decorate([
+            __1.Property({
+                enumerable: false,
+                set: false,
+                get: false
+            }),
+            tslib_1.__metadata("design:type", Object)
+        ], TestBase.prototype, "prop", void 0);
+        class Test extends TestBase {
+            constructor() {
+                super();
+                this.prop = undefined;
+                super.entt();
+            }
+        }
+        tslib_1.__decorate([
+            __1.Property({
+                enumerable: true,
+                set: (obj, value) => value && value.toUpperCase(),
+                get: (obj, value) => `!${value && value.toUpperCase()}!`
+            }),
+            tslib_1.__metadata("design:type", Object)
+        ], Test.prototype, "prop", void 0);
+        const base = new TestBase();
+        tests_init_1.assert(Object.keys(base).length === 0);
+        expect(() => { base.prop = 'test'; }).toThrow();
+        tests_init_1.assert(base.prop === undefined);
+        const test = new Test();
+        tests_init_1.assert(Object.keys(test).length === 1);
+        test.prop = 'test';
+        tests_init_1.assert(test.prop === '!TEST!');
+    });
 });
 //# sourceMappingURL=index.spec.js.map

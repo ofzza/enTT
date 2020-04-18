@@ -7,7 +7,7 @@ import { _undefined, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from '
 // Import dependencies
 import { _readPropertyMetadata, _readPropertyDescriptor } from '../decorators/property/internals';
 import { _rawDataType, _cast, _serialize, _deserialize } from '../decorators/serializable/internals';
-import { EnttValidationError, _readValidityMetadata, _validateProperty, _isValid, _getValidationErrors } from '../decorators/validate/internals';
+import { EnttValidationError, _readValidityMetadata, _validateObject, _validateProperty, _isValid, _getValidationErrors } from '../decorators/validate/internals';
 
 /**
  * Main, extensible EnTT class definition
@@ -95,6 +95,7 @@ export class EnTT extends _EnTTRoot {
    */
   public get valid (): boolean {
     // using @Validate
+    _validateObject(this);
     return _isValid(this);
   }
 
@@ -104,6 +105,7 @@ export class EnTT extends _EnTTRoot {
    */
   public get errors (): Record<string, EnttValidationError[]> {
     // using @Validate
+    _validateObject(this);
     return _getValidationErrors(this);
   }
 
@@ -120,8 +122,6 @@ export class EnTT extends _EnTTRoot {
       if (errors[key].length) {
         // Undo to latest valid value
         store[key] = restore[key];
-        // Revalidate
-        _validateProperty(this, key);
       }
     });
   }

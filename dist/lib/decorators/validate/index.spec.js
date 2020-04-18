@@ -145,6 +145,56 @@ describe('@Validate', () => {
             }
         });
     });
+    it('Allows overriding when extending EnTT classes', () => {
+        class TestBase extends __1.EnTT {
+            constructor() {
+                super();
+                this.propA = true;
+                this.propB = true;
+                this.entt();
+            }
+        }
+        tslib_1.__decorate([
+            __1.Validate({ type: 'boolean' }),
+            tslib_1.__metadata("design:type", Object)
+        ], TestBase.prototype, "propA", void 0);
+        tslib_1.__decorate([
+            __1.Validate({ provider: (target, value) => !!value }),
+            tslib_1.__metadata("design:type", Object)
+        ], TestBase.prototype, "propB", void 0);
+        class Test extends TestBase {
+            constructor() {
+                super();
+                this.propA = 0;
+                this.propB = 0;
+                this.entt();
+            }
+        }
+        tslib_1.__decorate([
+            __1.Validate({ type: 'number' }),
+            tslib_1.__metadata("design:type", Object)
+        ], Test.prototype, "propA", void 0);
+        tslib_1.__decorate([
+            __1.Validate({ provider: (target, value) => (value < 10) }),
+            tslib_1.__metadata("design:type", Object)
+        ], Test.prototype, "propB", void 0);
+        const base = new TestBase();
+        tests_init_1.assert(base.valid === true);
+        tests_init_1.assert(base.valid === true);
+        base.propA = false;
+        tests_init_1.assert(base.valid === true);
+        base.propB = false;
+        tests_init_1.assert(base.valid === false);
+        const test = new Test();
+        tests_init_1.assert(test.valid === true);
+        tests_init_1.assert(test.valid === true);
+        test.propA = false;
+        tests_init_1.assert(test.valid === false);
+        tests_init_1.assert(test.errors.propA.length === 1);
+        test.propB = 100;
+        tests_init_1.assert(test.valid === false);
+        tests_init_1.assert(test.errors.propB.length === 1);
+    });
 });
 /**
  * Verifies validation for natural number property

@@ -307,6 +307,49 @@ describe('@Serializable', () => {
 
   });
 
+  it('Allows overriding when extending EnTT classes', () => {
+
+    class Inner extends EnTT {
+      constructor () { super(); super.entt(); }
+      public prop = true;
+    }
+
+    class TestBase extends EnTT {
+      constructor () { super(); super.entt(); }
+      
+      @Serializable({ serialize: false })
+      public propA = true;
+
+      @Serializable({ alias: 'propB1', cast: Inner })
+      public propB = undefined as any;
+    }
+
+    class Test extends TestBase {
+      constructor () { super(); super.entt(); }
+      
+      @Serializable({ serialize: true })
+      public propA = true;
+
+      @Serializable({ alias: 'propB2', cast: [Inner] })
+      public propB = undefined as any;
+    }
+
+    const base = new TestBase();
+    base.deserialize({ propA: false, propB1: { prop: true } });
+    assert(base.propA === true);
+    assert(base.propB instanceof Inner);
+    assert(base.propB.prop === true);
+
+    const test = new Test();
+    test.deserialize({ propA: false, propB2: [{ prop: true }, { prop: false }] });
+    assert(test.propA === false);
+    assert(test.propB instanceof Array);
+    assert(test.propB.length === 2);
+    assert(test.propB[0].prop === true);
+    assert(test.propB[1].prop === false);
+
+  });
+
 });
 
 /**
