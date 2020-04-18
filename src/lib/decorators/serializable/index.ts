@@ -6,7 +6,7 @@
 import { _symbolSerializable, _rawDataType, _castType, _readSerializableMetadata, _serialize, _deserialize, _cast } from './internals';
 
 // Import dependencies
-import { _getClassMetadata } from '../../entt/internals';
+import { _getDecoratorMetadata } from '../../entt/internals';
 
 /**
  * @Serializable() decorator, configures property serialization behavior
@@ -20,24 +20,28 @@ import { _getClassMetadata } from '../../entt/internals';
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  */
 export function Serializable ({
-  serialize = true as boolean,
+  serialize = undefined as boolean,
   alias     = undefined as string,
   cast      = undefined as _castType
 } = {}) {
 
+  // Set defaults
+  const defaults = {
+    serialize: true,
+    alias:     undefined as string,
+    cast:      undefined as _castType
+  };
+
   // Return decorator
   return (target, key) => {
-    // Store @Serializable metadata
-    const decorators  = _getClassMetadata(target.constructor).decorators,
-          metadata    = decorators[_symbolSerializable] || (decorators[_symbolSerializable] = {});
-    if (!metadata[key]) {
-      metadata[key] = {
-        key,
-        serialize,
-        alias,
-        cast
-      };
-    }
+    // Store @Serializable metadata (configured value, or else inherited value, or else default value)
+    const metadata = _getDecoratorMetadata(target.constructor, _symbolSerializable);
+    metadata[key] = {
+      key,
+      serialize: (serialize !== undefined ? serialize : (metadata[key]?.serialized !== undefined ? metadata[key].serialized : defaults.serialize)),
+      alias:     (alias !== undefined ? alias : (metadata[key]?.alias !== undefined ? metadata[key].alias : defaults.alias)),
+      cast:      (cast !== undefined ? cast : (metadata[key]?.cast !== undefined ? metadata[key].cast : defaults.cast))
+    };
   }
 
 }

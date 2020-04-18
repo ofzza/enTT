@@ -13,8 +13,7 @@ exports._symbolSerializable = Symbol('@Serializable');
  * @returns Stored @Serializable decorator metadata
  */
 function _readSerializableMetadata(Class) {
-    var _a, _b;
-    return ((_b = (_a = internals_1._getClassMetadata(Class)) === null || _a === void 0 ? void 0 : _a.decorators) === null || _b === void 0 ? void 0 : _b[exports._symbolSerializable]) || {};
+    return internals_1._getDecoratorMetadata(Class, exports._symbolSerializable) || {};
 }
 exports._readSerializableMetadata = _readSerializableMetadata;
 /**
@@ -84,7 +83,7 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
     if ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object)) {
         // Deserialize
         Object.keys(source).reduce((deserialized, key) => {
-            var _a, _b, _c;
+            var _a;
             // Check if target property exists and isn't a method
             if (source.hasOwnProperty(key) && typeof source[key] !== 'function') {
                 // Check if target property has a setter or if both setter and setter aren't defined on plain property
@@ -93,7 +92,7 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
                 // Check if property has or needs a getter
                 if (hasSetter) {
                     // Get @Serializable metadata (or defaults)
-                    const properties = (_b = (_a = internals_1._getClassMetadata(target.constructor)) === null || _a === void 0 ? void 0 : _a.decorators) === null || _b === void 0 ? void 0 : _b[exports._symbolSerializable];
+                    const properties = internals_1._getDecoratorMetadata(target.constructor, exports._symbolSerializable);
                     const metadata = (properties === null || properties === void 0 ? void 0 : properties[key]) || {
                         serialize: true,
                         alias: undefined,
@@ -102,7 +101,7 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
                     // Check if property is serializable
                     if (metadata.serialize) {
                         // Serializable value (EnTT instance or raw value)
-                        const alias = properties && ((_c = Object.values(properties).find((prop) => (prop.alias === key))) === null || _c === void 0 ? void 0 : _c.key) || key;
+                        const alias = properties && ((_a = Object.values(properties).find((prop) => (prop.alias === key))) === null || _a === void 0 ? void 0 : _a.key) || key;
                         if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
                             // Deserialize and cast array
                             deserialized[alias] = source[key]

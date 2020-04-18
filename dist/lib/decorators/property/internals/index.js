@@ -12,8 +12,7 @@ exports._symbolProperty = Symbol('@Property');
  * @returns Stored @Property decorator metadata
  */
 function _readPropertyMetadata(Class) {
-    var _a, _b;
-    return ((_b = (_a = internals_1._getClassMetadata(Class)) === null || _a === void 0 ? void 0 : _a.decorators) === null || _b === void 0 ? void 0 : _b[exports._symbolProperty]) || {};
+    return internals_1._getDecoratorMetadata(Class, exports._symbolProperty) || {};
 }
 exports._readPropertyMetadata = _readPropertyMetadata;
 /**

@@ -21,18 +21,24 @@ const internals_2 = require("../../entt/internals");
  *   and the property value being set) and it's returned value will be used as the value being stored for the property.
  * @param enumerable (Optional) If the property is enumerable
  */
-function Property({ get = true, set = true, enumerable = true } = {}) {
+function Property({ get = undefined, set = undefined, enumerable = undefined } = {}) {
+    // Set defaults
+    const defaults = {
+        get: true,
+        set: true,
+        enumerable: true
+    };
     // Return decorator
     return (target, key) => {
-        // Store @Property metadata
-        const decorators = internals_2._getClassMetadata(target.constructor).decorators, metadata = decorators[internals_1._symbolProperty] || (decorators[internals_1._symbolProperty] = {});
-        if (!metadata[key]) {
-            metadata[key] = {
-                get,
-                set,
-                enumerable
-            };
-        }
+        var _a, _b, _c;
+        // Store @Serializable metadata (configured value, or else inherited value, or else default value)
+        const metadata = internals_2._getDecoratorMetadata(target.constructor, internals_1._symbolProperty);
+        metadata[key] = {
+            key,
+            get: (get !== undefined ? get : (((_a = metadata[key]) === null || _a === void 0 ? void 0 : _a.get) !== undefined ? metadata[key].get : defaults.get)),
+            set: (set !== undefined ? set : (((_b = metadata[key]) === null || _b === void 0 ? void 0 : _b.set) !== undefined ? metadata[key].set : defaults.set)),
+            enumerable: (enumerable !== undefined ? enumerable : (((_c = metadata[key]) === null || _c === void 0 ? void 0 : _c.enumerable) !== undefined ? metadata[key].enumerable : defaults.enumerable))
+        };
     };
 }
 exports.Property = Property;

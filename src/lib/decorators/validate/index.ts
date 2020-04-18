@@ -7,7 +7,7 @@ import { EnttValidationError, _symbolValidate, _primitiveTypeName, _readValidity
 export { EnttValidationError };
 
 // Import dependencies
-import { _getClassMetadata } from '../../entt/internals';
+import { _getDecoratorMetadata } from '../../entt/internals';
 
 /**
  * @Validate() decorator, configures property validation behavior
@@ -23,17 +23,21 @@ export function Validate ({
   provider  = undefined as any
 } = {}) {
 
+  // Set defaults
+  const defaults = {
+    type:     undefined as _primitiveTypeName,
+    provider: undefined as any
+  };
+
   // Return decorator
   return (target, key) => {
-    // Store @Validate metadata
-    const decorators  = _getClassMetadata(target.constructor).decorators,
-          metadata    = decorators[_symbolValidate] || (decorators[_symbolValidate] = {});
-    if (!metadata[key]) {
-      metadata[key] = {
-        type,
-        provider
-      };
-    }
+    // Store @Serializable metadata (configured value, or else inherited value, or else default value)
+    const metadata = _getDecoratorMetadata(target.constructor, _symbolValidate);
+    metadata[key] = {
+      key,
+      type:     (type !== undefined ? type : (metadata[key]?.type !== undefined ? metadata[key].type : defaults.type)),
+      provider: (provider !== undefined ? provider : (metadata[key]?.provider !== undefined ? metadata[key].provider : defaults.provider))
+    };
   }
 
 }

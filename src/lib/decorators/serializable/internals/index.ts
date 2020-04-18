@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { _undefined, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from '../../../entt/internals';
+import { _undefined, _EnTTRoot, _getDecoratorMetadata, _getInstanceMetadata } from '../../../entt/internals';
 import { _readPropertyDescriptor } from '../../property/internals';
 import { _validateObject } from '../../validate/internals';
 
@@ -19,7 +19,7 @@ export type _castType =  (new() => any) | (Array<new() => any>) | Object;
  * @returns Stored @Serializable decorator metadata
  */
 export function _readSerializableMetadata (Class) {
-  return _getClassMetadata(Class)?.decorators?.[_symbolSerializable] || {};
+  return _getDecoratorMetadata(Class, _symbolSerializable) || {};
 }
 
 /**
@@ -124,7 +124,7 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
         if (hasSetter) {
 
           // Get @Serializable metadata (or defaults)
-          const properties = _getClassMetadata(target.constructor)?.decorators?.[_symbolSerializable];
+          const properties = _getDecoratorMetadata(target.constructor, _symbolSerializable);
           const metadata = properties?.[key] || {
             serialize: true,
             alias:     undefined,

@@ -3,7 +3,8 @@
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
 // Define a unique symbol for Property decorator
-exports._symbolEnTT = Symbol('EnTT');
+exports._symbolEnTTClass = Symbol('EnTT Class Metadata');
+exports._symbolEnTTInstance = Symbol('EnTT Instance Metadata');
 // Define reusable undefined stand-in symbol
 exports._undefined = Symbol('undefined');
 /**
@@ -19,8 +20,9 @@ exports._EnTTRoot = _EnTTRoot;
  */
 function _getClassMetadata(Class) {
     // Initialize metadata on the derived class
-    if (Class && !Class[exports._symbolEnTT]) {
-        Object.defineProperty(Class, exports._symbolEnTT, {
+    if (Class && !Class.hasOwnProperty(exports._symbolEnTTClass)) {
+        // Set metadata store
+        Object.defineProperty(Class, exports._symbolEnTTClass, {
             enumerable: false,
             value: {
                 // Initialize a private decorators store
@@ -29,9 +31,35 @@ function _getClassMetadata(Class) {
         });
     }
     // Return metadata reference
-    return Class[exports._symbolEnTT] || {};
+    return Class[exports._symbolEnTTClass];
 }
 exports._getClassMetadata = _getClassMetadata;
+/**
+ * Initializes and gets stored EnTT class metadata for a requested decorator
+ * @param {*} Class EnTT class containing the metadata
+ * @param {*} _symbolDecorator Unique symbol name-spacing the decorator in question
+ * @returns Stored EnTT class metadata for requested decorator
+ */
+function _getDecoratorMetadata(Class, _symbolDecorator) {
+    // Get class metadata
+    const decoratorsMetadata = _getClassMetadata(Class).decorators;
+    // Check if decorator already initialized
+    if (!decoratorsMetadata[_symbolDecorator]) {
+        // Initialized decorator
+        decoratorsMetadata[_symbolDecorator] = {};
+        // Check for inherited metadata
+        const prototypeClass = Object.getPrototypeOf(Class), prototypeDecoratorMetadata = (prototypeClass ? _getClassMetadata(prototypeClass).decorators : {});
+        // Inherit metadata
+        if (prototypeDecoratorMetadata[_symbolDecorator]) {
+            for (const key in prototypeDecoratorMetadata[_symbolDecorator]) {
+                decoratorsMetadata[_symbolDecorator][key] = prototypeDecoratorMetadata[_symbolDecorator][key];
+            }
+        }
+    }
+    // Return decorator metadata
+    return decoratorsMetadata[_symbolDecorator];
+}
+exports._getDecoratorMetadata = _getDecoratorMetadata;
 /**
  * Initializes and gets stored EnTT instance metadata
  * @param instance EnTT instance containing the metadata
@@ -39,8 +67,8 @@ exports._getClassMetadata = _getClassMetadata;
  */
 function _getInstanceMetadata(instance) {
     // Initialize metadata on the instance (non-enumerable an hidden-ish)
-    if (instance && !instance[exports._symbolEnTT]) {
-        Object.defineProperty(instance, exports._symbolEnTT, {
+    if (instance && !instance[exports._symbolEnTTInstance]) {
+        Object.defineProperty(instance, exports._symbolEnTTInstance, {
             enumerable: false,
             value: {
                 // Initialize a private property values' store
@@ -53,7 +81,7 @@ function _getInstanceMetadata(instance) {
         });
     }
     // Return metadata reference
-    return instance[exports._symbolEnTT] || {};
+    return instance[exports._symbolEnTTInstance];
 }
 exports._getInstanceMetadata = _getInstanceMetadata;
 //# sourceMappingURL=index.js.map

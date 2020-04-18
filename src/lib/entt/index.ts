@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import and (re)export internals
-import { _undefined, _symbolEnTT, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from './internals';
+import { _undefined, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from './internals';
 
 // Import dependencies
 import { _readPropertyMetadata, _readPropertyDescriptor } from '../decorators/property/internals';

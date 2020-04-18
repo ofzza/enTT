@@ -18,19 +18,24 @@ const internals_2 = require("../../entt/internals");
  * - { cast: {MyEnTTClass} }, will cast property value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  */
-function Serializable({ serialize = true, alias = undefined, cast = undefined } = {}) {
+function Serializable({ serialize = undefined, alias = undefined, cast = undefined } = {}) {
+    // Set defaults
+    const defaults = {
+        serialize: true,
+        alias: undefined,
+        cast: undefined
+    };
     // Return decorator
     return (target, key) => {
-        // Store @Serializable metadata
-        const decorators = internals_2._getClassMetadata(target.constructor).decorators, metadata = decorators[internals_1._symbolSerializable] || (decorators[internals_1._symbolSerializable] = {});
-        if (!metadata[key]) {
-            metadata[key] = {
-                key,
-                serialize,
-                alias,
-                cast
-            };
-        }
+        var _a, _b, _c;
+        // Store @Serializable metadata (configured value, or else inherited value, or else default value)
+        const metadata = internals_2._getDecoratorMetadata(target.constructor, internals_1._symbolSerializable);
+        metadata[key] = {
+            key,
+            serialize: (serialize !== undefined ? serialize : (((_a = metadata[key]) === null || _a === void 0 ? void 0 : _a.serialized) !== undefined ? metadata[key].serialized : defaults.serialize)),
+            alias: (alias !== undefined ? alias : (((_b = metadata[key]) === null || _b === void 0 ? void 0 : _b.alias) !== undefined ? metadata[key].alias : defaults.alias)),
+            cast: (cast !== undefined ? cast : (((_c = metadata[key]) === null || _c === void 0 ? void 0 : _c.cast) !== undefined ? metadata[key].cast : defaults.cast))
+        };
     };
 }
 exports.Serializable = Serializable;

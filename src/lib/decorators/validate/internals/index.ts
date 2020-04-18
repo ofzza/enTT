@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { _undefined, _getClassMetadata, _getInstanceMetadata } from '../../../entt/internals';
+import { _undefined, _getDecoratorMetadata, _getInstanceMetadata } from '../../../entt/internals';
 
 // Define a unique symbol for Serializable decorator
 export const _symbolValidate = Symbol('@Validate');
@@ -60,7 +60,7 @@ export function _readValidityMetadata (target) {
  */
 export function _validateObject (target): Record<string, EnttValidationError[]> {
   // Validate all properties
-  const keys = Object.keys(_getClassMetadata(target.constructor)?.decorators?.[_symbolValidate] || {});
+  const keys = Object.keys(_getDecoratorMetadata(target.constructor, _symbolValidate) || {});
   return keys.reduce((errors, key) => {
     const propertyErrors = _validateProperty(target, key);
     if (propertyErrors && propertyErrors.length) {
@@ -80,7 +80,7 @@ export function _validateObject (target): Record<string, EnttValidationError[]> 
 export function _validateProperty (target, key, value = _undefined as any): EnttValidationError[] {
 
   // Get property metadata
-  const metadata = _getClassMetadata(target.constructor)?.decorators?.[_symbolValidate]?.[key];
+  const metadata = _getDecoratorMetadata(target.constructor, _symbolValidate)[key];
   if (!metadata) { return []; }
 
   // Get instance validity and reset errors
@@ -198,7 +198,7 @@ export function _isValid (target): boolean {
  * @returns A hashmap of arrays of errors per property
  */
 export function _getValidationErrors (target): Record<string, EnttValidationError[]> {
-  // using @Validate  // TODO: Track every child's path
+  // using @Validate
 
   // Initialize all errors
   const allErrors = {};

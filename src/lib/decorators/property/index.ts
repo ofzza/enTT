@@ -6,7 +6,7 @@
 import { _symbolProperty, _readPropertyMetadata, _readPropertyDescriptor } from './internals';
 
 // Import dependencies
-import { _getClassMetadata } from '../../entt/internals';
+import { _getDecoratorMetadata } from '../../entt/internals';
 
 /**
  * @Property() decorator, configures basic property behavior metadata
@@ -23,23 +23,28 @@ import { _getClassMetadata } from '../../entt/internals';
  * @param enumerable (Optional) If the property is enumerable
  */
 export function Property ({
-  get        = true as ((target: any, value: any) => any) | boolean,
-  set        = true as ((target: any, value: any) => any) | boolean,
-  enumerable = true as boolean
+  get        = undefined as ((target: any, value: any) => any) | boolean,
+  set        = undefined as ((target: any, value: any) => any) | boolean,
+  enumerable = undefined as boolean
 } = {}) {
+
+  // Set defaults
+  const defaults = {
+    get:        true,
+    set:        true,
+    enumerable: true
+  };
 
   // Return decorator
   return (target, key) => {
-    // Store @Property metadata
-    const decorators  = _getClassMetadata(target.constructor).decorators,
-          metadata    = decorators[_symbolProperty] || (decorators[_symbolProperty] = {});
-    if (!metadata[key]) {
-      metadata[key] = {
-        get,
-        set,
-        enumerable
-      };
-    }
+    // Store @Serializable metadata (configured value, or else inherited value, or else default value)
+    const metadata = _getDecoratorMetadata(target.constructor, _symbolProperty);
+    metadata[key] = {
+      key,
+      get:        (get !== undefined ? get : (metadata[key]?.get !== undefined ? metadata[key].get : defaults.get)),
+      set:        (set !== undefined ? set : (metadata[key]?.set !== undefined ? metadata[key].set : defaults.set)),
+      enumerable: (enumerable !== undefined ? enumerable : (metadata[key]?.enumerable !== undefined ? metadata[key].enumerable : defaults.enumerable))
+    };
   }
 
 }

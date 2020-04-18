@@ -18,16 +18,21 @@ const internals_2 = require("../../entt/internals");
  * - yup:         https://www.npmjs.com/package/yup
  */
 function Validate({ type = undefined, provider = undefined } = {}) {
+    // Set defaults
+    const defaults = {
+        type: undefined,
+        provider: undefined
+    };
     // Return decorator
     return (target, key) => {
-        // Store @Validate metadata
-        const decorators = internals_2._getClassMetadata(target.constructor).decorators, metadata = decorators[internals_1._symbolValidate] || (decorators[internals_1._symbolValidate] = {});
-        if (!metadata[key]) {
-            metadata[key] = {
-                type,
-                provider
-            };
-        }
+        var _a, _b;
+        // Store @Serializable metadata (configured value, or else inherited value, or else default value)
+        const metadata = internals_2._getDecoratorMetadata(target.constructor, internals_1._symbolValidate);
+        metadata[key] = {
+            key,
+            type: (type !== undefined ? type : (((_a = metadata[key]) === null || _a === void 0 ? void 0 : _a.type) !== undefined ? metadata[key].type : defaults.type)),
+            provider: (provider !== undefined ? provider : (((_b = metadata[key]) === null || _b === void 0 ? void 0 : _b.provider) !== undefined ? metadata[key].provider : defaults.provider))
+        };
     };
 }
 exports.Validate = Validate;

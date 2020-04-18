@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { _getClassMetadata } from '../../../entt/internals';
+import { _getDecoratorMetadata } from '../../../entt/internals';
 
 // Define a unique symbol for Property decorator
 export const _symbolProperty = Symbol('@Property');
@@ -13,7 +13,7 @@ export const _symbolProperty = Symbol('@Property');
  * @returns Stored @Property decorator metadata
  */
 export function _readPropertyMetadata (Class) {
-  return _getClassMetadata(Class)?.decorators?.[_symbolProperty] || {};
+  return _getDecoratorMetadata(Class, _symbolProperty) || {};
 }
 
 /**

@@ -43,9 +43,8 @@ exports._readValidityMetadata = _readValidityMetadata;
  * @returns Hashmap of all properties having validation errors
  */
 function _validateObject(target) {
-    var _a, _b;
     // Validate all properties
-    const keys = Object.keys(((_b = (_a = internals_1._getClassMetadata(target.constructor)) === null || _a === void 0 ? void 0 : _a.decorators) === null || _b === void 0 ? void 0 : _b[exports._symbolValidate]) || {});
+    const keys = Object.keys(internals_1._getDecoratorMetadata(target.constructor, exports._symbolValidate) || {});
     return keys.reduce((errors, key) => {
         const propertyErrors = _validateProperty(target, key);
         if (propertyErrors && propertyErrors.length) {
@@ -63,9 +62,8 @@ exports._validateObject = _validateObject;
  * @returns Array of validation errors
  */
 function _validateProperty(target, key, value = internals_1._undefined) {
-    var _a, _b, _c;
     // Get property metadata
-    const metadata = (_c = (_b = (_a = internals_1._getClassMetadata(target.constructor)) === null || _a === void 0 ? void 0 : _a.decorators) === null || _b === void 0 ? void 0 : _b[exports._symbolValidate]) === null || _c === void 0 ? void 0 : _c[key];
+    const metadata = internals_1._getDecoratorMetadata(target.constructor, exports._symbolValidate)[key];
     if (!metadata) {
         return [];
     }
@@ -175,7 +173,7 @@ exports._isValid = _isValid;
  * @returns A hashmap of arrays of errors per property
  */
 function _getValidationErrors(target) {
-    // using @Validate  // TODO: Track every child's path
+    // using @Validate
     // Initialize all errors
     const allErrors = {};
     // Read local errors
