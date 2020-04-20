@@ -135,8 +135,7 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
           // Check if property is serializable
           if (metadata.serialize) {
 
-            // Serializable value (EnTT instance or raw value)
-            
+            // Serializable value (EnTT instance or raw value)            
             if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
               // Deserialize and cast array
               deserialized[alias] = source[key]
@@ -241,6 +240,15 @@ export function _cast <T> (into: ((new() => T) | (new() => T)[] | Record<any, (n
     // Throw error
     throw new Error(`Can't recognize casting target class or structure!`);
   }
+}
+
+/**
+ * Clones an EnTT instance
+ * @param instance EnTT instance to clone
+ * @returns Cloned instance
+ */
+export function _clone (instance) {
+  return _deserialize(_serialize(instance, 'object'), 'object', { target: new (instance.constructor)() } );
 }
 
 /**

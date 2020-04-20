@@ -136,6 +136,9 @@ describe('README examples', () => {
                     tests_init_1.assert(castPromise.firstName === 'John');
                     tests_init_1.assert(castPromise.lastName === 'Doe');
                 });
+                const cloned = MyPersonClass.clone(instance);
+                tests_init_1.assert(instance !== cloned);
+                tests_init_1.assert(instance.serialize('json') === cloned.serialize('json'));
             });
         });
         describe('Aliasing property names', () => {

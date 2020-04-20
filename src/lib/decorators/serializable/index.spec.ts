@@ -4,7 +4,7 @@
 // Import dependencies
 import { assert } from '../../../tests.init'
 import { EnTT, Property, Serializable }  from '../../../';
-import { _rawDataType, _cast, _serialize, _deserialize }  from './internals';
+import { _rawDataType, _cast, _clone, _serialize, _deserialize }  from './internals';
 
 // Test ...
 describe('@Serializable', () => {
@@ -191,6 +191,13 @@ describe('@Serializable', () => {
       verifyAny(castHashmap.a, deserialized, { verifyConstructors: true });
     });
 
+    it('Clones raw objects', () => {
+      const instance = obj.initialize(),
+            cloned = EnTT.clone(instance)
+      assert(instance !== cloned);
+      assert(_serialize(instance, 'json') === _serialize(cloned, 'json'));
+    })
+
   });
   
   describe('Works with non-EnTT class instances', () => {
@@ -220,6 +227,13 @@ describe('@Serializable', () => {
       verifyAny(castHashmap.a, instance, { verifyConstructors: true });
       verifyAny(castHashmap.a, deserialized, { verifyConstructors: true });
     });
+
+    it('Clones non-EnTT class instances', () => {
+      const instance = (new NonEnTT()).initialize(),
+            cloned = EnTT.clone(instance)
+      assert(instance !== cloned);
+      assert(_serialize(instance, 'json') === _serialize(cloned, 'json'));
+    })
 
   });
   
@@ -267,6 +281,13 @@ describe('@Serializable', () => {
       expect(instance).toEqual(castImplicitlyDirectly);            
       expect(instance).toEqual(castIndirectly);            
     });
+
+    it('Clones EnTT class instances', () => {
+      const instance = (new Test()).initialize(),
+            cloned = EnTT.clone(instance)
+      assert(instance !== cloned);
+      assert(_serialize(instance, 'json') === _serialize(cloned, 'json'));
+    })
 
   });
 

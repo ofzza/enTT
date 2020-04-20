@@ -23,6 +23,12 @@ export declare class EnTT extends _EnTTRoot {
         type?: _rawDataType;
     }): any;
     /**
+     * Clones an EnTT instance
+     * @param instance EnTT instance to clone
+     * @returns Cloned instance
+     */
+    static clone(instance: any): any;
+    /**
      * Initializes EnTT features for the extending class - should be called in extending class' constructor, right after "super()".
      * Example:
      *   constructor () { super(); super.entt(); }

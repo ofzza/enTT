@@ -6,7 +6,7 @@ import { _undefined, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from '
 
 // Import dependencies
 import { _readPropertyMetadata, _readPropertyDescriptor } from '../decorators/property/internals';
-import { _rawDataType, _cast, _serialize, _deserialize } from '../decorators/serializable/internals';
+import { _rawDataType, _cast, _clone, _serialize, _deserialize } from '../decorators/serializable/internals';
 import { EnttValidationError, _readValidityMetadata, _validateObject, _validateProperty, _isValid, _getValidationErrors } from '../decorators/validate/internals';
 
 /**
@@ -45,6 +45,15 @@ export class EnTT extends _EnTTRoot {
       // Cast value
       return _cast(into)(value, type);
     }
+  }
+
+  /**
+   * Clones an EnTT instance
+   * @param instance EnTT instance to clone
+   * @returns Cloned instance
+   */
+  public static clone (instance) {
+    return _clone(instance);
   }
 
   /**

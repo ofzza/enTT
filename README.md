@@ -179,7 +179,7 @@ class MyEntityClass extends EnTT {
 }
 ```
 
-### Simply serialize, deserialize and cast
+### Simply serialize, deserialize, cast and clone
 
 <details><summary>EXAMPLE</summary>
 
@@ -226,6 +226,10 @@ Without any customization, all properties can be serialized and deserialized:
   console.log(castPromise instanceof MyPersonClass)     // Outputs: true
   console.log(castPromise.firstName);                   // Outputs: "John"
   console.log(castPromise.lastName);                    // Outputs: "Doe"
+
+  const cloned = MyPersonClass.clone(instance);
+  console.log(instance !== cloned);                                     // Outputs: true
+  console.log(instance.serialize('json') === cloned.serialize('json')); // Outputs: true
 ```
 </details>
 

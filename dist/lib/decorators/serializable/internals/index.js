@@ -100,7 +100,7 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
                     };
                     // Check if property is serializable
                     if (metadata.serialize) {
-                        // Serializable value (EnTT instance or raw value)
+                        // Serializable value (EnTT instance or raw value)            
                         if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
                             // Deserialize and cast array
                             deserialized[alias] = source[key]
@@ -197,6 +197,15 @@ function _cast(into) {
     }
 }
 exports._cast = _cast;
+/**
+ * Clones an EnTT instance
+ * @param instance EnTT instance to clone
+ * @returns Cloned instance
+ */
+function _clone(instance) {
+    return _deserialize(_serialize(instance, 'object'), 'object', { target: new (instance.constructor)() });
+}
+exports._clone = _clone;
 /**
  * Converts an object into serialized value of given type
  * @param obj Object being serialized

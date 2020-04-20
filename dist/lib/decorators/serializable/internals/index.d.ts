@@ -39,3 +39,9 @@ export declare function _deserialize<T>(value: any, type?: _rawDataType, { targe
  * @returns A casting function
  */
 export declare function _cast<T>(into: ((new () => T) | (new () => T)[] | Record<any, (new () => T)>)): ((value: any, type?: _rawDataType) => any);
+/**
+ * Clones an EnTT instance
+ * @param instance EnTT instance to clone
+ * @returns Cloned instance
+ */
+export declare function _clone(instance: any): any;

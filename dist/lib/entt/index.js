@@ -46,6 +46,14 @@ class EnTT extends internals_1._EnTTRoot {
         }
     }
     /**
+     * Clones an EnTT instance
+     * @param instance EnTT instance to clone
+     * @returns Cloned instance
+     */
+    static clone(instance) {
+        return internals_3._clone(instance);
+    }
+    /**
      * Initializes EnTT features for the extending class - should be called in extending class' constructor, right after "super()".
      * Example:
      *   constructor () { super(); super.entt(); }

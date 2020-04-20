@@ -136,6 +136,10 @@ describe('README examples', () => {
           assert(castPromise.firstName === 'John');
           assert(castPromise.lastName === 'Doe');                
         })
+
+        const cloned = MyPersonClass.clone(instance);
+        assert(instance !== cloned);
+        assert(instance.serialize('json') === cloned.serialize('json'));
       });
 
     });
