@@ -18,7 +18,7 @@ enTT
 
 To start using ```enTT``` in your project, simply install it from NPM by running the following in your terminal:
  ```sh
- > npm install entt --save
+ > npm install @ofzza/entt --save
  ```
 
 Alternatively, get an extended implementation:
@@ -30,7 +30,7 @@ Alternatively, get an extended implementation:
 To make any class an ```enTT``` class, just extend the EnTT base and run ```super.entt()``` in its constructor, right after ```super()```:
 
 ```ts
-import { EnTT } from 'entt';
+import { EnTT } from '@ofzza/entt';
 
 class MyEntityClass extends EnTT {
     constructor () { super(); super.entt(); }
@@ -74,7 +74,7 @@ All properties are enumerable by default. To turn a property non-enumerable, jus
 <details><summary>EXAMPLE</summary>
 
   ```ts
-  import { EnTT, Property } from 'entt';
+  import { EnTT, Property } from '@ofzza/entt';
 
   class MyEntityClass extends EnTT {
     constructor () { super(); super.entt(); }
@@ -106,7 +106,7 @@ Any property can be made read-only or write only by explicitly removing its sett
 <details><summary>EXAMPLE</summary>
 
   ```ts
-  import { EnTT, Property } from 'entt';
+  import { EnTT, Property } from '@ofzza/entt';
 
   class MyEntityClass extends EnTT {
     constructor () { super(); super.entt(); }
@@ -139,7 +139,7 @@ Any property can be augmented with a custom setter and/or getter modifying the p
 <details><summary>EXAMPLE</summary>
 
   ```ts
-  import { EnTT, Property } from 'entt';
+  import { EnTT, Property } from '@ofzza/entt';
 
   class MyPersonClass extends EnTT {
     constructor () { super(); super.entt(); }
@@ -186,7 +186,7 @@ class MyEntityClass extends EnTT {
 Without any customization, all properties can be serialized and deserialized:
 
 ```ts
-  import { EnTT } from 'entt';
+  import { EnTT } from '@ofzza/entt';
 
   class MyPersonClass extends EnTT {
     constructor () { super(); super.entt(); }
@@ -244,7 +244,7 @@ Any property can define an alias to be used when serializing and deserializing d
 <details><summary>EXAMPLE</summary>
 
 ```ts
-  import { EnTT } from 'entt';
+  import { EnTT } from '@ofzza/entt';
 
   class MyPersonClass extends EnTT {
     constructor () { super(); super.entt(); }
@@ -285,7 +285,7 @@ Any property can be defined not participating in serialization, like so:
 <details><summary>EXAMPLE</summary>
 
 ```ts
-  import { EnTT } from 'entt';
+  import { EnTT } from '@ofzza/entt';
 
   class MyAuthenticationClass extends EnTT {
     constructor () { super(); super.entt(); }
@@ -321,7 +321,7 @@ Any property can hold nested instances of other EnTT classes, either directly or
 <details><summary>EXAMPLE</summary>
 
 ```ts
-  import { EnTT } from 'entt';
+  import { EnTT } from '@ofzza/entt';
 
   class MyPersonClass extends EnTT {
     constructor (name?: string) {
@@ -448,7 +448,7 @@ Simplest, and very limited way of validating property values is by their type. Y
 <details><summary>EXAMPLE</summary>
 
 ```ts
-  import { EnTT } from 'entt';
+  import { EnTT } from '@ofzza/entt';
 
   class MyValidClass extends EnTT {
     constructor () { super(); super.entt(); }
@@ -518,7 +518,7 @@ The most basic custom validator is just a function evaluating the validity of a 
 <details><summary>EXAMPLE</summary>
 
 ```ts
-  import { EnTT } from 'entt';
+  import { EnTT } from '@ofzza/entt';
 
   class MyDatesClass extends EnTT {
     constructor () { super(); super.entt(); }
@@ -602,7 +602,7 @@ import * as Joi from '@hapi/joi';
 <details><summary>EXAMPLE</summary>
 
 ```ts
-  import { EnTT } from 'entt';
+  import { EnTT } from '@ofzza/entt';
 
   class MyDatesClass extends EnTT {
     constructor () { super(); super.entt(); }
@@ -681,7 +681,7 @@ import * as Yup from 'yup';
 <details><summary>EXAMPLE</summary>
 
 ```ts
-  import { EnTT } from 'entt';
+  import { EnTT } from '@ofzza/entt';
 
   class MyDatesClass extends EnTT {
     constructor () { super(); super.entt(); }
@@ -755,7 +755,7 @@ When nesting EnTT classes, invalid nested instances will automatically invalidat
 <details><summary>EXAMPLE</summary>
 
 ```ts
-  import { EnTT } from 'entt';
+  import { EnTT } from '@ofzza/entt';
 
   class MyNestedClass extends EnTT {
     constructor () { super(); super.entt(); }

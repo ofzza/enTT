@@ -1,5 +1,5 @@
 {
-  "name": "entt",
+  "name": "@ofzza/entt",
   "version": "3.0.0",
   "description": "Modular TS data-modeling solution, implementing import/export, validation and change detection",
   "main": "./dist/index.js",
@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
-    "test": "npx jasmine --config=./jasmine.json"
+    "test": "tsc && npx jasmine --config=./jasmine.json"
   },
   "pre-commit": [
     "build",
