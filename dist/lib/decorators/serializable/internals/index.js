@@ -7,6 +7,12 @@ const internals_1 = require("../../../entt/internals");
 const internals_2 = require("../../validate/internals");
 // Define a unique symbols for Serializable decorator
 exports._symbolSerializable = Symbol('@Serializable');
+exports._serializeTypeEnum = {
+    Never: Symbol('@Serializable:Serialize:Never'),
+    DeserializeOnly: Symbol('@Serializable:Serialize:DeserializeOnly'),
+    SerializeOnly: Symbol('@Serializable:Serialize:SerializeOnly'),
+    Always: Symbol('@Serializable:Serialize:Always')
+};
 /**
  * Gets @Serializable decorator metadata store
  * @param Class EnTT class containing the metadata
@@ -44,7 +50,7 @@ function _serialize(source, type = 'object') {
                         cast: undefined
                     };
                     // Check if property is serializable
-                    if (metadata.serialize) {
+                    if ([true, exports._serializeTypeEnum.Always, exports._serializeTypeEnum.SerializeOnly].indexOf(metadata.serialize) !== -1) {
                         // Serializable value (EnTT instance or raw value)
                         serialized[metadata.alias || key] = _serialize(instance[key], 'object');
                     }
@@ -99,7 +105,7 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
                         cast: undefined
                     };
                     // Check if property is serializable
-                    if (metadata.serialize) {
+                    if ([true, exports._serializeTypeEnum.Always, exports._serializeTypeEnum.DeserializeOnly].indexOf(metadata.serialize) !== -1) {
                         // Serializable value (EnTT instance or raw value)            
                         if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
                             // Deserialize and cast array

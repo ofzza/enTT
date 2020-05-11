@@ -1,4 +1,11 @@
 export declare const _symbolSerializable: unique symbol;
+export declare type _serializeType = Symbol;
+export declare const _serializeTypeEnum: {
+    Never: symbol;
+    DeserializeOnly: symbol;
+    SerializeOnly: symbol;
+    Always: symbol;
+};
 export declare type _rawDataType = 'object' | 'json';
 export declare type _castType = (new () => any) | (Array<new () => any>) | Object;
 /**

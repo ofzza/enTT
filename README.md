@@ -282,6 +282,12 @@ Any property can be defined not participating in serialization, like so:
 @Serializable({ serialize: false })
 ```
 
+or only participating in serialization, or only participating in de-serialization, like so:
+```ts
+@Serializable({ serialize: Serializable.serialize.SerializeOnly })
+@Serializable({ serialize: Serializable.serialize.DeserializeOnly })
+```
+
 <details><summary>EXAMPLE</summary>
 
 ```ts

@@ -39,4 +39,6 @@ function Serializable({ serialize = undefined, alias = undefined, cast = undefin
     };
 }
 exports.Serializable = Serializable;
+// Attach enums to @Serializable decorator
+Serializable.serialize = internals_1._serializeTypeEnum;
 //# sourceMappingURL=index.js.map

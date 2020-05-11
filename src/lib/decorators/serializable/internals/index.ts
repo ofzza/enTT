@@ -10,6 +10,13 @@ import { _validateObject } from '../../validate/internals';
 export const _symbolSerializable = Symbol('@Serializable');
 
 // Define supported types
+export type _serializeType = Symbol;
+export const _serializeTypeEnum = {
+  Never:           Symbol('@Serializable:Serialize:Never'),
+  DeserializeOnly: Symbol('@Serializable:Serialize:DeserializeOnly'),
+  SerializeOnly:   Symbol('@Serializable:Serialize:SerializeOnly'),
+  Always:          Symbol('@Serializable:Serialize:Always')
+};
 export type _rawDataType = 'object' | 'json';
 export type _castType =  (new() => any) | (Array<new() => any>) | Object;
 
@@ -58,7 +65,7 @@ export function _serialize <T> (source: T, type = 'object' as _rawDataType): any
           };
 
           // Check if property is serializable
-          if (metadata.serialize) {
+          if ([true, _serializeTypeEnum.Always, _serializeTypeEnum.SerializeOnly].indexOf(metadata.serialize) !== -1) {
 
             // Serializable value (EnTT instance or raw value)
             serialized[metadata.alias || key] = _serialize(instance[key], 'object');
@@ -133,7 +140,7 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
           };
 
           // Check if property is serializable
-          if (metadata.serialize) {
+          if ([true, _serializeTypeEnum.Always, _serializeTypeEnum.DeserializeOnly].indexOf(metadata.serialize) !== -1) {
 
             // Serializable value (EnTT instance or raw value)            
             if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {

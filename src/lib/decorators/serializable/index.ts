@@ -3,7 +3,10 @@
 // ----------------------------------------------------------------------------
 
 // Import and (re)export internals
-import { _symbolSerializable, _rawDataType, _castType, _readSerializableMetadata, _serialize, _deserialize, _cast } from './internals';
+import {
+  _symbolSerializable, _serializeType, _serializeTypeEnum, _rawDataType, _castType,
+  _readSerializableMetadata, _serialize, _deserialize, _cast
+} from './internals';
 
 // Import dependencies
 import { _getDecoratorMetadata } from '../../entt/internals';
@@ -20,7 +23,7 @@ import { _getDecoratorMetadata } from '../../entt/internals';
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  */
 export function Serializable ({
-  serialize = undefined as boolean,
+  serialize = undefined as _serializeType | boolean,
   alias     = undefined as string,
   cast      = undefined as _castType
 } = {}) {
@@ -45,3 +48,6 @@ export function Serializable ({
   }
 
 }
+
+// Attach enums to @Serializable decorator
+Serializable.serialize = _serializeTypeEnum;

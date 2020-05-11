@@ -348,6 +348,79 @@ describe('@Serializable', () => {
         tests_init_1.assert(test.propB[0].prop === true);
         tests_init_1.assert(test.propB[1].prop === false);
     });
+    describe('Respects limiting or opting out of serialization', () => {
+        class LimitedTest extends __1.EnTT {
+            constructor() {
+                super();
+                this.serializeTrue = undefined;
+                this.serializeFalse = undefined;
+                this.serializeNever = undefined;
+                this.serializeSerOnly = undefined;
+                this.serializeDeSerOnly = undefined;
+                this.serializeAlways = undefined;
+                super.entt();
+            }
+            initialize() {
+                this.serializeTrue = 'initialized';
+                this.serializeFalse = 'initialized';
+                this.serializeNever = 'initialized';
+                this.serializeSerOnly = 'initialized';
+                this.serializeDeSerOnly = 'initialized';
+                this.serializeAlways = 'initialized';
+                return this;
+            }
+        }
+        tslib_1.__decorate([
+            __1.Serializable({ serialize: true }),
+            tslib_1.__metadata("design:type", Object)
+        ], LimitedTest.prototype, "serializeTrue", void 0);
+        tslib_1.__decorate([
+            __1.Serializable({ serialize: false }),
+            tslib_1.__metadata("design:type", Object)
+        ], LimitedTest.prototype, "serializeFalse", void 0);
+        tslib_1.__decorate([
+            __1.Serializable({ serialize: __1.Serializable.serialize.Never }),
+            tslib_1.__metadata("design:type", Object)
+        ], LimitedTest.prototype, "serializeNever", void 0);
+        tslib_1.__decorate([
+            __1.Serializable({ serialize: __1.Serializable.serialize.SerializeOnly }),
+            tslib_1.__metadata("design:type", Object)
+        ], LimitedTest.prototype, "serializeSerOnly", void 0);
+        tslib_1.__decorate([
+            __1.Serializable({ serialize: __1.Serializable.serialize.DeserializeOnly }),
+            tslib_1.__metadata("design:type", Object)
+        ], LimitedTest.prototype, "serializeDeSerOnly", void 0);
+        tslib_1.__decorate([
+            __1.Serializable({ serialize: __1.Serializable.serialize.Always }),
+            tslib_1.__metadata("design:type", Object)
+        ], LimitedTest.prototype, "serializeAlways", void 0);
+        it('Respects boolean serialization configuration', () => {
+            const instance = (new LimitedTest()).initialize(), serialized = internals_1._serialize(instance, 'object'), serializedCloned = Object.assign({}, serialized);
+            serializedCloned.serializeTrue = 'changed';
+            serializedCloned.serializeFalse = 'changed';
+            const deserialized = internals_1._deserialize(serializedCloned, 'object', { target: new LimitedTest() });
+            tests_init_1.assert(serialized.serializeTrue !== undefined);
+            tests_init_1.assert(serialized.serializeFalse === undefined);
+            tests_init_1.assert(deserialized.serializeTrue !== undefined);
+            tests_init_1.assert(deserialized.serializeFalse === undefined);
+        });
+        it('Respects @Serializable.serialize serialization configuration', () => {
+            const instance = (new LimitedTest()).initialize(), serialized = internals_1._serialize(instance, 'object'), serializedCloned = Object.assign({}, serialized);
+            serializedCloned.serializeNever = 'changed';
+            serializedCloned.serializeSerOnly = 'changed';
+            serializedCloned.serializeDeSerOnly = 'changed';
+            serializedCloned.serializeAlways = 'changed';
+            const deserialized = internals_1._deserialize(serializedCloned, 'object', { target: new LimitedTest() });
+            tests_init_1.assert(serialized.serializeNever === undefined);
+            tests_init_1.assert(serialized.serializeSerOnly !== undefined);
+            tests_init_1.assert(serialized.serializeDeSerOnly === undefined);
+            tests_init_1.assert(serialized.serializeAlways !== undefined);
+            tests_init_1.assert(deserialized.serializeNever === undefined);
+            tests_init_1.assert(deserialized.serializeSerOnly === undefined);
+            tests_init_1.assert(deserialized.serializeDeSerOnly !== undefined);
+            tests_init_1.assert(deserialized.serializeAlways !== undefined);
+        });
+    });
 });
 /**
  * Verify serialization

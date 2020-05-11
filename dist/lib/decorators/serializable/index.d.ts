@@ -11,7 +11,15 @@ import { _castType } from './internals';
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  */
 export declare function Serializable({ serialize, alias, cast }?: {
-    serialize?: boolean;
+    serialize?: boolean | Symbol;
     alias?: string;
     cast?: _castType;
 }): (target: any, key: any) => void;
+export declare namespace Serializable {
+    var serialize: {
+        Never: symbol;
+        DeserializeOnly: symbol;
+        SerializeOnly: symbol;
+        Always: symbol;
+    };
+}

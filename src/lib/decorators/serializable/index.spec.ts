@@ -371,6 +371,71 @@ describe('@Serializable', () => {
 
   });
 
+  describe('Respects limiting or opting out of serialization', () => {
+
+    class LimitedTest extends EnTT {
+      constructor () { super(); super.entt(); }
+  
+      @Serializable({ serialize: true })
+      public serializeTrue = undefined as string;
+      @Serializable({ serialize: false })
+      public serializeFalse = undefined as string;
+      @Serializable({ serialize: Serializable.serialize.Never })
+      public serializeNever = undefined as string;
+      @Serializable({ serialize: Serializable.serialize.SerializeOnly })
+      public serializeSerOnly = undefined as string;
+      @Serializable({ serialize: Serializable.serialize.DeserializeOnly })
+      public serializeDeSerOnly = undefined as string;
+      @Serializable({ serialize: Serializable.serialize.Always })
+      public serializeAlways = undefined as string;
+  
+      initialize () {
+        this.serializeTrue      = 'initialized';
+        this.serializeFalse     = 'initialized';
+        this.serializeNever     = 'initialized';
+        this.serializeSerOnly   = 'initialized';
+        this.serializeDeSerOnly = 'initialized';
+        this.serializeAlways    = 'initialized';
+        return this;
+      }
+    }
+  
+    it('Respects boolean serialization configuration', () => {
+      const instance = (new LimitedTest()).initialize(),
+            serialized = _serialize(instance, 'object'),
+      serializedCloned = { ... serialized };
+      serializedCloned.serializeTrue      = 'changed';
+      serializedCloned.serializeFalse     = 'changed';
+      const deserialized = _deserialize(serializedCloned, 'object', { target: new LimitedTest() });
+
+      assert(serialized.serializeTrue !== undefined);
+      assert(serialized.serializeFalse === undefined);
+      assert(deserialized.serializeTrue !== undefined);
+      assert(deserialized.serializeFalse === undefined);
+    });
+
+    it('Respects @Serializable.serialize serialization configuration', () => {
+      const instance = (new LimitedTest()).initialize(),
+            serialized = _serialize(instance, 'object'),
+      serializedCloned = { ... serialized };
+      serializedCloned.serializeNever     = 'changed';
+      serializedCloned.serializeSerOnly   = 'changed';
+      serializedCloned.serializeDeSerOnly = 'changed';
+      serializedCloned.serializeAlways    = 'changed'; 
+      const deserialized = _deserialize(serializedCloned, 'object', { target: new LimitedTest() });
+
+      assert(serialized.serializeNever === undefined);
+      assert(serialized.serializeSerOnly !== undefined);
+      assert(serialized.serializeDeSerOnly === undefined);
+      assert(serialized.serializeAlways !== undefined);
+      assert(deserialized.serializeNever === undefined);
+      assert(deserialized.serializeSerOnly === undefined);
+      assert(deserialized.serializeDeSerOnly !== undefined);
+      assert(deserialized.serializeAlways !== undefined);
+    });
+
+  });
+
 });
 
 /**
