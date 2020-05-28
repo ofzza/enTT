@@ -178,35 +178,71 @@ describe('README examples', () => {
 
     });
 
-    describe('Not-Serializable properties', () => {
+    describe('Custom serialization', () => {
 
-      it('Example', () => {
-              
-        class MyAuthenticationClass extends EnTT {
-          constructor () { super(); super.entt(); }
-      
-          @Serializable({ serialize: true })
-          public password = undefined as string;
-          
-          @Serializable({ serialize: false })
-          public repeatPassword = undefined as string;
-        }
-      
-        const instance = new MyAuthenticationClass();
-        instance.password = '123';
-        instance.repeatPassword = '123';
-      
-        const serialized = instance.serialize();
-        assert(JSON.stringify(serialized) === JSON.stringify({ password: "123" }));
-      
-        const deserialized = new MyAuthenticationClass();
-        deserialized.deserialize({ ...serialized, repeatPassword: '123' });
-        assert(deserialized.password === '123');
-        assert(deserialized.repeatPassword === undefined);
-      
-        const cast = MyAuthenticationClass.cast(serialized);
-        assert(deserialized.password === '123');
-        assert(deserialized.repeatPassword === undefined);
+      describe('Skipped de-serialization/serialization', () => {
+
+        it('Example', () => {
+                
+          class MyAuthenticationClass extends EnTT {
+            constructor () { super(); super.entt(); }
+        
+            @Serializable()
+            public password = undefined as string;
+            
+            @Serializable({ serialize: false, deserialize: false })
+            public repeatPassword = undefined as string;
+          }
+        
+          const instance = new MyAuthenticationClass();
+          instance.password = '123';
+          instance.repeatPassword = '123';
+        
+          const serialized = instance.serialize();
+          assert(JSON.stringify(serialized) === JSON.stringify({ password: "123" }));
+        
+          const deserialized = new MyAuthenticationClass();
+          deserialized.deserialize({ ...serialized, repeatPassword: '123' });
+          assert(deserialized.password === '123');
+          assert(deserialized.repeatPassword === undefined);
+        
+          const cast = MyAuthenticationClass.cast(serialized);
+          assert(cast.password === '123');
+          assert(cast.repeatPassword === undefined);
+
+        });
+
+      });
+
+      describe('Custom de-serialization/serialization', () => {
+
+        it('Example', () => {
+
+          class MyTimestampedClass extends EnTT {
+            constructor () { super(); super.entt(); }
+        
+            @Serializable({
+              deserialize: (obj, value) => new Date(value),
+              serialize:   (obj, value) => value.getTime()
+            })
+            public timestamp = undefined as Date;
+          }
+
+          const now = Date.now(),
+                instance = new MyTimestampedClass();
+          instance.timestamp = new Date(now);
+
+          const serialized = instance.serialize();
+          assert(JSON.stringify(serialized) === JSON.stringify({ timestamp: now }));
+
+          const deserialized = new MyTimestampedClass();
+          deserialized.deserialize({ ...serialized });
+          assert(deserialized.timestamp.getTime() === instance.timestamp.getTime());
+        
+          const cast = MyTimestampedClass.cast(serialized);
+          assert(cast.timestamp.getTime() === instance.timestamp.getTime());
+
+        });
 
       });
 

@@ -312,7 +312,7 @@ describe('@Serializable', () => {
             }
         }
         tslib_1.__decorate([
-            __1.Serializable({ serialize: false }),
+            __1.Serializable({ serialize: false, deserialize: false }),
             tslib_1.__metadata("design:type", Object)
         ], TestBase.prototype, "propA", void 0);
         tslib_1.__decorate([
@@ -328,7 +328,7 @@ describe('@Serializable', () => {
             }
         }
         tslib_1.__decorate([
-            __1.Serializable({ serialize: true }),
+            __1.Serializable({ serialize: true, deserialize: true }),
             tslib_1.__metadata("design:type", Object)
         ], Test.prototype, "propA", void 0);
         tslib_1.__decorate([
@@ -352,8 +352,6 @@ describe('@Serializable', () => {
         class LimitedTest extends __1.EnTT {
             constructor() {
                 super();
-                this.serializeTrue = undefined;
-                this.serializeFalse = undefined;
                 this.serializeNever = undefined;
                 this.serializeSerOnly = undefined;
                 this.serializeDeSerOnly = undefined;
@@ -361,8 +359,6 @@ describe('@Serializable', () => {
                 super.entt();
             }
             initialize() {
-                this.serializeTrue = 'initialized';
-                this.serializeFalse = 'initialized';
                 this.serializeNever = 'initialized';
                 this.serializeSerOnly = 'initialized';
                 this.serializeDeSerOnly = 'initialized';
@@ -371,40 +367,22 @@ describe('@Serializable', () => {
             }
         }
         tslib_1.__decorate([
-            __1.Serializable({ serialize: true }),
-            tslib_1.__metadata("design:type", Object)
-        ], LimitedTest.prototype, "serializeTrue", void 0);
-        tslib_1.__decorate([
-            __1.Serializable({ serialize: false }),
-            tslib_1.__metadata("design:type", Object)
-        ], LimitedTest.prototype, "serializeFalse", void 0);
-        tslib_1.__decorate([
-            __1.Serializable({ serialize: __1.Serializable.serialize.Never }),
+            __1.Serializable({ serialize: false, deserialize: false }),
             tslib_1.__metadata("design:type", Object)
         ], LimitedTest.prototype, "serializeNever", void 0);
         tslib_1.__decorate([
-            __1.Serializable({ serialize: __1.Serializable.serialize.SerializeOnly }),
+            __1.Serializable({ serialize: true, deserialize: false }),
             tslib_1.__metadata("design:type", Object)
         ], LimitedTest.prototype, "serializeSerOnly", void 0);
         tslib_1.__decorate([
-            __1.Serializable({ serialize: __1.Serializable.serialize.DeserializeOnly }),
+            __1.Serializable({ serialize: false, deserialize: true }),
             tslib_1.__metadata("design:type", Object)
         ], LimitedTest.prototype, "serializeDeSerOnly", void 0);
         tslib_1.__decorate([
-            __1.Serializable({ serialize: __1.Serializable.serialize.Always }),
+            __1.Serializable({ serialize: true, deserialize: true }),
             tslib_1.__metadata("design:type", Object)
         ], LimitedTest.prototype, "serializeAlways", void 0);
-        it('Respects boolean serialization configuration', () => {
-            const instance = (new LimitedTest()).initialize(), serialized = internals_1._serialize(instance, 'object'), serializedCloned = Object.assign({}, serialized);
-            serializedCloned.serializeTrue = 'changed';
-            serializedCloned.serializeFalse = 'changed';
-            const deserialized = internals_1._deserialize(serializedCloned, 'object', { target: new LimitedTest() });
-            tests_init_1.assert(serialized.serializeTrue !== undefined);
-            tests_init_1.assert(serialized.serializeFalse === undefined);
-            tests_init_1.assert(deserialized.serializeTrue !== undefined);
-            tests_init_1.assert(deserialized.serializeFalse === undefined);
-        });
-        it('Respects @Serializable.serialize serialization configuration', () => {
+        it('Respects @Serializable.serialize and @Serializable.deserialize serialization configuration', () => {
             const instance = (new LimitedTest()).initialize(), serialized = internals_1._serialize(instance, 'object'), serializedCloned = Object.assign({}, serialized);
             serializedCloned.serializeNever = 'changed';
             serializedCloned.serializeSerOnly = 'changed';

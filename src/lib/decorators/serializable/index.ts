@@ -4,8 +4,8 @@
 
 // Import and (re)export internals
 import {
-  _symbolSerializable, _serializeType, _serializeTypeEnum, _rawDataType, _castType,
-  _readSerializableMetadata, _serialize, _deserialize, _cast
+  _symbolSerializable, _serializeType, _rawDataType, _castType,
+  _readSerializableMetadata, _serialize, _deserialize, _cast, _registerNativeClass
 } from './internals';
 
 // Import dependencies
@@ -14,6 +14,12 @@ import { _getDecoratorMetadata } from '../../entt/internals';
 /**
  * @Serializable() decorator, configures property serialization behavior
  * @param alias (Optional) Configures property getter
+ * @param serialize (Optional) Configures custom serialization mapper.
+ *   Function ((target: any, value: any) => any) will be called (with a reference to the entire EnTT instance
+ *   and the property value being fetched) and it's returned value will be used as serialized value.
+ * @param deserialize (Optional) Configures custom de-serialization mapper,
+ *   Function ((target: any, value: any) => any)  will be called (with a reference to the entire EnTT instance
+ *   and the property value being set) and it's returned value will be used  as de-serialized value.
  * @param cast (Optional) Configures how serialized value is cast before being set. Supported shapes are:
  * - { cast: MyEnTTClass }, will cast property value as instance of MyEnTTClass
  *    => new myEnTTClass()
@@ -23,16 +29,18 @@ import { _getDecoratorMetadata } from '../../entt/internals';
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  */
 export function Serializable ({
-  serialize = undefined as _serializeType | boolean,
-  alias     = undefined as string,
-  cast      = undefined as _castType
+  alias       = undefined as string,
+  serialize   = undefined as ((target: any, value: any) => any) | boolean,
+  deserialize = undefined as ((target: any, value: any) => any) | boolean,
+  cast        = undefined as _castType
 } = {}) {
 
   // Set defaults
   const defaults = {
-    serialize: true,
-    alias:     undefined as string,
-    cast:      undefined as _castType
+    alias:       undefined as string,
+    serialize:   true as ((target: any, value: any) => any) | boolean,
+    deserialize: true as ((target: any, value: any) => any) | boolean,
+    cast:        undefined as _castType
   };
 
   // Return decorator
@@ -41,13 +49,17 @@ export function Serializable ({
     const metadata = _getDecoratorMetadata(target.constructor, _symbolSerializable);
     metadata[key] = {
       key,
-      serialize: (serialize !== undefined ? serialize : (metadata[key]?.serialized !== undefined ? metadata[key].serialized : defaults.serialize)),
-      alias:     (alias !== undefined ? alias : (metadata[key]?.alias !== undefined ? metadata[key].alias : defaults.alias)),
-      cast:      (cast !== undefined ? cast : (metadata[key]?.cast !== undefined ? metadata[key].cast : defaults.cast))
+      alias:       (alias !== undefined ? alias : (metadata[key]?.alias !== undefined ? metadata[key].alias : defaults.alias)),
+      serialize:   (serialize !== undefined ? serialize : (metadata[key]?.serialize !== undefined ? metadata[key].serialize : defaults.serialize)),
+      deserialize: (deserialize !== undefined ? deserialize : (metadata[key]?.deserialize !== undefined ? metadata[key].deserialize : defaults.deserialize)),
+      cast:        (cast !== undefined ? cast : (metadata[key]?.cast !== undefined ? metadata[key].cast : defaults.cast))
     };
   }
 
 }
 
-// Attach enums to @Serializable decorator
-Serializable.serialize = _serializeTypeEnum;
+/**
+ * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
+ * @param nativeClass Native JS class
+ */
+Serializable.registerNativeClass = _registerNativeClass;

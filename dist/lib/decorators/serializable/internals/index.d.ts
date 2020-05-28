@@ -1,13 +1,12 @@
 export declare const _symbolSerializable: unique symbol;
 export declare type _serializeType = Symbol;
-export declare const _serializeTypeEnum: {
-    Never: symbol;
-    DeserializeOnly: symbol;
-    SerializeOnly: symbol;
-    Always: symbol;
-};
 export declare type _rawDataType = 'object' | 'json';
 export declare type _castType = (new () => any) | (Array<new () => any>) | Object;
+/**
+ * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
+ * @param nativeClass Native JS class
+ */
+export declare function _registerNativeClass(nativeClass: any): void;
 /**
  * Gets @Serializable decorator metadata store
  * @param Class EnTT class containing the metadata
@@ -21,7 +20,9 @@ export declare function _readSerializableMetadata(Class: any): any;
  * @param type Value type to serialize as
  * @returns Serialized value of requested type
  */
-export declare function _serialize<T>(source: T, type?: _rawDataType): any;
+export declare function _serialize<T>(source: T, type?: _rawDataType, { customValue }?: {
+    customValue?: any;
+}): any;
 /**
  * Deserializes value of given type into a target
  * @param T Target class
@@ -30,8 +31,9 @@ export declare function _serialize<T>(source: T, type?: _rawDataType): any;
  * @param type Type of value to deserialized form
  * @return Target with given value deserialized into it
  */
-export declare function _deserialize<T>(value: any, type?: _rawDataType, { target }?: {
+export declare function _deserialize<T>(value: any, type?: _rawDataType, { target, customValue }?: {
     target?: T;
+    customValue?: any;
 }): any;
 /**
  * Returns a casting function that casts a value of given type as an instance of a given Class

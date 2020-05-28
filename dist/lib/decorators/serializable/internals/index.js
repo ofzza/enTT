@@ -7,12 +7,16 @@ const internals_1 = require("../../../entt/internals");
 const internals_2 = require("../../validate/internals");
 // Define a unique symbols for Serializable decorator
 exports._symbolSerializable = Symbol('@Serializable');
-exports._serializeTypeEnum = {
-    Never: Symbol('@Serializable:Serialize:Never'),
-    DeserializeOnly: Symbol('@Serializable:Serialize:DeserializeOnly'),
-    SerializeOnly: Symbol('@Serializable:Serialize:SerializeOnly'),
-    Always: Symbol('@Serializable:Serialize:Always')
-};
+// Holds registered native JS classes
+const _nativeClasses = [Symbol, Date];
+/**
+ * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
+ * @param nativeClass Native JS class
+ */
+function _registerNativeClass(nativeClass) {
+    this._nativeClasses.push(nativeClass);
+}
+exports._registerNativeClass = _registerNativeClass;
 /**
  * Gets @Serializable decorator metadata store
  * @param Class EnTT class containing the metadata
@@ -29,11 +33,11 @@ exports._readSerializableMetadata = _readSerializableMetadata;
  * @param type Value type to serialize as
  * @returns Serialized value of requested type
  */
-function _serialize(source, type = 'object') {
+function _serialize(source, type = 'object', { customValue = internals_1._undefined } = {}) {
     // Check if source's store should be source instead
     const instance = (source instanceof internals_1._EnTTRoot ? internals_1._getInstanceMetadata(source).store : source);
     // Serializable
-    if (instance && (instance instanceof Array || instance instanceof Object)) {
+    if (instance && !_isNativeClassInstance(instance) && (instance instanceof Array || instance instanceof Object)) {
         // Serializable array or object
         const serialized = Object.keys(instance).reduce((serialized, key) => {
             // Check if property not a method
@@ -45,14 +49,17 @@ function _serialize(source, type = 'object') {
                 if (hasGetter) {
                     // Get @Serializable metadata (or defaults)
                     const metadata = _readSerializableMetadata(source.constructor)[key] || {
-                        serialize: true,
                         alias: undefined,
+                        serialize: true,
+                        deserialize: true,
                         cast: undefined
                     };
                     // Check if property is serializable
-                    if ([true, exports._serializeTypeEnum.Always, exports._serializeTypeEnum.SerializeOnly].indexOf(metadata.serialize) !== -1) {
+                    if (metadata.serialize) {
+                        // If custom serialization function, map value using the function
+                        const customValue = (metadata.serialize instanceof Function ? metadata.serialize(instance, instance[key]) : internals_1._undefined);
                         // Serializable value (EnTT instance or raw value)
-                        serialized[metadata.alias || key] = _serialize(instance[key], 'object');
+                        serialized[metadata.alias || key] = _serialize(instance[key], 'object', { customValue });
                     }
                 }
             }
@@ -64,7 +71,7 @@ function _serialize(source, type = 'object') {
     }
     else {
         // Convert raw value
-        return _obj2data(instance, type);
+        return _obj2data((customValue !== internals_1._undefined ? customValue : instance), type);
     }
 }
 exports._serialize = _serialize;
@@ -76,7 +83,7 @@ exports._serialize = _serialize;
  * @param type Type of value to deserialized form
  * @return Target with given value deserialized into it
  */
-function _deserialize(value, type = 'object', { target = undefined } = {}) {
+function _deserialize(value, type = 'object', { target = undefined, customValue = internals_1._undefined } = {}) {
     // Convert value
     const source = _data2obj(value, type);
     // Check if target defined
@@ -86,7 +93,7 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
     // Check if target's store should be source instead
     const instance = (target instanceof internals_1._EnTTRoot ? internals_1._getInstanceMetadata(target).store : target);
     // Check if value matches target shape
-    if ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object)) {
+    if (!_isNativeClassInstance(instance) && ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object))) {
         // Deserialize
         Object.keys(source).reduce((deserialized, key) => {
             var _a;
@@ -100,35 +107,38 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
                     // Get @Serializable metadata (or defaults)
                     const properties = internals_1._getDecoratorMetadata(target.constructor, exports._symbolSerializable), alias = properties && ((_a = Object.values(properties).find((prop) => (prop.alias === key))) === null || _a === void 0 ? void 0 : _a.key) || key;
                     const metadata = (properties === null || properties === void 0 ? void 0 : properties[alias]) || {
-                        serialize: true,
                         alias: undefined,
+                        serialize: true,
+                        deserialize: true,
                         cast: undefined
                     };
                     // Check if property is serializable
-                    if ([true, exports._serializeTypeEnum.Always, exports._serializeTypeEnum.DeserializeOnly].indexOf(metadata.serialize) !== -1) {
-                        // Serializable value (EnTT instance or raw value)            
+                    if (metadata.deserialize) {
+                        // If custom deserialization function, map value using the function
+                        const customValue = (metadata.deserialize instanceof Function ? metadata.deserialize(source, source[key]) : internals_1._undefined);
+                        // Deserializable value (EnTT instance or raw value)            
                         if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
                             // Deserialize and cast array
                             deserialized[alias] = source[key]
                                 .map((value) => {
-                                return _deserialize(value, 'object', { target: new (metadata.cast[0])() });
+                                return _deserialize(value, 'object', { target: new (metadata.cast[0])(), customValue });
                             });
                         }
                         else if (metadata.cast && (metadata.cast instanceof Object) && (Object.values(metadata.cast).length === 1) && (typeof Object.values(metadata.cast)[0] === 'function')) {
                             // Deserialize and cast hashmap
                             deserialized[alias] = Object.keys(source[key])
                                 .reduce((deserialized, k) => {
-                                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0])() });
+                                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0])(), customValue });
                                 return deserialized;
                             }, {});
                         }
                         else if (metadata.cast && (typeof metadata.cast === 'function')) {
                             // Deserialize and cast
-                            deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)() });
+                            deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)(), customValue });
                         }
                         else {
                             // Deserialize without casting
-                            deserialized[alias] = _deserialize(source[key], 'object');
+                            deserialized[alias] = _deserialize(source[key], 'object', { customValue });
                         }
                     }
                 }
@@ -143,7 +153,7 @@ function _deserialize(value, type = 'object', { target = undefined } = {}) {
     }
     else {
         // Just return a value as deserialized
-        return value;
+        return (customValue !== internals_1._undefined ? customValue : value);
     }
 }
 exports._deserialize = _deserialize;
@@ -212,6 +222,18 @@ function _clone(instance) {
     return _deserialize(_serialize(instance, 'object'), 'object', { target: new (instance.constructor)() });
 }
 exports._clone = _clone;
+/**
+ * Checks if object is an instance of a native JS class
+ * @param obj Object to check
+ */
+function _isNativeClassInstance(obj) {
+    for (const nativeClass of _nativeClasses) {
+        if (obj instanceof nativeClass) {
+            return true;
+        }
+    }
+    return false;
+}
 /**
  * Converts an object into serialized value of given type
  * @param obj Object being serialized

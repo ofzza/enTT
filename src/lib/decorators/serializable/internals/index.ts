@@ -11,14 +11,19 @@ export const _symbolSerializable = Symbol('@Serializable');
 
 // Define supported types
 export type _serializeType = Symbol;
-export const _serializeTypeEnum = {
-  Never:           Symbol('@Serializable:Serialize:Never'),
-  DeserializeOnly: Symbol('@Serializable:Serialize:DeserializeOnly'),
-  SerializeOnly:   Symbol('@Serializable:Serialize:SerializeOnly'),
-  Always:          Symbol('@Serializable:Serialize:Always')
-};
 export type _rawDataType = 'object' | 'json';
 export type _castType =  (new() => any) | (Array<new() => any>) | Object;
+
+// Holds registered native JS classes
+const _nativeClasses = [ Symbol, Date ];
+
+/**
+ * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
+ * @param nativeClass Native JS class
+ */
+export function _registerNativeClass (nativeClass) {
+  this._nativeClasses.push(nativeClass);
+}
 
 /**
  * Gets @Serializable decorator metadata store
@@ -36,13 +41,13 @@ export function _readSerializableMetadata (Class) {
  * @param type Value type to serialize as
  * @returns Serialized value of requested type
  */
-export function _serialize <T> (source: T, type = 'object' as _rawDataType): any {
+export function _serialize <T> (source: T, type = 'object' as _rawDataType, { customValue = _undefined as any } = {}): any {
 
   // Check if source's store should be source instead
   const instance = (source instanceof _EnTTRoot ? _getInstanceMetadata(source).store : source);
 
   // Serializable
-  if (instance && (instance instanceof Array || instance instanceof Object)) {
+  if (instance && !_isNativeClassInstance(instance) && (instance instanceof Array || instance instanceof Object)) {
 
     // Serializable array or object
     const serialized = Object.keys(instance).reduce((serialized, key) => {
@@ -59,16 +64,19 @@ export function _serialize <T> (source: T, type = 'object' as _rawDataType): any
 
           // Get @Serializable metadata (or defaults)
           const metadata = _readSerializableMetadata(source.constructor)[key] || {
-            serialize: true,
-            alias:     undefined,
-            cast:      undefined
+            alias:       undefined,
+            serialize:   true,
+            deserialize: true,
+            cast:        undefined
           };
 
           // Check if property is serializable
-          if ([true, _serializeTypeEnum.Always, _serializeTypeEnum.SerializeOnly].indexOf(metadata.serialize) !== -1) {
+          if (metadata.serialize) {
 
+            // If custom serialization function, map value using the function
+            const customValue = (metadata.serialize instanceof Function ? metadata.serialize(instance, instance[key]) : _undefined);
             // Serializable value (EnTT instance or raw value)
-            serialized[metadata.alias || key] = _serialize(instance[key], 'object');
+            serialized[metadata.alias || key] = _serialize(instance[key], 'object', { customValue });
 
           }
 
@@ -87,7 +95,7 @@ export function _serialize <T> (source: T, type = 'object' as _rawDataType): any
   } else {
 
     // Convert raw value
-    return _obj2data(instance, type);
+    return _obj2data((customValue !== _undefined ? customValue : instance), type);
 
   }
 
@@ -101,7 +109,7 @@ export function _serialize <T> (source: T, type = 'object' as _rawDataType): any
  * @param type Type of value to deserialized form
  * @return Target with given value deserialized into it
  */
-export function _deserialize <T> (value, type = 'object' as _rawDataType, { target = undefined as T } = {}) {
+export function _deserialize <T> (value, type = 'object' as _rawDataType, { target = undefined as T, customValue = _undefined as any } = {}) {
   
   // Convert value
   const source = _data2obj(value, type);
@@ -115,7 +123,7 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
   const instance = (target instanceof _EnTTRoot ? _getInstanceMetadata(target).store : target);
 
   // Check if value matches target shape
-  if ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object)) {
+  if (!_isNativeClassInstance(instance) && ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object))) {
 
     // Deserialize
     Object.keys(source).reduce((deserialized, key) => {
@@ -134,34 +142,37 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
           const properties = _getDecoratorMetadata(target.constructor, _symbolSerializable),
                 alias = properties && (Object.values(properties) as any[]).find((prop) => (prop.alias === key))?.key || key;
           const metadata = properties?.[alias] || {
-            serialize: true,
-            alias:     undefined,
-            cast:      undefined
+            alias:       undefined,
+            serialize:   true,
+            deserialize: true,
+            cast:        undefined
           };
 
           // Check if property is serializable
-          if ([true, _serializeTypeEnum.Always, _serializeTypeEnum.DeserializeOnly].indexOf(metadata.serialize) !== -1) {
+          if (metadata.deserialize) {
 
-            // Serializable value (EnTT instance or raw value)            
+            // If custom deserialization function, map value using the function
+            const customValue = (metadata.deserialize instanceof Function ? metadata.deserialize(source, source[key]) : _undefined);
+            // Deserializable value (EnTT instance or raw value)            
             if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
               // Deserialize and cast array
               deserialized[alias] = source[key]
                 .map((value) => {
-                  return _deserialize(value, 'object', { target: new (metadata.cast[0])() })
+                  return _deserialize(value, 'object', { target: new (metadata.cast[0])(), customValue })
                 });
             } else if (metadata.cast && (metadata.cast instanceof Object) && (Object.values(metadata.cast).length === 1) && (typeof Object.values(metadata.cast)[0] === 'function')) {
               // Deserialize and cast hashmap
               deserialized[alias] = Object.keys(source[key])
                 .reduce((deserialized, k) => {
-                  deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)() });
+                  deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)(), customValue });
                   return deserialized;
                 }, {});
             } else if (metadata.cast && (typeof metadata.cast === 'function')) {
               // Deserialize and cast
-              deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)() });
+              deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)(), customValue });
             } else {
               // Deserialize without casting
-              deserialized[alias] = _deserialize(source[key], 'object');
+              deserialized[alias] = _deserialize(source[key], 'object', { customValue });
             }
 
           }
@@ -184,7 +195,7 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
   } else {
 
     // Just return a value as deserialized
-    return value;
+    return (customValue !== _undefined ? customValue : value);
 
   }
   
@@ -256,6 +267,17 @@ export function _cast <T> (into: ((new() => T) | (new() => T)[] | Record<any, (n
  */
 export function _clone (instance) {
   return _deserialize(_serialize(instance, 'object'), 'object', { target: new (instance.constructor)() } );
+}
+
+/**
+ * Checks if object is an instance of a native JS class
+ * @param obj Object to check
+ */
+function _isNativeClassInstance (obj) {
+  for (const nativeClass of _nativeClasses) {
+    if (obj instanceof nativeClass) { return true; }
+  }
+  return false;
 }
 
 /**

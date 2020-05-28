@@ -338,7 +338,7 @@ describe('@Serializable', () => {
     class TestBase extends EnTT {
       constructor () { super(); super.entt(); }
       
-      @Serializable({ serialize: false })
+      @Serializable({ serialize: false, deserialize: false })
       public propA = true;
 
       @Serializable({ alias: 'propB1', cast: Inner })
@@ -348,7 +348,7 @@ describe('@Serializable', () => {
     class Test extends TestBase {
       constructor () { super(); super.entt(); }
       
-      @Serializable({ serialize: true })
+      @Serializable({ serialize: true, deserialize: true })
       public propA = true;
 
       @Serializable({ alias: 'propB2', cast: [Inner] })
@@ -376,22 +376,16 @@ describe('@Serializable', () => {
     class LimitedTest extends EnTT {
       constructor () { super(); super.entt(); }
   
-      @Serializable({ serialize: true })
-      public serializeTrue = undefined as string;
-      @Serializable({ serialize: false })
-      public serializeFalse = undefined as string;
-      @Serializable({ serialize: Serializable.serialize.Never })
+      @Serializable({ serialize: false, deserialize: false })
       public serializeNever = undefined as string;
-      @Serializable({ serialize: Serializable.serialize.SerializeOnly })
+      @Serializable({ serialize: true, deserialize: false })
       public serializeSerOnly = undefined as string;
-      @Serializable({ serialize: Serializable.serialize.DeserializeOnly })
+      @Serializable({ serialize: false, deserialize: true })
       public serializeDeSerOnly = undefined as string;
-      @Serializable({ serialize: Serializable.serialize.Always })
+      @Serializable({ serialize: true, deserialize: true })
       public serializeAlways = undefined as string;
   
       initialize () {
-        this.serializeTrue      = 'initialized';
-        this.serializeFalse     = 'initialized';
         this.serializeNever     = 'initialized';
         this.serializeSerOnly   = 'initialized';
         this.serializeDeSerOnly = 'initialized';
@@ -399,22 +393,8 @@ describe('@Serializable', () => {
         return this;
       }
     }
-  
-    it('Respects boolean serialization configuration', () => {
-      const instance = (new LimitedTest()).initialize(),
-            serialized = _serialize(instance, 'object'),
-      serializedCloned = { ... serialized };
-      serializedCloned.serializeTrue      = 'changed';
-      serializedCloned.serializeFalse     = 'changed';
-      const deserialized = _deserialize(serializedCloned, 'object', { target: new LimitedTest() });
 
-      assert(serialized.serializeTrue !== undefined);
-      assert(serialized.serializeFalse === undefined);
-      assert(deserialized.serializeTrue !== undefined);
-      assert(deserialized.serializeFalse === undefined);
-    });
-
-    it('Respects @Serializable.serialize serialization configuration', () => {
+    it('Respects @Serializable.serialize and @Serializable.deserialize serialization configuration', () => {
       const instance = (new LimitedTest()).initialize(),
             serialized = _serialize(instance, 'object'),
       serializedCloned = { ... serialized };

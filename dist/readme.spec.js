@@ -173,36 +173,65 @@ describe('README examples', () => {
                 tests_init_1.assert(cast.lastName === 'Doe');
             });
         });
-        describe('Not-Serializable properties', () => {
-            it('Example', () => {
-                class MyAuthenticationClass extends _1.EnTT {
-                    constructor() {
-                        super();
-                        this.password = undefined;
-                        this.repeatPassword = undefined;
-                        super.entt();
+        describe('Custom serialization', () => {
+            describe('Skipped de-serialization/serialization', () => {
+                it('Example', () => {
+                    class MyAuthenticationClass extends _1.EnTT {
+                        constructor() {
+                            super();
+                            this.password = undefined;
+                            this.repeatPassword = undefined;
+                            super.entt();
+                        }
                     }
-                }
-                tslib_1.__decorate([
-                    _1.Serializable({ serialize: true }),
-                    tslib_1.__metadata("design:type", Object)
-                ], MyAuthenticationClass.prototype, "password", void 0);
-                tslib_1.__decorate([
-                    _1.Serializable({ serialize: false }),
-                    tslib_1.__metadata("design:type", Object)
-                ], MyAuthenticationClass.prototype, "repeatPassword", void 0);
-                const instance = new MyAuthenticationClass();
-                instance.password = '123';
-                instance.repeatPassword = '123';
-                const serialized = instance.serialize();
-                tests_init_1.assert(JSON.stringify(serialized) === JSON.stringify({ password: "123" }));
-                const deserialized = new MyAuthenticationClass();
-                deserialized.deserialize(Object.assign(Object.assign({}, serialized), { repeatPassword: '123' }));
-                tests_init_1.assert(deserialized.password === '123');
-                tests_init_1.assert(deserialized.repeatPassword === undefined);
-                const cast = MyAuthenticationClass.cast(serialized);
-                tests_init_1.assert(deserialized.password === '123');
-                tests_init_1.assert(deserialized.repeatPassword === undefined);
+                    tslib_1.__decorate([
+                        _1.Serializable(),
+                        tslib_1.__metadata("design:type", Object)
+                    ], MyAuthenticationClass.prototype, "password", void 0);
+                    tslib_1.__decorate([
+                        _1.Serializable({ serialize: false, deserialize: false }),
+                        tslib_1.__metadata("design:type", Object)
+                    ], MyAuthenticationClass.prototype, "repeatPassword", void 0);
+                    const instance = new MyAuthenticationClass();
+                    instance.password = '123';
+                    instance.repeatPassword = '123';
+                    const serialized = instance.serialize();
+                    tests_init_1.assert(JSON.stringify(serialized) === JSON.stringify({ password: "123" }));
+                    const deserialized = new MyAuthenticationClass();
+                    deserialized.deserialize(Object.assign(Object.assign({}, serialized), { repeatPassword: '123' }));
+                    tests_init_1.assert(deserialized.password === '123');
+                    tests_init_1.assert(deserialized.repeatPassword === undefined);
+                    const cast = MyAuthenticationClass.cast(serialized);
+                    tests_init_1.assert(cast.password === '123');
+                    tests_init_1.assert(cast.repeatPassword === undefined);
+                });
+            });
+            describe('Custom de-serialization/serialization', () => {
+                it('Example', () => {
+                    class MyTimestampedClass extends _1.EnTT {
+                        constructor() {
+                            super();
+                            this.timestamp = undefined;
+                            super.entt();
+                        }
+                    }
+                    tslib_1.__decorate([
+                        _1.Serializable({
+                            deserialize: (obj, value) => new Date(value),
+                            serialize: (obj, value) => value.getTime()
+                        }),
+                        tslib_1.__metadata("design:type", Object)
+                    ], MyTimestampedClass.prototype, "timestamp", void 0);
+                    const now = Date.now(), instance = new MyTimestampedClass();
+                    instance.timestamp = new Date(now);
+                    const serialized = instance.serialize();
+                    tests_init_1.assert(JSON.stringify(serialized) === JSON.stringify({ timestamp: now }));
+                    const deserialized = new MyTimestampedClass();
+                    deserialized.deserialize(Object.assign({}, serialized));
+                    tests_init_1.assert(deserialized.timestamp.getTime() === instance.timestamp.getTime());
+                    const cast = MyTimestampedClass.cast(serialized);
+                    tests_init_1.assert(cast.timestamp.getTime() === instance.timestamp.getTime());
+                });
             });
         });
         describe('Preserving nested class instances', () => {
