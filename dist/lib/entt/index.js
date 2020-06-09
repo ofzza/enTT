@@ -13,6 +13,25 @@ const internals_4 = require("../decorators/validate/internals");
  */
 class EnTT extends internals_1._EnTTRoot {
     /**
+     * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
+     * @param nativeClass Native JS class
+     */
+    static registerNativeClass(nativeClass) {
+        internals_3._registerNativeClass(nativeClass);
+    }
+    /**
+     * Finds all properties of an EnTT class tagged with the specified tag
+     * @param tag Tag to search for
+     * @param from (Optional) EnTT class whose properties to search
+     */
+    static findTaggedProperties(tag, { from = undefined } = {}) {
+        // using @Property
+        // Get searching class
+        from = (from || this.prototype.constructor);
+        // Find tagged properties
+        return internals_2._findTaggedProperties(from, tag);
+    }
+    /**
      * Casts a value of given type as an instance of a parent EnTT Class
      * @param value Value (or structure of values) being cast, or (alternatively) a Promise about to resolve such a value
      * @param into Casting target class, or structure:
@@ -48,10 +67,11 @@ class EnTT extends internals_1._EnTTRoot {
     /**
      * Clones an EnTT instance
      * @param instance EnTT instance to clone
+     * @param target Instance being deserialized into
      * @returns Cloned instance
      */
-    static clone(instance) {
-        return internals_3._clone(instance);
+    static clone(instance, { target = undefined } = {}) {
+        return internals_3._clone(instance, { target });
     }
     /**
      * Initializes EnTT features for the extending class - should be called in extending class' constructor, right after "super()".

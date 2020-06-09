@@ -20,4 +20,11 @@ export declare function _readPropertyDescriptor({ target, key, store }?: {
     get: () => any;
     set: (value: any) => void;
     enumerable: boolean;
+    tag: any;
 };
+/**
+ * Finds all properties of an EnTT class tagged with the specified tag
+ * @param target Class to search for tagged properties
+ * @param tag Tag to search for
+ */
+export declare function _findTaggedProperties(target?: any, tag?: string | Symbol): string[];

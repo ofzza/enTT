@@ -132,4 +132,44 @@ describe('@Property', () => {
 
   });
 
+  describe('Allows tagging of properties', () => {
+
+    class Test extends EnTT {
+      constructor () { super(); super.entt(); }
+      
+      @Property({ tag: 'A' })
+      public propA = undefined as any;
+
+      @Property({ tag: 'B' })
+      public propB = undefined as any;
+
+      @Property({ tag: ['C', 'X'] })
+      public propC = undefined as any;
+
+      @Property({ tag: ['D', 'X'] })
+      public propD = undefined as any;
+    }
+
+    it('Finds properties tagged with a single tag', () => {
+      const propsA = Test.findTaggedProperties('A');
+      assert(propsA.length === 1);
+      assert(propsA[0] === 'propA');
+      const propsB = EnTT.findTaggedProperties('B', { from: Test });
+      assert(propsB.length === 1);
+      assert(propsB[0] === 'propB');
+    });
+    
+    it('Finds properties tagged with a multiple tags', () => {
+      const propsX1 = Test.findTaggedProperties('X');
+      assert(propsX1.length === 2);
+      assert(propsX1[0] === 'propC');
+      assert(propsX1[1] === 'propD');
+      const propsX2 = EnTT.findTaggedProperties('X', { from: Test });
+      assert(propsX2.length === 2);
+      assert(propsX2[0] === 'propC');
+      assert(propsX2[1] === 'propD');
+    });
+
+  });
+
 });

@@ -1,3 +1,4 @@
+import { _EnTTRoot } from '../../../entt/internals';
 export declare const _symbolSerializable: unique symbol;
 export declare type _serializeType = Symbol;
 export declare type _rawDataType = 'object' | 'json';
@@ -18,22 +19,28 @@ export declare function _readSerializableMetadata(Class: any): any;
  * @param T Source class
  * @param source Source being serialized from
  * @param type Value type to serialize as
+ * @param _customValue (Internal) Used for internal passing of custom serialized values
+ * @param _directSerialize (Internal) If true, ignores all custom serialization configuration (used by .clone())
  * @returns Serialized value of requested type
  */
-export declare function _serialize<T>(source: T, type?: _rawDataType, { customValue }?: {
-    customValue?: any;
+export declare function _serialize<T>(source: T, type?: _rawDataType, { _customValue, _directSerialize }?: {
+    _customValue?: any;
+    _directSerialize?: boolean;
 }): any;
 /**
  * Deserializes value of given type into a target
  * @param T Target class
- * @param target Instance being deserialized into
  * @param value Value being deserialized from
  * @param type Type of value to deserialized form
+ * @param target Instance being deserialized into
+ * @param _customValue Used for internal passing of custom deserialized values
+ * @param _directDeserialize (Internal) If true, ignores all custom deserialization configuration (used by .clone())
  * @return Target with given value deserialized into it
  */
-export declare function _deserialize<T>(value: any, type?: _rawDataType, { target, customValue }?: {
+export declare function _deserialize<T>(value: any, type?: _rawDataType, { target, _customValue, _directDeserialize }?: {
     target?: T;
-    customValue?: any;
+    _customValue?: any;
+    _directDeserialize?: boolean;
 }): any;
 /**
  * Returns a casting function that casts a value of given type as an instance of a given Class
@@ -51,6 +58,9 @@ export declare function _cast<T>(into: ((new () => T) | (new () => T)[] | Record
 /**
  * Clones an EnTT instance
  * @param instance EnTT instance to clone
+ * @param target Instance being deserialized into
  * @returns Cloned instance
  */
-export declare function _clone(instance: any): any;
+export declare function _clone(instance: any, { target }?: {
+    target?: _EnTTRoot;
+}): any;

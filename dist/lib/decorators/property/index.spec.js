@@ -140,5 +140,51 @@ describe('@Property', () => {
         test.prop = 'test';
         tests_init_1.assert(test.prop === '!TEST!');
     });
+    describe('Allows tagging of properties', () => {
+        class Test extends __1.EnTT {
+            constructor() {
+                super();
+                this.propA = undefined;
+                this.propB = undefined;
+                this.propC = undefined;
+                this.propD = undefined;
+                super.entt();
+            }
+        }
+        tslib_1.__decorate([
+            __1.Property({ tag: 'A' }),
+            tslib_1.__metadata("design:type", Object)
+        ], Test.prototype, "propA", void 0);
+        tslib_1.__decorate([
+            __1.Property({ tag: 'B' }),
+            tslib_1.__metadata("design:type", Object)
+        ], Test.prototype, "propB", void 0);
+        tslib_1.__decorate([
+            __1.Property({ tag: ['C', 'X'] }),
+            tslib_1.__metadata("design:type", Object)
+        ], Test.prototype, "propC", void 0);
+        tslib_1.__decorate([
+            __1.Property({ tag: ['D', 'X'] }),
+            tslib_1.__metadata("design:type", Object)
+        ], Test.prototype, "propD", void 0);
+        it('Finds properties tagged with a single tag', () => {
+            const propsA = Test.findTaggedProperties('A');
+            tests_init_1.assert(propsA.length === 1);
+            tests_init_1.assert(propsA[0] === 'propA');
+            const propsB = __1.EnTT.findTaggedProperties('B', { from: Test });
+            tests_init_1.assert(propsB.length === 1);
+            tests_init_1.assert(propsB[0] === 'propB');
+        });
+        it('Finds properties tagged with a multiple tags', () => {
+            const propsX1 = Test.findTaggedProperties('X');
+            tests_init_1.assert(propsX1.length === 2);
+            tests_init_1.assert(propsX1[0] === 'propC');
+            tests_init_1.assert(propsX1[1] === 'propD');
+            const propsX2 = __1.EnTT.findTaggedProperties('X', { from: Test });
+            tests_init_1.assert(propsX2.length === 2);
+            tests_init_1.assert(propsX2[0] === 'propC');
+            tests_init_1.assert(propsX2[1] === 'propD');
+        });
+    });
 });
 //# sourceMappingURL=index.spec.js.map

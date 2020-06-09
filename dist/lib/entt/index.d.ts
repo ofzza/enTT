@@ -6,6 +6,19 @@ import { EnttValidationError } from '../decorators/validate/internals';
  */
 export declare class EnTT extends _EnTTRoot {
     /**
+     * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
+     * @param nativeClass Native JS class
+     */
+    static registerNativeClass(nativeClass: any): void;
+    /**
+     * Finds all properties of an EnTT class tagged with the specified tag
+     * @param tag Tag to search for
+     * @param from (Optional) EnTT class whose properties to search
+     */
+    static findTaggedProperties(tag: string | Symbol, { from }?: {
+        from?: new () => EnTT;
+    }): string[];
+    /**
      * Casts a value of given type as an instance of a parent EnTT Class
      * @param value Value (or structure of values) being cast, or (alternatively) a Promise about to resolve such a value
      * @param into Casting target class, or structure:
@@ -25,9 +38,12 @@ export declare class EnTT extends _EnTTRoot {
     /**
      * Clones an EnTT instance
      * @param instance EnTT instance to clone
+     * @param target Instance being deserialized into
      * @returns Cloned instance
      */
-    static clone(instance: any): any;
+    static clone(instance: any, { target }?: {
+        target?: EnTT;
+    }): any;
     /**
      * Initializes EnTT features for the extending class - should be called in extending class' constructor, right after "super()".
      * Example:

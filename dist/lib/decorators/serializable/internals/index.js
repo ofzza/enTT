@@ -31,9 +31,11 @@ exports._readSerializableMetadata = _readSerializableMetadata;
  * @param T Source class
  * @param source Source being serialized from
  * @param type Value type to serialize as
+ * @param _customValue (Internal) Used for internal passing of custom serialized values
+ * @param _directSerialize (Internal) If true, ignores all custom serialization configuration (used by .clone())
  * @returns Serialized value of requested type
  */
-function _serialize(source, type = 'object', { customValue = internals_1._undefined } = {}) {
+function _serialize(source, type = 'object', { _customValue = internals_1._undefined, _directSerialize = false } = {}) {
     // Check if source's store should be source instead
     const instance = (source instanceof internals_1._EnTTRoot ? internals_1._getInstanceMetadata(source).store : source);
     // Serializable
@@ -55,11 +57,11 @@ function _serialize(source, type = 'object', { customValue = internals_1._undefi
                         cast: undefined
                     };
                     // Check if property is serializable
-                    if (metadata.serialize) {
+                    if (_directSerialize || metadata.serialize) {
                         // If custom serialization function, map value using the function
-                        const customValue = (metadata.serialize instanceof Function ? metadata.serialize(instance, instance[key]) : internals_1._undefined);
+                        const _customValue = (!_directSerialize && metadata.serialize instanceof Function ? metadata.serialize(instance, instance[key]) : internals_1._undefined);
                         // Serializable value (EnTT instance or raw value)
-                        serialized[metadata.alias || key] = _serialize(instance[key], 'object', { customValue });
+                        serialized[metadata.alias || key] = _serialize(instance[key], 'object', { _customValue });
                     }
                 }
             }
@@ -71,19 +73,21 @@ function _serialize(source, type = 'object', { customValue = internals_1._undefi
     }
     else {
         // Convert raw value
-        return _obj2data((customValue !== internals_1._undefined ? customValue : instance), type);
+        return _obj2data((_customValue !== internals_1._undefined ? _customValue : instance), type);
     }
 }
 exports._serialize = _serialize;
 /**
  * Deserializes value of given type into a target
  * @param T Target class
- * @param target Instance being deserialized into
  * @param value Value being deserialized from
  * @param type Type of value to deserialized form
+ * @param target Instance being deserialized into
+ * @param _customValue Used for internal passing of custom deserialized values
+ * @param _directDeserialize (Internal) If true, ignores all custom deserialization configuration (used by .clone())
  * @return Target with given value deserialized into it
  */
-function _deserialize(value, type = 'object', { target = undefined, customValue = internals_1._undefined } = {}) {
+function _deserialize(value, type = 'object', { target = undefined, _customValue = internals_1._undefined, _directDeserialize = false } = {}) {
     // Convert value
     const source = _data2obj(value, type);
     // Check if target defined
@@ -93,7 +97,7 @@ function _deserialize(value, type = 'object', { target = undefined, customValue 
     // Check if target's store should be source instead
     const instance = (target instanceof internals_1._EnTTRoot ? internals_1._getInstanceMetadata(target).store : target);
     // Check if value matches target shape
-    if (!_isNativeClassInstance(instance) && ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object))) {
+    if (!_isNativeClassInstance(source) && ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object))) {
         // Deserialize
         Object.keys(source).reduce((deserialized, key) => {
             var _a;
@@ -113,32 +117,32 @@ function _deserialize(value, type = 'object', { target = undefined, customValue 
                         cast: undefined
                     };
                     // Check if property is serializable
-                    if (metadata.deserialize) {
+                    if (_directDeserialize || metadata.deserialize) {
                         // If custom deserialization function, map value using the function
-                        const customValue = (metadata.deserialize instanceof Function ? metadata.deserialize(source, source[key]) : internals_1._undefined);
+                        const _customValue = (!_directDeserialize && metadata.deserialize instanceof Function ? metadata.deserialize(source, source[key]) : internals_1._undefined);
                         // Deserializable value (EnTT instance or raw value)            
                         if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
                             // Deserialize and cast array
                             deserialized[alias] = source[key]
                                 .map((value) => {
-                                return _deserialize(value, 'object', { target: new (metadata.cast[0])(), customValue });
+                                return _deserialize(value, 'object', { target: new (metadata.cast[0])(), _customValue });
                             });
                         }
                         else if (metadata.cast && (metadata.cast instanceof Object) && (Object.values(metadata.cast).length === 1) && (typeof Object.values(metadata.cast)[0] === 'function')) {
                             // Deserialize and cast hashmap
                             deserialized[alias] = Object.keys(source[key])
                                 .reduce((deserialized, k) => {
-                                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0])(), customValue });
+                                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0])(), _customValue });
                                 return deserialized;
                             }, {});
                         }
                         else if (metadata.cast && (typeof metadata.cast === 'function')) {
                             // Deserialize and cast
-                            deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)(), customValue });
+                            deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)(), _customValue });
                         }
                         else {
                             // Deserialize without casting
-                            deserialized[alias] = _deserialize(source[key], 'object', { customValue });
+                            deserialized[alias] = _deserialize(source[key], 'object', { _customValue });
                         }
                     }
                 }
@@ -153,7 +157,7 @@ function _deserialize(value, type = 'object', { target = undefined, customValue 
     }
     else {
         // Just return a value as deserialized
-        return (customValue !== internals_1._undefined ? customValue : value);
+        return (_customValue !== internals_1._undefined ? _customValue : value);
     }
 }
 exports._deserialize = _deserialize;
@@ -216,10 +220,12 @@ exports._cast = _cast;
 /**
  * Clones an EnTT instance
  * @param instance EnTT instance to clone
+ * @param target Instance being deserialized into
  * @returns Cloned instance
  */
-function _clone(instance) {
-    return _deserialize(_serialize(instance, 'object'), 'object', { target: new (instance.constructor)() });
+function _clone(instance, { target = undefined } = {}) {
+    target = target || new (instance.constructor)();
+    return _deserialize(_serialize(instance, 'object', { _directSerialize: true }), 'object', { target, _directDeserialize: true });
 }
 exports._clone = _clone;
 /**

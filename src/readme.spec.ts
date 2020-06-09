@@ -92,6 +92,39 @@ describe('README examples', () => {
 
     });
 
+    describe('Property tagging', () => {
+
+      it('Example', () => {
+
+        class MyPersonClass extends EnTT {
+          constructor () { super(); super.entt(); }
+      
+          @Property({ tag: 'callsign' })
+          public name = undefined as string;      
+        }
+      
+        class MyCarClass extends EnTT {
+          constructor () { super(); super.entt(); }
+      
+          @Property({ tag: 'callsign' })
+          public make = undefined as string;      
+        }
+      
+        function promptCallsign (instance: EnTT, from: (new() => EnTT)) {
+          return instance[EnTT.findTaggedProperties('callsign', { from })[0]];
+        }
+      
+        const person = new MyPersonClass();
+        person.name = 'Marty McFly';
+        const car = new MyCarClass();
+        car.make = 'Delorean';
+
+        assert(promptCallsign(person, MyPersonClass) === 'Marty McFly');
+        assert(promptCallsign(car, MyCarClass) === 'Delorean');
+      });
+
+    });
+
   });
 
   describe('Using @Serializable decorator', () => {

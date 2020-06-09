@@ -32,7 +32,8 @@ export function _readPropertyDescriptor ({
   const metadata = _readPropertyMetadata(target.constructor)[key] || {
     get:        true,
     set:        true,
-    enumerable: true
+    enumerable: true,
+    tag:        []
   };
   return {
     // Define property getter
@@ -56,6 +57,30 @@ export function _readPropertyDescriptor ({
       }
     }),
     // Define if property is enumerable
-    enumerable: !!metadata.enumerable
+    enumerable: !!metadata.enumerable,
+    // Define property tags
+    tag:  metadata.tag
   };  
+}
+/**
+ * Finds all properties of an EnTT class tagged with the specified tag
+ * @param target Class to search for tagged properties
+ * @param tag Tag to search for
+ */
+export function _findTaggedProperties (
+  target = undefined as any,
+  tag    = undefined as string | Symbol
+) {
+  // Get @Property metadata (or defaults)
+  const metadata = _readPropertyMetadata(target);
+  // Find properties matching requested tab
+  return Object.keys(metadata).filter((key) => {
+    const propertyMetadata = metadata[key];
+    if (propertyMetadata && propertyMetadata.tag) {
+      if ((propertyMetadata.tag instanceof Array) && (propertyMetadata.tag.indexOf(tag) !== -1)) { return true; }
+      if ((typeof propertyMetadata.tag === 'symbol') && (propertyMetadata.tag === tag)) { return true; }
+      if ((typeof propertyMetadata.tag === 'string') && (propertyMetadata.tag === tag)) { return true; }
+    }
+    return false;
+  });
 }

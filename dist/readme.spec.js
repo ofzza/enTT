@@ -98,6 +98,41 @@ describe('README examples', () => {
                 tests_init_1.assert(instance.fullName === 'John Doe');
             });
         });
+        describe('Property tagging', () => {
+            it('Example', () => {
+                class MyPersonClass extends _1.EnTT {
+                    constructor() {
+                        super();
+                        this.name = undefined;
+                        super.entt();
+                    }
+                }
+                tslib_1.__decorate([
+                    _1.Property({ tag: 'callsign' }),
+                    tslib_1.__metadata("design:type", Object)
+                ], MyPersonClass.prototype, "name", void 0);
+                class MyCarClass extends _1.EnTT {
+                    constructor() {
+                        super();
+                        this.make = undefined;
+                        super.entt();
+                    }
+                }
+                tslib_1.__decorate([
+                    _1.Property({ tag: 'callsign' }),
+                    tslib_1.__metadata("design:type", Object)
+                ], MyCarClass.prototype, "make", void 0);
+                function promptCallsign(instance, from) {
+                    return instance[_1.EnTT.findTaggedProperties('callsign', { from })[0]];
+                }
+                const person = new MyPersonClass();
+                person.name = 'Marty McFly';
+                const car = new MyCarClass();
+                car.make = 'Delorean';
+                tests_init_1.assert(promptCallsign(person, MyPersonClass) === 'Marty McFly');
+                tests_init_1.assert(promptCallsign(car, MyCarClass) === 'Delorean');
+            });
+        });
     });
     describe('Using @Serializable decorator', () => {
         describe('Simply serialize, deserialize and cast', () => {

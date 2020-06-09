@@ -11,9 +11,11 @@
  * - If ((target: any, value: any) => any), the function will be called (with a reference to the entire EnTT instance
  *   and the property value being set) and it's returned value will be used as the value being stored for the property.
  * @param enumerable (Optional) If the property is enumerable
+ * @param tag (Optional) String or array of strings marking the property as belonging to a certain subset
  */
-export declare function Property({ get, set, enumerable }?: {
+export declare function Property({ get, set, enumerable, tag }?: {
     get?: boolean | ((target: any, value: any) => any);
     set?: boolean | ((target: any, value: any) => any);
     enumerable?: boolean;
+    tag?: string | Symbol | string[] | Symbol[];
 }): (target: any, key: any) => void;

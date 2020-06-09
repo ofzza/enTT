@@ -5,8 +5,8 @@
 import { _undefined, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from './internals';
 
 // Import dependencies
-import { _readPropertyMetadata, _readPropertyDescriptor } from '../decorators/property/internals';
-import { _rawDataType, _cast, _clone, _serialize, _deserialize } from '../decorators/serializable/internals';
+import { _readPropertyMetadata, _readPropertyDescriptor, _findTaggedProperties } from '../decorators/property/internals';
+import { _rawDataType, _registerNativeClass, _cast, _clone, _serialize, _deserialize } from '../decorators/serializable/internals';
 import { EnttValidationError, _readValidityMetadata, _validateObject, _validateProperty, _isValid, _getValidationErrors } from '../decorators/validate/internals';
 
 /**
@@ -14,6 +14,27 @@ import { EnttValidationError, _readValidityMetadata, _validateObject, _validateP
  */
 export class EnTT extends _EnTTRoot {
 
+  /**
+   * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
+   * @param nativeClass Native JS class
+   */
+  public static registerNativeClass (nativeClass) {
+    _registerNativeClass(nativeClass);
+  }
+
+  /**
+   * Finds all properties of an EnTT class tagged with the specified tag
+   * @param tag Tag to search for
+   * @param from (Optional) EnTT class whose properties to search 
+   */
+  public static findTaggedProperties (tag: string | Symbol, { from = undefined as (new() => EnTT) } = {}) {
+    // using @Property
+    // Get searching class
+    from = (from || (this.prototype.constructor as (new() => any)));
+    // Find tagged properties
+    return _findTaggedProperties(from, tag);
+  }
+  
   /**
    * Casts a value of given type as an instance of a parent EnTT Class
    * @param value Value (or structure of values) being cast, or (alternatively) a Promise about to resolve such a value
@@ -50,10 +71,11 @@ export class EnTT extends _EnTTRoot {
   /**
    * Clones an EnTT instance
    * @param instance EnTT instance to clone
+   * @param target Instance being deserialized into
    * @returns Cloned instance
    */
-  public static clone (instance) {
-    return _clone(instance);
+  public static clone (instance, { target = undefined as EnTT } = {}) {
+    return _clone(instance, { target });
   }
 
   /**
