@@ -2,14 +2,16 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { assert } from '../../../tests.init'
-import { EnTT, Property }  from '../../../';
+import { assert } from '../../../tests.init';
+import { EnTT, Property } from '../../../';
 
 // Test ...
 describe('@Property', () => {
-
   class Test extends EnTT {
-    constructor () { super(); super.entt(); }
+    constructor() {
+      super();
+      super.entt();
+    }
 
     public plain = 'plain';
 
@@ -70,7 +72,6 @@ describe('@Property', () => {
   });
 
   describe('Can set property with custom getter and setter', () => {
-
     it('Custom getter reflects changes to property value', () => {
       const test = new Test();
       assert(test.customgetter === 'plain:CUSTOMGETTER');
@@ -85,7 +86,7 @@ describe('@Property', () => {
       assert(test.customsetter === 'plain:TEST');
     });
 
-    it('Custom getter and setter reflect changes to other, referenced properties\' values', () => {
+    it("Custom getter and setter reflect changes to other, referenced properties' values", () => {
       const test = new Test();
       test.plain = 'no-longer-plain';
       test.customsetter = 'test';
@@ -93,50 +94,57 @@ describe('@Property', () => {
       assert(test.customgetter === 'no-longer-plain:TEST');
       assert(test.customsetter === 'no-longer-plain:TEST');
     });
-
   });
 
   it('Allows overriding when extending EnTT classes', () => {
-
     class TestBase extends EnTT {
-      constructor () { super(); super.entt(); }
-      
+      constructor() {
+        super();
+        super.entt();
+      }
+
       @Property({
         enumerable: false,
         set: false,
-        get: false
+        get: false,
       })
       public prop = undefined as any;
     }
 
     class Test extends TestBase {
-      constructor () { super(); super.entt(); }
-      
+      constructor() {
+        super();
+        super.entt();
+      }
+
       @Property({
         enumerable: true,
         set: (obj, value) => value && value.toUpperCase(),
-        get: (obj, value) => `!${value && value.toUpperCase()}!`
+        get: (obj, value) => `!${value && value.toUpperCase()}!`,
       })
       public prop = undefined as any;
     }
 
     const base = new TestBase();
     assert(Object.keys(base).length === 0);
-    expect(() => { base.prop = 'test'; }).toThrow();
+    expect(() => {
+      base.prop = 'test';
+    }).toThrow();
     assert(base.prop === undefined);
 
     const test = new Test();
     assert(Object.keys(test).length === 1);
     test.prop = 'test';
     assert(test.prop === '!TEST!');
-
   });
 
   describe('Allows tagging of properties', () => {
-
     class Test extends EnTT {
-      constructor () { super(); super.entt(); }
-      
+      constructor() {
+        super();
+        super.entt();
+      }
+
       @Property({ tag: 'A' })
       public propA = undefined as any;
 
@@ -158,7 +166,7 @@ describe('@Property', () => {
       assert(propsB.length === 1);
       assert(propsB[0] === 'propB');
     });
-    
+
     it('Finds properties tagged with a multiple tags', () => {
       const propsX1 = Test.findTaggedProperties('X');
       assert(propsX1.length === 2);
@@ -169,7 +177,5 @@ describe('@Property', () => {
       assert(propsX2[0] === 'propC');
       assert(propsX2[1] === 'propD');
     });
-
   });
-
 });

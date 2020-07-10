@@ -3,8 +3,8 @@
 
 // Import dependencies
 import { assert } from '../../../tests.init';
-import { EnTT, Validate }  from '../../../';
-import { _validateObject, _validateProperty } from './internals'
+import { EnTT, Validate } from '../../../';
+import { _validateObject, _validateProperty } from './internals';
 
 // Import validation providers
 import * as Joi from '@hapi/joi';
@@ -13,42 +13,47 @@ import * as Yup from 'yup';
 
 // Test ...
 describe('@Validate', () => {
-
   // Initialize test data models
   class InnerTest extends EnTT {
-    constructor () { super(); super.entt(); }
+    constructor() {
+      super();
+      super.entt();
+    }
 
     @Validate({
       type: 'number',
-      provider: (obj, value) => ((typeof value === 'number') && (Math.trunc(value) === value) && (value > 0))
+      provider: (obj, value) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
     })
     public naturalNum = 1;
   }
 
   class Test extends EnTT {
-    constructor () { super(); super.entt(); }
+    constructor() {
+      super();
+      super.entt();
+    }
 
     @Validate({
       type: 'number',
-      provider: (obj, value) => ((typeof value === 'number') && (Math.trunc(value) === value) && (value > 0))
+      provider: (obj, value) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
     })
     public customNaturalNum = 1;
 
     @Validate({
       type: 'number',
-      provider: Joi.number().strict().integer().min(1)
+      provider: Joi.number().strict().integer().min(1),
     })
     public joiNaturalNum = 2;
 
     @Validate({
       type: 'number',
-      provider: JoiBrowser.number().strict().integer().min(1)
+      provider: JoiBrowser.number().strict().integer().min(1),
     })
     public joiBrowserNaturalNum = 3;
 
     @Validate({
       type: 'number',
-      provider: Yup.number().strict().integer().min(1)
+      provider: Yup.number().strict().integer().min(1),
     })
     public yupNaturalNum = 4;
 
@@ -56,12 +61,11 @@ describe('@Validate', () => {
 
     public enttarrayliteral = [new InnerTest(), new InnerTest(), new InnerTest()];
 
-    public enttobjectliteral = { a: new InnerTest(), b: new InnerTest(), c: new InnerTest() }; 
+    public enttobjectliteral = { a: new InnerTest(), b: new InnerTest(), c: new InnerTest() };
   }
 
   // Run tests
   describe('Works with different validation providers', () => {
-
     it('custom', () => {
       verifyNaturalNumProperty(Test, 'customNaturalNum');
     });
@@ -77,11 +81,9 @@ describe('@Validate', () => {
     it('yup', () => {
       verifyNaturalNumProperty(Test, 'yupNaturalNum');
     });
-
   });
 
   describe('Works with nested EnTTs', () => {
-
     it('Nested single EnTT', () => {
       const instance = new Test();
       // Test invalid nested values
@@ -103,8 +105,8 @@ describe('@Validate', () => {
     it('Nested EnTT array', () => {
       const instance = new Test();
       // Test invalid nested values
-      instance.enttarrayliteral.forEach((instance) => {
-        (instance.naturalNum as any) = '-3.14'
+      instance.enttarrayliteral.forEach(instance => {
+        (instance.naturalNum as any) = '-3.14';
       });
       {
         const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
@@ -112,8 +114,8 @@ describe('@Validate', () => {
         assert(errors.length === 6);
       }
       // Test valid nested values
-      instance.enttarrayliteral.forEach((instance) => {
-        (instance.naturalNum as any) = 1
+      instance.enttarrayliteral.forEach(instance => {
+        (instance.naturalNum as any) = 1;
       });
       {
         const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
@@ -125,8 +127,8 @@ describe('@Validate', () => {
     it('Nested EnTT hashmap', () => {
       const instance = new Test();
       // Test invalid nested values
-      Object.values(instance.enttobjectliteral).forEach((instance) => {
-        (instance.naturalNum as any) = '-3.14'
+      Object.values(instance.enttobjectliteral).forEach(instance => {
+        (instance.naturalNum as any) = '-3.14';
       });
       {
         const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
@@ -134,8 +136,8 @@ describe('@Validate', () => {
         assert(errors.length === 6);
       }
       // Test valid nested values
-      Object.values(instance.enttobjectliteral).forEach((instance) => {
-        (instance.naturalNum as any) = 1
+      Object.values(instance.enttobjectliteral).forEach(instance => {
+        (instance.naturalNum as any) = 1;
       });
       {
         const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
@@ -143,14 +145,15 @@ describe('@Validate', () => {
         assert(errors.length === 0);
       }
     });
-
   });
 
   it('Allows overriding when extending EnTT classes', () => {
-
     class TestBase extends EnTT {
-      constructor () { super(); this.entt(); }
-      
+      constructor() {
+        super();
+        this.entt();
+      }
+
       @Validate({ type: 'boolean' })
       public propA = true as any;
 
@@ -159,12 +162,15 @@ describe('@Validate', () => {
     }
 
     class Test extends TestBase {
-      constructor () { super(); this.entt(); }
-      
+      constructor() {
+        super();
+        this.entt();
+      }
+
       @Validate({ type: 'number' })
       public propA = 0 as any;
 
-      @Validate({ provider: (target, value) => (value < 10) })
+      @Validate({ provider: (target, value) => value < 10 })
       public propB = 0 as any;
     }
 
@@ -185,9 +191,7 @@ describe('@Validate', () => {
     test.propB = 100;
     assert(test.valid === false);
     assert(test.errors.propB.length === 1);
-
   });
-
 });
 
 /**
@@ -195,7 +199,7 @@ describe('@Validate', () => {
  * @param Class Class to verify
  * @param key Property key
  */
-function verifyNaturalNumProperty (Class, key) {
+function verifyNaturalNumProperty(Class, key) {
   // Explicitly test valid object
   {
     const instance = new Class();
@@ -233,7 +237,7 @@ function verifyNaturalNumProperty (Class, key) {
     instance.revert(key);
     assert(instance.valid === true);
     assert(Object.values(instance.errors).length === 0);
-  }  
+  }
 }
 
 /**
@@ -241,7 +245,7 @@ function verifyNaturalNumProperty (Class, key) {
  * @param instance Parent object hosting the property
  * @param key Property key
  */
-function verifyNaturalNumPropertyErrors (instance, key) {
+function verifyNaturalNumPropertyErrors(instance, key) {
   {
     const errors = _validateProperty(instance, key, 1);
     assert(errors.length === 0);

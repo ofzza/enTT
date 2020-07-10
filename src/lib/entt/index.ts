@@ -2,39 +2,45 @@
 // ----------------------------------------------------------------------------
 
 // Import and (re)export internals
-import { _undefined, _EnTTRoot, _getClassMetadata, _getInstanceMetadata } from './internals';
+import { _undefined, _EnTTRoot, _getClassMetadata, _getInstanceMetadata, _getDecoratorMetadata, _symbolEnTTInstance } from './internals';
 
 // Import dependencies
 import { _readPropertyMetadata, _readPropertyDescriptor, _findTaggedProperties } from '../decorators/property/internals';
 import { _rawDataType, _registerNativeClass, _cast, _clone, _serialize, _deserialize } from '../decorators/serializable/internals';
-import { EnttValidationError, _readValidityMetadata, _validateObject, _validateProperty, _isValid, _getValidationErrors } from '../decorators/validate/internals';
+import {
+  EnttValidationError,
+  _readValidityMetadata,
+  _validateObject,
+  _validateProperty,
+  _isValid,
+  _getValidationErrors,
+} from '../decorators/validate/internals';
 
 /**
  * Main, extensible EnTT class definition
  */
 export class EnTT extends _EnTTRoot {
-
   /**
    * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
    * @param nativeClass Native JS class
    */
-  public static registerNativeClass (nativeClass) {
+  public static registerNativeClass(nativeClass) {
     _registerNativeClass(nativeClass);
   }
 
   /**
    * Finds all properties of an EnTT class tagged with the specified tag
    * @param tag Tag to search for
-   * @param from (Optional) EnTT class whose properties to search 
+   * @param from (Optional) EnTT class whose properties to search
    */
-  public static findTaggedProperties (tag: string | Symbol, { from = undefined as (new() => EnTT) } = {}) {
+  public static findTaggedProperties(tag: string | symbol, { from = undefined as new () => EnTT } = {}) {
     // using @Property
     // Get searching class
-    from = (from || (this.prototype.constructor as (new() => any)));
+    from = from || (this.prototype.constructor as new () => any);
     // Find tagged properties
     return _findTaggedProperties(from, tag);
   }
-  
+
   /**
    * Casts a value of given type as an instance of a parent EnTT Class
    * @param value Value (or structure of values) being cast, or (alternatively) a Promise about to resolve such a value
@@ -48,19 +54,19 @@ export class EnTT extends _EnTTRoot {
    * @param type Type of value being cast
    * @returns Instance (or structure of instances) of the class with deserialized data, or (alternatively) a Promise about to resolve to such an instance
    */
-  public static cast (value, { into = undefined as ((new() => EnTT) | (new() => EnTT)[] | Record<any, (new() => EnTT)>), type = 'object' as _rawDataType } = {}) {
-    // using @Serializable    
+  public static cast(value, { into = undefined as (new () => EnTT) | (new () => EnTT)[] | Record<any, new () => EnTT>, type = 'object' as _rawDataType } = {}) {
+    // using @Serializable
     // Get casting target class
-    into = (into || (this.prototype.constructor as (new() => any)));
+    into = into || (this.prototype.constructor as new () => any);
     // Check if value is a Promise
     if (value instanceof Promise) {
       // Return promise of cast, resolved value
       return new Promise((resolve, reject) => {
         value
-          .then((value) => {
-            resolve(EnTT.cast(value, { into, type }));
+          .then(v => {
+            resolve(EnTT.cast(v, { into, type }));
           })
-          .catch(reject)
+          .catch(reject);
       });
     } else {
       // Cast value
@@ -74,7 +80,7 @@ export class EnTT extends _EnTTRoot {
    * @param target Instance being deserialized into
    * @returns Cloned instance
    */
-  public static clone (instance, { target = undefined as EnTT } = {}) {
+  public static clone(instance, { target = undefined as EnTT } = {}) {
     return _clone(instance, { target });
   }
 
@@ -83,8 +89,7 @@ export class EnTT extends _EnTTRoot {
    * Example:
    *   constructor () { super(); super.entt(); }
    */
-  protected entt () {
-
+  protected entt() {
     // Initialize metadata on the derived class
     const classMetadata = _getClassMetadata(this.constructor);
     // Initialize metadata on the instance (non-enumerable an hidden-ish)
@@ -92,11 +97,10 @@ export class EnTT extends _EnTTRoot {
 
     // Replace properties with dynamic counterparts
     _replacePropertiesWithGetterSetters.bind(this)({
-      store:    instanceMetadata.store,
-      restore:  instanceMetadata.restore,
-      children: instanceMetadata.children
+      store: instanceMetadata.store,
+      restore: instanceMetadata.restore,
+      children: instanceMetadata.children,
     });
-
   }
 
   /**
@@ -104,7 +108,7 @@ export class EnTT extends _EnTTRoot {
    * @param type Value type to serialize as
    * @returns Serialized value of requested type
    */
-  public serialize (type = 'object' as _rawDataType) {
+  public serialize(type = 'object' as _rawDataType) {
     // using @Serializable
     return _serialize(this, type);
   }
@@ -115,7 +119,7 @@ export class EnTT extends _EnTTRoot {
    * @param type Type of value to deserialized form
    * @return Target with given value deserialized into it
    */
-  public deserialize (value, type = 'object' as _rawDataType) {
+  public deserialize(value, type = 'object' as _rawDataType) {
     // using @Serializable
     return _deserialize(value, type, { target: this });
   }
@@ -124,7 +128,7 @@ export class EnTT extends _EnTTRoot {
    * Returns validation status of the instance
    * @returns If instance is validated
    */
-  public get valid (): boolean {
+  public get valid(): boolean {
     // using @Validate
     _validateObject(this);
     return _isValid(this);
@@ -134,7 +138,7 @@ export class EnTT extends _EnTTRoot {
    * Returns validation errors of all properties
    * @returns A hashmap of arrays of errors per property
    */
-  public get errors (): Record<string, EnttValidationError[]> {
+  public get errors(): Record<string, EnttValidationError[]> {
     // using @Validate
     _validateObject(this);
     return _getValidationErrors(this);
@@ -144,49 +148,42 @@ export class EnTT extends _EnTTRoot {
    * Reverts property value(s) of requested property (or all properties if no property key specified) to last valid value
    * @param key (Optional) Property key of the property to be reverted
    */
-  public revert (key?: string) {
-    const store   = _getInstanceMetadata(this).store,
-          restore = _getInstanceMetadata(this).restore,
-          errors  = _readValidityMetadata(this).errors,
-          keys    = (key ? [key] : Object.keys(restore));
-    keys.forEach((key) => {
-      if (errors[key].length) {
+  public revert(key?: string) {
+    const store = _getInstanceMetadata(this).store,
+      restore = _getInstanceMetadata(this).restore,
+      errors = _readValidityMetadata(this).errors,
+      keys = key ? [key] : Object.keys(restore);
+    keys.forEach(k => {
+      if (errors[k].length) {
         // Undo to latest valid value
-        store[key] = restore[key];
+        store[k] = restore[k];
       }
     });
   }
-
 }
 
 /**
  * Replaces properties with dynamic counterparts
  * @param store Private store for all property values
  */
-function _replacePropertiesWithGetterSetters ({
-  store    = undefined as object,
-  restore  = undefined as object,
-  children = undefined as object[]
-} = {}) {
+function _replacePropertiesWithGetterSetters({ store = undefined as object, restore = undefined as object, children = undefined as object[] } = {}) {
   // Iterate over properties
-  for (const key of Object.keys(this) ) {
+  for (const key of Object.keys(this)) {
     // Check if own property
     if (this.hasOwnProperty(key)) {
       if (typeof this[key] !== 'function') {
-
         // Get initial value
         const value = this[key];
 
         // Generate property descriptor (advised by @Property)
         const descriptor = _readPropertyDescriptor({ target: this, key, store });
-        
+
         // Wrap descriptor setter
         if (descriptor.set) {
           const previousSetter = descriptor.set;
-          descriptor.set = (value) => {
-
+          descriptor.set = v => {
             // Deffer to originally set up setter and store value
-            previousSetter(value);
+            previousSetter(v);
 
             // Validate property (using @Validate)
             const errors = _validateProperty(this, key);
@@ -204,8 +201,7 @@ function _replacePropertiesWithGetterSetters ({
             }
             // Search newly added children of this property
             children.push(..._findChildEnTTs([key], store[key]));
-
-          }
+          };
         }
 
         // Replace property with a custom property
@@ -213,7 +209,7 @@ function _replacePropertiesWithGetterSetters ({
           // Default property configuration
           ...{ configurable: true },
           // @Property property overrides
-          ...descriptor
+          ...descriptor,
         });
 
         // Store initial value (through property custom setter, if available)
@@ -222,7 +218,6 @@ function _replacePropertiesWithGetterSetters ({
         } else {
           store[key] = value;
         }
-
       }
     }
   }
@@ -233,15 +228,15 @@ function _replacePropertiesWithGetterSetters ({
  * @param value Value being searched for EnTTs
  * @returns Array of found EnTT children
  */
-function _findChildEnTTs (path, value) {
+function _findChildEnTTs(path, value) {
   // Find child EnTTs
   const children = [];
   if (value instanceof EnTT) {
     children.push({
       path,
-      child: value
+      child: value,
     });
-  } else if ((value instanceof Array) || (value instanceof Object)) {
+  } else if (value instanceof Array || value instanceof Object) {
     for (const key of Object.keys(value)) {
       children.push(..._findChildEnTTs([...path, key], value[key]));
     }

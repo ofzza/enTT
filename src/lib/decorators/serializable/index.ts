@@ -4,8 +4,15 @@
 
 // Import and (re)export internals
 import {
-  _symbolSerializable, _serializeType, _rawDataType, _castType,
-  _readSerializableMetadata, _serialize, _deserialize, _cast, _registerNativeClass
+  _symbolSerializable,
+  _serializeType,
+  _rawDataType,
+  _castType,
+  _readSerializableMetadata,
+  _serialize,
+  _deserialize,
+  _cast,
+  _registerNativeClass,
 } from './internals';
 
 // Import dependencies
@@ -28,19 +35,18 @@ import { _getDecoratorMetadata } from '../../entt/internals';
  * - { cast: {MyEnTTClass} }, will cast property value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  */
-export function Serializable ({
-  alias       = undefined as string,
-  serialize   = undefined as ((target: any, value: any) => any) | boolean,
+export function Serializable({
+  alias = undefined as string,
+  serialize = undefined as ((target: any, value: any) => any) | boolean,
   deserialize = undefined as ((target: any, value: any) => any) | boolean,
-  cast        = undefined as _castType
+  cast = undefined as _castType,
 } = {}) {
-
   // Set defaults
   const defaults = {
-    alias:       undefined as string,
-    serialize:   true as ((target: any, value: any) => any) | boolean,
+    alias: undefined as string,
+    serialize: true as ((target: any, value: any) => any) | boolean,
     deserialize: true as ((target: any, value: any) => any) | boolean,
-    cast:        undefined as _castType
+    cast: undefined as _castType,
   };
 
   // Return decorator
@@ -49,13 +55,12 @@ export function Serializable ({
     const metadata = _getDecoratorMetadata(target.constructor, _symbolSerializable);
     metadata[key] = {
       key,
-      alias:       (alias !== undefined ? alias : (metadata[key]?.alias !== undefined ? metadata[key].alias : defaults.alias)),
-      serialize:   (serialize !== undefined ? serialize : (metadata[key]?.serialize !== undefined ? metadata[key].serialize : defaults.serialize)),
-      deserialize: (deserialize !== undefined ? deserialize : (metadata[key]?.deserialize !== undefined ? metadata[key].deserialize : defaults.deserialize)),
-      cast:        (cast !== undefined ? cast : (metadata[key]?.cast !== undefined ? metadata[key].cast : defaults.cast))
+      alias: alias !== undefined ? alias : metadata[key]?.alias !== undefined ? metadata[key].alias : defaults.alias,
+      serialize: serialize !== undefined ? serialize : metadata[key]?.serialize !== undefined ? metadata[key].serialize : defaults.serialize,
+      deserialize: deserialize !== undefined ? deserialize : metadata[key]?.deserialize !== undefined ? metadata[key].deserialize : defaults.deserialize,
+      cast: cast !== undefined ? cast : metadata[key]?.cast !== undefined ? metadata[key].cast : defaults.cast,
     };
-  }
-
+  };
 }
 
 /**

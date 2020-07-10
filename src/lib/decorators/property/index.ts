@@ -23,19 +23,18 @@ import { _getDecoratorMetadata } from '../../entt/internals';
  * @param enumerable (Optional) If the property is enumerable
  * @param tag (Optional) String or array of strings marking the property as belonging to a certain subset
  */
-export function Property ({
-  get        = undefined as ((target: any, value: any) => any) | boolean,
-  set        = undefined as ((target: any, value: any) => any) | boolean,
+export function Property({
+  get = undefined as ((target: any, value: any) => any) | boolean,
+  set = undefined as ((target: any, value: any) => any) | boolean,
   enumerable = undefined as boolean,
-  tag        = undefined as string | string[] | Symbol | Symbol[]
+  tag = undefined as string | string[] | Symbol | Symbol[],
 } = {}) {
-
   // Set defaults
   const defaults = {
-    get:        true,
-    set:        true,
+    get: true,
+    set: true,
     enumerable: true,
-    tag:        []
+    tag: [],
   };
 
   // Return decorator
@@ -44,12 +43,10 @@ export function Property ({
     const metadata = _getDecoratorMetadata(target.constructor, _symbolProperty);
     metadata[key] = {
       key,
-      get:        (get !== undefined ? get : (metadata[key]?.get !== undefined ? metadata[key].get : defaults.get)),
-      set:        (set !== undefined ? set : (metadata[key]?.set !== undefined ? metadata[key].set : defaults.set)),
-      enumerable: (enumerable !== undefined ? enumerable : (metadata[key]?.enumerable !== undefined ? metadata[key].enumerable : defaults.enumerable)),
-      tag:        (tag !== undefined ? tag : (metadata[key]?.tag !== undefined ? metadata[key].tag : defaults.tag))
+      get: get !== undefined ? get : metadata[key]?.get !== undefined ? metadata[key].get : defaults.get,
+      set: set !== undefined ? set : metadata[key]?.set !== undefined ? metadata[key].set : defaults.set,
+      enumerable: enumerable !== undefined ? enumerable : metadata[key]?.enumerable !== undefined ? metadata[key].enumerable : defaults.enumerable,
+      tag: tag !== undefined ? tag : metadata[key]?.tag !== undefined ? metadata[key].tag : defaults.tag,
     };
-  }
-
+  };
 }
-

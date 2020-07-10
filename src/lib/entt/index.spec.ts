@@ -2,13 +2,12 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { assert } from '../../tests.init'
-import { EnTT }  from '../../';
-import {  _getClassMetadata, _getInstanceMetadata }  from './internals';
+import { assert } from '../../tests.init';
+import { EnTT } from '../../';
+import { _getClassMetadata, _getInstanceMetadata } from './internals';
 
 // Test ...
 describe('class EnTT', () => {
-
   it('Initializes enTT metadata namespaces on extending classes and instances', () => {
     class NonEnTT {}
     const nonEnTT = new NonEnTT();
@@ -22,7 +21,12 @@ describe('class EnTT', () => {
     assert(_getInstanceMetadata(notInitializedEnTT) !== undefined);
     assert(_getClassMetadata(notInitializedEnTT.constructor) !== undefined);
 
-    class InitializedEnTT extends EnTT { constructor () { super(); super.entt(); } }
+    class InitializedEnTT extends EnTT {
+      constructor() {
+        super();
+        super.entt();
+      }
+    }
     const initializedEnTT = new InitializedEnTT();
     assert(initializedEnTT instanceof EnTT);
     assert(_getInstanceMetadata(initializedEnTT) !== undefined);
@@ -30,13 +34,9 @@ describe('class EnTT', () => {
   });
 
   it('Allow occlusion of prototype methods', () => {
-
     // TODO: check occlusion of: serialize
     // TODO: check occlusion of: deserialize
     // TODO: check occlusion of: valid
     // TODO: check occlusion of: errors
-
   });
-
 });
-

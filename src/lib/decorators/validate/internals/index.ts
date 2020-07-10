@@ -14,12 +14,11 @@ export type _primitiveTypeName = 'boolean' | 'string' | 'number' | 'object';
  * Richer error class used for describing validation errors
  */
 export class EnttValidationError extends Error {
-  
   /**
    * Unique key enumerating the type of validation error
    */
   public type: string;
-  
+
   /**
    * Context of the error message, containing values involved in validation
    */
@@ -31,7 +30,7 @@ export class EnttValidationError extends Error {
    * @param message User friendly, verbose error message
    * @param context Context of the error message, containing values involved in validation
    */
-  constructor ({ type = null as string, message = null as string, context = {} as any } = {}) {
+  constructor({ type = null as string, message = null as string, context = {} as any } = {}) {
     super(message);
 
     // Set properties
@@ -45,12 +44,15 @@ export class EnttValidationError extends Error {
  * @param target EnTT class instance containing the validity data
  * @returns Instance's validity store
  */
-export function _readValidityMetadata (target) {
-  const metadata =  _getInstanceMetadata(target);
-  return metadata.validity || (metadata.validity = {
-    valid: true,
-    errors: {}
-  });
+export function _readValidityMetadata(target) {
+  const metadata = _getInstanceMetadata(target);
+  return (
+    metadata.validity ||
+    (metadata.validity = {
+      valid: true,
+      errors: {},
+    })
+  );
 }
 
 /**
@@ -58,7 +60,7 @@ export function _readValidityMetadata (target) {
  * @param target Object instance to validate all properties of
  * @returns Hashmap of all properties having validation errors
  */
-export function _validateObject (target): Record<string, EnttValidationError[]> {
+export function _validateObject(target): Record<string, EnttValidationError[]> {
   // Validate all properties
   const keys = Object.keys(_getDecoratorMetadata(target.constructor, _symbolValidate) || {});
   return keys.reduce((errors, key) => {
@@ -79,15 +81,16 @@ export function _validateObject (target): Record<string, EnttValidationError[]> 
  * @param value (Optional) Property value being validated; if not present, current property value will be validated instead
  * @returns Array of validation errors
  */
-export function _validateProperty (target, key, value = _undefined as any): EnttValidationError[] {
-
+export function _validateProperty(target, key, value = _undefined as any): EnttValidationError[] {
   // Get property metadata
   const metadata = _getDecoratorMetadata(target.constructor, _symbolValidate)[key];
-  if (!metadata) { return []; }
+  if (!metadata) {
+    return [];
+  }
 
   // Get instance validity and reset errors
-  const validity  = _readValidityMetadata(target),
-        errors    = (validity.errors[key] = []);
+  const validity = _readValidityMetadata(target),
+    errors = (validity.errors[key] = []);
 
   // Check if value passed, or should be assumed from property (Using _undefined Symbol to allow undefined as a legitimate value being set)
   if (value === _undefined) {
@@ -103,10 +106,9 @@ export function _validateProperty (target, key, value = _undefined as any): Entt
 
   // Validate using valifation provider, if available
   if (typeof metadata.provider === 'function') {
-    
     // Validate using custom validation function
     const err = metadata.provider(target, value);
-    if (err !== undefined && err !== null && err !== true) {      
+    if (err !== undefined && err !== null && err !== true) {
       if (err === false) {
         // Generic error
         errors.push(new EnttValidationError({ message: `Value ${JSON.stringify(value)} not allowed!` }));
@@ -118,7 +120,7 @@ export function _validateProperty (target, key, value = _undefined as any): Entt
         errors.push(err);
       } else if (err instanceof Array) {
         // Take errors
-        err.forEach((err) => {
+        err.forEach(err => {
           if (typeof err === 'string') {
             // Create error from string
             errors.push(new EnttValidationError({ message: err }));
@@ -129,47 +131,36 @@ export function _validateProperty (target, key, value = _undefined as any): Entt
         });
       }
     }
-
-  } else if ((typeof metadata.provider === 'object') && (typeof metadata.provider.validate === 'function') && metadata.provider.__isYupSchema__) {
-
+  } else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function' && metadata.provider.__isYupSchema__) {
     // Validate using YUP validation
     try {
       metadata.provider.validateSync(value, { context: target });
     } catch (err) {
-      err.errors.forEach((msg) => {
-        msg = (msg.substr(0, 5) === 'this ' ? `Value ${JSON.stringify(value)} ${msg.substr(5)}` : msg);
+      err.errors.forEach(msg => {
+        msg = msg.substr(0, 5) === 'this ' ? `Value ${JSON.stringify(value)} ${msg.substr(5)}` : msg;
         errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
       });
     }
-
-  } else if ((typeof metadata.provider === 'object') && (typeof metadata.provider.validate === 'function')) {
-
+  } else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function') {
     // Validate using attached .validate() method
     const err = metadata.provider.validate(value, { context: target }).error;
     if (err && err.isJoi) {
-
       // Process JOI errors result
-      err.details.forEach((err) => {
+      err.details.forEach(err => {
         const msg = err.message.replace(/"value"/g, `Value ${JSON.stringify(value)}`);
         errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
       });
-
     } else if (err instanceof Error) {
-
       // Process explicit errors
       errors.push(err);
-
     }
-
   }
 
   // Update target valid status
-  validity.valid = !Object.values(validity.errors)
-    .filter((errs: any[]) => !!errs.length).length;
+  validity.valid = !Object.values(validity.errors).filter((errs: any[]) => !!errs.length).length;
 
   // Output validation result
   return errors;
-
 }
 
 /**
@@ -177,21 +168,24 @@ export function _validateProperty (target, key, value = _undefined as any): Entt
  * @param target target instance being validated
  * @returns If instance is validated
  */
-export function _isValid (target): boolean {
+export function _isValid(target): boolean {
   // using @Validate
 
   // Return if local invalid
   const valid = _readValidityMetadata(target).valid as boolean;
-  if (!valid) { return false; }
+  if (!valid) {
+    return false;
+  }
 
   // Return if any of children invalid
-  for (const c  of _getInstanceMetadata(target).children) {
-    if (!c.child.valid) { return false; }
+  for (const c of _getInstanceMetadata(target).children) {
+    if (!c.child.valid) {
+      return false;
+    }
   }
 
   // Return valid by default
   return true;
-
 }
 
 /**
@@ -199,7 +193,7 @@ export function _isValid (target): boolean {
  * @param target target instance being validated
  * @returns A hashmap of arrays of errors per property
  */
-export function _getValidationErrors (target): Record<string, EnttValidationError[]> {
+export function _getValidationErrors(target): Record<string, EnttValidationError[]> {
   // using @Validate
 
   // Initialize all errors
@@ -207,30 +201,31 @@ export function _getValidationErrors (target): Record<string, EnttValidationErro
 
   // Read local errors
   const errors = _readValidityMetadata(target).errors;
-  Object.keys(errors)
-    .forEach((key) => {
-      // Add local errors per each property
-      if (errors[key].length) {
-        if (!allErrors[key]) { allErrors[key] = []; }
-        allErrors[key] = [...errors[key]];
+  Object.keys(errors).forEach(key => {
+    // Add local errors per each property
+    if (errors[key].length) {
+      if (!allErrors[key]) {
+        allErrors[key] = [];
       }
-    });
+      allErrors[key] = [...errors[key]];
+    }
+  });
 
   // Read children
   for (const c of _getInstanceMetadata(target).children) {
     // Add child errors per each property
     const childErrors = c.child.errors;
-    Object.keys(childErrors)
-      .forEach((childKey) => {
-        if (childErrors[childKey].length) {
-          const compositeKey = `${c.path.join('.')}.${childKey}`;
-          if (!allErrors[compositeKey]) { allErrors[compositeKey] = []; }
-          allErrors[compositeKey].push(...childErrors[childKey]);
+    Object.keys(childErrors).forEach(childKey => {
+      if (childErrors[childKey].length) {
+        const compositeKey = `${c.path.join('.')}.${childKey}`;
+        if (!allErrors[compositeKey]) {
+          allErrors[compositeKey] = [];
         }
-      });
+        allErrors[compositeKey].push(...childErrors[childKey]);
+      }
+    });
   }
 
   // Return all found errors
   return allErrors;
-
 }

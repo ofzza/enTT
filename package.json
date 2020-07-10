@@ -1,11 +1,11 @@
 {
   "name": "@ofzza/entt",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "description": "Modular TS data-modeling solution, implementing import/export, validation and change detection",
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "prettier --write . && tsc",
     "dev": "tsc -w",
     "test": "tsc && npx jasmine --config=./jasmine.json"
   },
@@ -44,6 +44,7 @@
     "jasmine-spec-reporter": "^4.2.1",
     "joi-browser": "^13.4.0",
     "pre-commit": "^1.2.2",
+    "prettier": "2.0.5",
     "tslint": "^6.0.0",
     "typescript": "^3.8.3",
     "yup": "^0.28.3"

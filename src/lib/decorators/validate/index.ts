@@ -3,7 +3,16 @@
 // ----------------------------------------------------------------------------
 
 // Import and (re)export internals
-import { EnttValidationError, _symbolValidate, _primitiveTypeName, _readValidityMetadata, _validateObject, _validateProperty, _isValid, _getValidationErrors } from './internals';
+import {
+  EnttValidationError,
+  _symbolValidate,
+  _primitiveTypeName,
+  _readValidityMetadata,
+  _validateObject,
+  _validateProperty,
+  _isValid,
+  _getValidationErrors,
+} from './internals';
 export { EnttValidationError };
 
 // Import dependencies
@@ -18,15 +27,11 @@ import { _getDecoratorMetadata } from '../../entt/internals';
  * - joi-browser: https://www.npmjs.com/package/joi-browser
  * - yup:         https://www.npmjs.com/package/yup
  */
-export function Validate ({
-  type      = undefined as _primitiveTypeName,
-  provider  = undefined as any
-} = {}) {
-
+export function Validate({ type = undefined as _primitiveTypeName, provider = undefined as any } = {}) {
   // Set defaults
   const defaults = {
-    type:     undefined as _primitiveTypeName,
-    provider: undefined as any
+    type: undefined as _primitiveTypeName,
+    provider: undefined as any,
   };
 
   // Return decorator
@@ -35,9 +40,8 @@ export function Validate ({
     const metadata = _getDecoratorMetadata(target.constructor, _symbolValidate);
     metadata[key] = {
       key,
-      type:     (type !== undefined ? type : (metadata[key]?.type !== undefined ? metadata[key].type : defaults.type)),
-      provider: (provider !== undefined ? provider : (metadata[key]?.provider !== undefined ? metadata[key].provider : defaults.provider))
+      type: type !== undefined ? type : metadata[key]?.type !== undefined ? metadata[key].type : defaults.type,
+      provider: provider !== undefined ? provider : metadata[key]?.provider !== undefined ? metadata[key].provider : defaults.provider,
     };
-  }
-
+  };
 }

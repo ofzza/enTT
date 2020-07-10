@@ -18,7 +18,7 @@ export class _EnTTRoot {}
  * @param Class EnTT class containing the metadata
  * @returns Stored EnTT class metadata
  */
-export function _getClassMetadata (Class) {
+export function _getClassMetadata(Class) {
   // Initialize metadata on the derived class
   if (Class && !Class.hasOwnProperty(_symbolEnTTClass)) {
     // Set metadata store
@@ -26,8 +26,8 @@ export function _getClassMetadata (Class) {
       enumerable: false,
       value: {
         // Initialize a private decorators store
-        decorators: {}
-      }      
+        decorators: {},
+      },
     });
   }
   // Return metadata reference
@@ -40,7 +40,7 @@ export function _getClassMetadata (Class) {
  * @param {*} _symbolDecorator Unique symbol name-spacing the decorator in question
  * @returns Stored EnTT class metadata for requested decorator
  */
-export function _getDecoratorMetadata (Class, _symbolDecorator) {
+export function _getDecoratorMetadata(Class, _symbolDecorator) {
   // Get class metadata
   const decoratorsMetadata = _getClassMetadata(Class).decorators;
   // Check if decorator already initialized
@@ -48,8 +48,8 @@ export function _getDecoratorMetadata (Class, _symbolDecorator) {
     // Initialized decorator
     decoratorsMetadata[_symbolDecorator] = {};
     // Check for inherited metadata
-    const prototypeClass              = Object.getPrototypeOf(Class),
-          prototypeDecoratorMetadata  = (prototypeClass ? _getClassMetadata(prototypeClass).decorators : {});
+    const prototypeClass = Object.getPrototypeOf(Class),
+      prototypeDecoratorMetadata = prototypeClass ? _getClassMetadata(prototypeClass).decorators : {};
     // Inherit metadata
     if (prototypeDecoratorMetadata[_symbolDecorator]) {
       for (const key in prototypeDecoratorMetadata[_symbolDecorator]) {
@@ -66,7 +66,7 @@ export function _getDecoratorMetadata (Class, _symbolDecorator) {
  * @param instance EnTT instance containing the metadata
  * @returns Stored EnTT instance metadata
  */
-export function _getInstanceMetadata (instance) {
+export function _getInstanceMetadata(instance) {
   // Initialize metadata on the instance (non-enumerable an hidden-ish)
   if (instance && !instance[_symbolEnTTInstance]) {
     Object.defineProperty(instance, _symbolEnTTInstance, {
@@ -77,8 +77,8 @@ export function _getInstanceMetadata (instance) {
         // Initialize a private property values' store of last valid values
         restore: {},
         // Array of child EnTT instances
-        children: []
-      }        
+        children: [],
+      },
     });
   }
   // Return metadata reference

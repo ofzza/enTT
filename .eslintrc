@@ -1,0 +1,117 @@
+{
+  "extends": "eslint:recommended",
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true
+  },
+  "globals": {
+    "angular": true,
+    "console": true,
+    "describe": true,
+    "it": true,
+    "global": true,
+    "__dirname": true,
+    "process": true,
+    "module": true,
+    "require": true,
+    "emit": true
+  },
+  "rules": {
+    "no-console": 0,
+    "no-unused-vars": 1,
+    "semi": ["error", "always"],
+    "require-atomic-updates": 0,
+    "require-jsdoc": 1,
+    "valid-jsdoc": [
+      2,
+      {
+        "requireReturn": false,
+        "requireParamDescription": true,
+        "requireReturnDescription": true
+      }
+    ],
+    "no-bitwise": 2,
+    "camelcase": 0,
+    "curly": [2, "all"],
+    "eqeqeq": 2,
+    "indent": [
+      2,
+      2,
+      {
+        "SwitchCase": 1,
+        "VariableDeclarator": "first",
+        "ObjectExpression": "first",
+        "MemberExpression": 1,
+        "ignoreComments": true
+      }
+    ],
+    "wrap-iife": [2, "any"],
+    "no-use-before-define": [
+      2,
+      {
+        "classes": false,
+        "functions": false
+      }
+    ],
+    "comma-style": [2, "last"],
+    "linebreak-style": [2, "unix"],
+    "new-cap": 2,
+    "no-caller": 2,
+    "quotes": [
+      2,
+      "single",
+      {
+        "allowTemplateLiterals": true
+      }
+    ],
+    "strict": 0,
+    "no-undef": 2,
+    "consistent-this": [2, "self"],
+    "no-empty": [
+      2,
+      {
+        "allowEmptyCatch": true
+      }
+    ],
+    "no-mixed-spaces-and-tabs": 2,
+    "quote-props": 0,
+    "space-unary-ops": [
+      2,
+      {
+        "words": true,
+        "nonwords": false
+      }
+    ],
+    "no-spaced-func": 2,
+    "space-in-parens": [2, "never"],
+    "no-trailing-spaces": 2,
+    "brace-style": [
+      2,
+      "1tbs",
+      {
+        "allowSingleLine": true
+      }
+    ],
+    "eol-last": 2,
+    "space-infix-ops": 2,
+    "space-before-blocks": [2, "always"],
+    "key-spacing": [
+      2,
+      {
+        "afterColon": true,
+        "align": "value"
+      }
+    ],
+    "array-bracket-spacing": [2, "never"],
+    "space-before-function-paren": [2, "always"],
+    "keyword-spacing": [2, {}]
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "sourceType": "module"
+  }
+}

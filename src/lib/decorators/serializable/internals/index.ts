@@ -12,16 +12,16 @@ export const _symbolSerializable = Symbol('@Serializable');
 // Define supported types
 export type _serializeType = Symbol;
 export type _rawDataType = 'object' | 'json';
-export type _castType =  (new() => any) | (Array<new() => any>) | Object;
+export type _castType = (new () => any) | Array<new () => any> | Object;
 
 // Holds registered native JS classes
-const _nativeClasses = [ Symbol, Date ];
+const _nativeClasses = [Symbol, Date];
 
 /**
  * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
  * @param nativeClass Native JS class
  */
-export function _registerNativeClass (nativeClass) {
+export function _registerNativeClass(nativeClass) {
   this._nativeClasses.push(nativeClass);
 }
 
@@ -30,7 +30,7 @@ export function _registerNativeClass (nativeClass) {
  * @param Class EnTT class containing the metadata
  * @returns Stored @Serializable decorator metadata
  */
-export function _readSerializableMetadata (Class) {
+export function _readSerializableMetadata(Class) {
   return _getDecoratorMetadata(Class, _symbolSerializable) || {};
 }
 
@@ -43,64 +43,52 @@ export function _readSerializableMetadata (Class) {
  * @param _directSerialize (Internal) If true, ignores all custom serialization configuration (used by .clone())
  * @returns Serialized value of requested type
  */
-export function _serialize <T> (source: T, type = 'object' as _rawDataType, { _customValue = _undefined as any, _directSerialize = false } = {}): any {
-
+export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _customValue = _undefined as any, _directSerialize = false } = {}): any {
   // Check if source's store should be source instead
-  const instance = (source instanceof _EnTTRoot ? _getInstanceMetadata(source).store : source);
+  const instance = source instanceof _EnTTRoot ? _getInstanceMetadata(source).store : source;
 
   // Serializable
   if (instance && !_isNativeClassInstance(instance) && (instance instanceof Array || instance instanceof Object)) {
-
     // Serializable array or object
-    const serialized = Object.keys(instance).reduce((serialized, key) => {
+    const serialized = Object.keys(instance).reduce(
+      (serialized, key) => {
+        // Check if property not a method
+        if (typeof instance[key] !== 'function') {
+          // Check if property has a getter or if both getter and setter aren't defined on plain property
+          const hasGetter = !!Object.getOwnPropertyDescriptor(instance, key).get || !Object.getOwnPropertyDescriptor(instance, key).set;
 
-      // Check if property not a method
-      if (typeof instance[key] !== 'function') {
-      
-        // Check if property has a getter or if both getter and setter aren't defined on plain property
-        const hasGetter = !!Object.getOwnPropertyDescriptor(instance, key).get
-                        || !Object.getOwnPropertyDescriptor(instance, key).set;
+          // Check if property has or needs a getter
+          if (hasGetter) {
+            // Get @Serializable metadata (or defaults)
+            const metadata = _readSerializableMetadata(source.constructor)[key] || {
+              alias: undefined,
+              serialize: true,
+              deserialize: true,
+              cast: undefined,
+            };
 
-        // Check if property has or needs a getter
-        if (hasGetter) {
-
-          // Get @Serializable metadata (or defaults)
-          const metadata = _readSerializableMetadata(source.constructor)[key] || {
-            alias:       undefined,
-            serialize:   true,
-            deserialize: true,
-            cast:        undefined
-          };
-
-          // Check if property is serializable
-          if (_directSerialize || metadata.serialize) {
-
-            // If custom serialization function, map value using the function
-            const _customValue = (!_directSerialize && metadata.serialize instanceof Function ? metadata.serialize(instance, instance[key]) : _undefined);
-            // Serializable value (EnTT instance or raw value)
-            serialized[metadata.alias || key] = _serialize(instance[key], 'object', { _customValue });
-
+            // Check if property is serializable
+            if (_directSerialize || metadata.serialize) {
+              // If custom serialization function, map value using the function
+              const _customValue = !_directSerialize && metadata.serialize instanceof Function ? metadata.serialize(instance, instance[key]) : _undefined;
+              // Serializable value (EnTT instance or raw value)
+              serialized[metadata.alias || key] = _serialize(instance[key], 'object', { _customValue });
+            }
           }
-
         }
 
-      }
-
-      // Return serialized
-      return serialized;
-
-    }, (instance instanceof Array ? [] : {}));
+        // Return serialized
+        return serialized;
+      },
+      instance instanceof Array ? [] : {},
+    );
 
     // Convert value
     return _obj2data(serialized, type);
-
   } else {
-
     // Convert raw value
-    return _obj2data((_customValue !== _undefined ? _customValue : instance), type);
-
+    return _obj2data(_customValue !== _undefined ? _customValue : instance, type);
   }
-
 }
 
 /**
@@ -113,8 +101,11 @@ export function _serialize <T> (source: T, type = 'object' as _rawDataType, { _c
  * @param _directDeserialize (Internal) If true, ignores all custom deserialization configuration (used by .clone())
  * @return Target with given value deserialized into it
  */
-export function _deserialize <T> (value, type = 'object' as _rawDataType, { target = undefined as T, _customValue = _undefined as any, _directDeserialize = false } = {}) {
-  
+export function _deserialize<T>(
+  value,
+  type = 'object' as _rawDataType,
+  { target = undefined as T, _customValue = _undefined as any, _directDeserialize = false } = {},
+) {
   // Convert value
   const source = _data2obj(value, type);
 
@@ -124,70 +115,63 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
   }
 
   // Check if target's store should be source instead
-  const instance = (target instanceof _EnTTRoot ? _getInstanceMetadata(target).store : target);
+  const instance = target instanceof _EnTTRoot ? _getInstanceMetadata(target).store : target;
 
   // Check if value matches target shape
   if (!_isNativeClassInstance(source) && ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object))) {
-
     // Deserialize
     Object.keys(source).reduce((deserialized, key) => {
-
       // Check if target property exists and isn't a method
       if (source.hasOwnProperty(key) && typeof source[key] !== 'function') {
-
         // Check if target property has a setter or if both setter and setter aren't defined on plain property
-        const hasSetter = !!Object.getOwnPropertyDescriptor(source, key).set
-                        || !Object.getOwnPropertyDescriptor(source, key).get;
+        const hasSetter = !!Object.getOwnPropertyDescriptor(source, key).set || !Object.getOwnPropertyDescriptor(source, key).get;
 
         // Check if property has or needs a getter
         if (hasSetter) {
-
           // Get @Serializable metadata (or defaults)
           const properties = _getDecoratorMetadata(target.constructor, _symbolSerializable),
-                alias = properties && (Object.values(properties) as any[]).find((prop) => (prop.alias === key))?.key || key;
+            alias = (properties && (Object.values(properties) as any[]).find(prop => prop.alias === key)?.key) || key;
           const metadata = properties?.[alias] || {
-            alias:       undefined,
-            serialize:   true,
+            alias: undefined,
+            serialize: true,
             deserialize: true,
-            cast:        undefined
+            cast: undefined,
           };
 
           // Check if property is serializable
           if (_directDeserialize || metadata.deserialize) {
-
             // If custom deserialization function, map value using the function
-            const _customValue = (!_directDeserialize && metadata.deserialize instanceof Function ? metadata.deserialize(source, source[key]) : _undefined);
-            // Deserializable value (EnTT instance or raw value)            
-            if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
+            const _customValue = !_directDeserialize && metadata.deserialize instanceof Function ? metadata.deserialize(source, source[key]) : _undefined;
+            // Deserializable value (EnTT instance or raw value)
+            if (metadata.cast && metadata.cast instanceof Array && metadata.cast.length === 1 && typeof metadata.cast[0] === 'function') {
               // Deserialize and cast array
-              deserialized[alias] = source[key]
-                .map((value) => {
-                  return _deserialize(value, 'object', { target: new (metadata.cast[0])(), _customValue })
-                });
-            } else if (metadata.cast && (metadata.cast instanceof Object) && (Object.values(metadata.cast).length === 1) && (typeof Object.values(metadata.cast)[0] === 'function')) {
+              deserialized[alias] = source[key].map(value => {
+                return _deserialize(value, 'object', { target: new metadata.cast[0](), _customValue });
+              });
+            } else if (
+              metadata.cast &&
+              metadata.cast instanceof Object &&
+              Object.values(metadata.cast).length === 1 &&
+              typeof Object.values(metadata.cast)[0] === 'function'
+            ) {
               // Deserialize and cast hashmap
-              deserialized[alias] = Object.keys(source[key])
-                .reduce((deserialized, k) => {
-                  deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)(), _customValue });
-                  return deserialized;
-                }, {});
-            } else if (metadata.cast && (typeof metadata.cast === 'function')) {
+              deserialized[alias] = Object.keys(source[key]).reduce((deserialized, k) => {
+                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)(), _customValue });
+                return deserialized;
+              }, {});
+            } else if (metadata.cast && typeof metadata.cast === 'function') {
               // Deserialize and cast
-              deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)(), _customValue });
+              deserialized[alias] = _deserialize(source[key], 'object', { target: new metadata.cast(), _customValue });
             } else {
               // Deserialize without casting
               deserialized[alias] = _deserialize(source[key], 'object', { _customValue });
             }
-
           }
-
         }
-
       }
 
       // Return deserialized
-      return deserialized
-
+      return deserialized;
     }, instance);
 
     // Revalidate instance
@@ -195,14 +179,10 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
 
     // Return deserialized target
     return target;
-
   } else {
-
     // Just return a value as deserialized
-    return (_customValue !== _undefined ? _customValue : value);
-
+    return _customValue !== _undefined ? _customValue : value;
   }
-  
 }
 
 /**
@@ -217,10 +197,9 @@ export function _deserialize <T> (value, type = 'object' as _rawDataType, { targ
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  * @returns A casting function
  */
-export function _cast <T> (into: ((new() => T) | (new() => T)[] | Record<any, (new() => T)>)): ((value: any, type?:_rawDataType) => any) {
+export function _cast<T>(into: (new () => T) | (new () => T)[] | Record<any, new () => T>): (value: any, type?: _rawDataType) => any {
   // Check casting target
-  if (into && (into instanceof Array) && (into.length === 1) && (typeof into[0] === 'function')) {
-
+  if (into && into instanceof Array && into.length === 1 && typeof into[0] === 'function') {
     /**
      * Casts a array of values of given type as an array of instances of a given Class
      * @param value Array of values being cast
@@ -228,11 +207,9 @@ export function _cast <T> (into: ((new() => T) | (new() => T)[] | Record<any, (n
      * @returns Array of instances of the class with deserialized data
      */
     return (value = undefined as T[], type = 'object' as _rawDataType) => {
-      return value.map(value => _deserialize<T>(value, type, { target: new (into[0])() }));
-    }
-
-  } else if (into && (into instanceof Object) && (Object.values(into).length === 1) && (typeof Object.values(into)[0] === 'function')) {
-
+      return value.map(value => _deserialize<T>(value, type, { target: new into[0]() }));
+    };
+  } else if (into && into instanceof Object && Object.values(into).length === 1 && typeof Object.values(into)[0] === 'function') {
     /**
      * Casts a hashmap of values of given type as a hashmap of instances of a given Class
      * @param value Hashmap of values being cast
@@ -244,10 +221,8 @@ export function _cast <T> (into: ((new() => T) | (new() => T)[] | Record<any, (n
         hashmap[key] = _deserialize<T>(value[key], type, { target: new (Object.values(into)[0])() });
         return hashmap;
       }, {});
-    }
-
-  } else if (into && (typeof into === 'function')) {
-
+    };
+  } else if (into && typeof into === 'function') {
     /**
      * Casts a value of given type as an instance of a given Class
      * @param value Value being cast
@@ -256,8 +231,7 @@ export function _cast <T> (into: ((new() => T) | (new() => T)[] | Record<any, (n
      */
     return (value = undefined as T, type = 'object' as _rawDataType) => {
       return _deserialize<T>(value, type, { target: new into() });
-    }
-
+    };
   } else {
     // Throw error
     throw new Error(`Can't recognize casting target class or structure!`);
@@ -270,18 +244,20 @@ export function _cast <T> (into: ((new() => T) | (new() => T)[] | Record<any, (n
  * @param target Instance being deserialized into
  * @returns Cloned instance
  */
-export function _clone (instance, { target = undefined as _EnTTRoot } = {}) {
-  target = target || new (instance.constructor)();
-  return _deserialize(_serialize(instance, 'object', { _directSerialize: true }), 'object', { target, _directDeserialize: true } );
+export function _clone(instance, { target = undefined as _EnTTRoot } = {}) {
+  target = target || new instance.constructor();
+  return _deserialize(_serialize(instance, 'object', { _directSerialize: true }), 'object', { target, _directDeserialize: true });
 }
 
 /**
  * Checks if object is an instance of a native JS class
  * @param obj Object to check
  */
-function _isNativeClassInstance (obj) {
+function _isNativeClassInstance(obj) {
   for (const nativeClass of _nativeClasses) {
-    if (obj instanceof nativeClass) { return true; }
+    if (obj instanceof nativeClass) {
+      return true;
+    }
   }
   return false;
 }
@@ -292,7 +268,7 @@ function _isNativeClassInstance (obj) {
  * @param type Type to serialize to
  * @returns Given object, serialized into given type
  */
-function _obj2data (obj, type = 'object' as _rawDataType) {
+function _obj2data(obj, type = 'object' as _rawDataType) {
   if (type === 'object') {
     return obj;
   } else if (type === 'json') {
@@ -306,7 +282,7 @@ function _obj2data (obj, type = 'object' as _rawDataType) {
  * @param type Type to deserialize from
  * @returns Object, deserialized from given type
  */
-function _data2obj (str, type = 'object' as _rawDataType) {
+function _data2obj(str, type = 'object' as _rawDataType) {
   if (type === 'object') {
     return str;
   } else if (type === 'json') {

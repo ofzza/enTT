@@ -9,9 +9,7 @@
       "request": "launch",
       "name": "Jasmin Tests",
       "program": "${workspaceRoot}\\node_modules\\jasmine\\bin\\jasmine.js",
-      "args": [
-        "--config=./jasmine.json"
-      ],
+      "args": ["--config=./jasmine.json"],
       "console": "internalConsole",
       "outputCapture": "std",
       "internalConsoleOptions": "neverOpen"

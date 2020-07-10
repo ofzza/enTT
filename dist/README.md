@@ -163,6 +163,63 @@ Any property can be augmented with a custom setter and/or getter modifying the p
   ```
 </details>
 
+### Property tagging
+
+Properties can be tagged with a single or multiple string tags. Later, properties can be searched by tag. This can be useful when writing a service that needs to accept different EnTT models and somehow know which properties serve a certain purpose on each, like finding a PrimaryKey property, or a property best used to represent a name of the model instance.
+Property tagging is used like so:
+
+```ts
+@Property({ tag: 'PK' })
+public id1 = undefined as string;
+
+...
+
+const keys1 = MyEntityClass.findTaggedProperties('PK');
+
+...
+
+@Property({ tag: ['PK', 'guid'] })
+public id2 = undefined as string;
+
+...
+
+const keys2 = EnTT.findTaggedProperties('PK', { from: MyEntityClass });
+
+```
+
+<details><summary>EXAMPLE</summary>
+
+  ```ts
+  import { EnTT, Property } from '@ofzza/entt';
+
+  class MyPersonClass extends EnTT {
+    constructor () { super(); super.entt(); }
+
+    @Property({ tag: 'callsign' })
+    public name = undefined as string;
+  }
+
+  class MyCarClass extends EnTT {
+    constructor () { super(); super.entt(); }
+
+    @Property({ tag: 'callsign' })
+    public make = undefined as string;
+  }
+
+  function promptCallsign (instance: EnTT, from: (new() => EnTT)) {
+    return instance[EnTT.findTaggedProperties('callsign', { from })[0]];
+  }
+
+  const person = new MyPersonClass();
+  person.name = 'Marty McFly';
+  const car = new MyCarClass();
+  car.make = 'Delorean';
+
+  console.log(promptCallsign(person, MyPersonClass)); // Outputs: Marty McFly
+  console.log(promptCallsign(car, MyCarClass));       // Outputs: Delorean
+  ```
+</details>
+
 ## @Serializable decorator
 
 The ```@Serializable``` decorator provides a simple way of serializing and deserializing EnTT instances into and from raw data, such that even nested instances will be preserved.
