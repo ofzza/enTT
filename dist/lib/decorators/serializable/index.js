@@ -24,13 +24,13 @@ const internals_2 = require("../../entt/internals");
  * - { cast: {MyEnTTClass} }, will cast property value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  */
-function Serializable({ alias = undefined, serialize = undefined, deserialize = undefined, cast = undefined } = {}) {
+function Serializable({ alias = undefined, serialize = undefined, deserialize = undefined, cast = undefined, } = {}) {
     // Set defaults
     const defaults = {
         alias: undefined,
         serialize: true,
         deserialize: true,
-        cast: undefined
+        cast: undefined,
     };
     // Return decorator
     return (target, key) => {
@@ -39,10 +39,10 @@ function Serializable({ alias = undefined, serialize = undefined, deserialize = 
         const metadata = internals_2._getDecoratorMetadata(target.constructor, internals_1._symbolSerializable);
         metadata[key] = {
             key,
-            alias: (alias !== undefined ? alias : (((_a = metadata[key]) === null || _a === void 0 ? void 0 : _a.alias) !== undefined ? metadata[key].alias : defaults.alias)),
-            serialize: (serialize !== undefined ? serialize : (((_b = metadata[key]) === null || _b === void 0 ? void 0 : _b.serialize) !== undefined ? metadata[key].serialize : defaults.serialize)),
-            deserialize: (deserialize !== undefined ? deserialize : (((_c = metadata[key]) === null || _c === void 0 ? void 0 : _c.deserialize) !== undefined ? metadata[key].deserialize : defaults.deserialize)),
-            cast: (cast !== undefined ? cast : (((_d = metadata[key]) === null || _d === void 0 ? void 0 : _d.cast) !== undefined ? metadata[key].cast : defaults.cast))
+            alias: alias !== undefined ? alias : ((_a = metadata[key]) === null || _a === void 0 ? void 0 : _a.alias) !== undefined ? metadata[key].alias : defaults.alias,
+            serialize: serialize !== undefined ? serialize : ((_b = metadata[key]) === null || _b === void 0 ? void 0 : _b.serialize) !== undefined ? metadata[key].serialize : defaults.serialize,
+            deserialize: deserialize !== undefined ? deserialize : ((_c = metadata[key]) === null || _c === void 0 ? void 0 : _c.deserialize) !== undefined ? metadata[key].deserialize : defaults.deserialize,
+            cast: cast !== undefined ? cast : ((_d = metadata[key]) === null || _d === void 0 ? void 0 : _d.cast) !== undefined ? metadata[key].cast : defaults.cast,
         };
     };
 }

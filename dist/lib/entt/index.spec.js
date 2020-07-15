@@ -22,7 +22,10 @@ describe('class EnTT', () => {
         tests_init_1.assert(internals_1._getInstanceMetadata(notInitializedEnTT) !== undefined);
         tests_init_1.assert(internals_1._getClassMetadata(notInitializedEnTT.constructor) !== undefined);
         class InitializedEnTT extends __1.EnTT {
-            constructor() { super(); super.entt(); }
+            constructor() {
+                super();
+                super.entt();
+            }
         }
         const initializedEnTT = new InitializedEnTT();
         tests_init_1.assert(initializedEnTT instanceof __1.EnTT);

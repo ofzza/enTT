@@ -1,6 +1,6 @@
 import { _EnTTRoot } from './internals';
 import { _rawDataType } from '../decorators/serializable/internals';
-import { EnttValidationError } from '../decorators/validate/internals';
+import { _symbolValidationEnabled, EnttValidationError } from '../decorators/validate/internals';
 /**
  * Main, extensible EnTT class definition
  */
@@ -15,7 +15,7 @@ export declare class EnTT extends _EnTTRoot {
      * @param tag Tag to search for
      * @param from (Optional) EnTT class whose properties to search
      */
-    static findTaggedProperties(tag: string | Symbol, { from }?: {
+    static findTaggedProperties(tag: string | symbol, { from }?: {
         from?: new () => EnTT;
     }): string[];
     /**
@@ -29,21 +29,29 @@ export declare class EnTT extends _EnTTRoot {
      * - {MyEnTTClass}, will cast value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
      *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
      * @param type Type of value being cast
+     * @param validate If cast instance should be validated after
      * @returns Instance (or structure of instances) of the class with deserialized data, or (alternatively) a Promise about to resolve to such an instance
      */
-    static cast(value: any, { into, type }?: {
+    static cast(value: any, { into, type, validate }?: {
         into?: (new () => EnTT) | (new () => EnTT)[] | Record<any, new () => EnTT>;
         type?: _rawDataType;
+        validate?: boolean;
     }): any;
     /**
      * Clones an EnTT instance
      * @param instance EnTT instance to clone
      * @param target Instance being deserialized into
+     * @param validate If cloned instance should be validated after
      * @returns Cloned instance
      */
-    static clone(instance: any, { target }?: {
+    static clone(instance: any, { target, validate }?: {
         target?: EnTT;
+        validate?: boolean;
     }): any;
+    /**
+     * Exposes validation toggling status (for internal use only)
+     */
+    [_symbolValidationEnabled]: boolean;
     /**
      * Initializes EnTT features for the extending class - should be called in extending class' constructor, right after "super()".
      * Example:
@@ -60,9 +68,12 @@ export declare class EnTT extends _EnTTRoot {
      * Deserializes value of given type into a target
      * @param value Value being deserialized from
      * @param type Type of value to deserialized form
+     * @param validate If deserialized instance should be validated after
      * @return Target with given value deserialized into it
      */
-    deserialize(value: any, type?: _rawDataType): any;
+    deserialize(value: any, type?: _rawDataType, { validate }?: {
+        validate?: boolean;
+    }): any;
     /**
      * Returns validation status of the instance
      * @returns If instance is validated

@@ -37,7 +37,7 @@ exports._readSerializableMetadata = _readSerializableMetadata;
  */
 function _serialize(source, type = 'object', { _customValue = internals_1._undefined, _directSerialize = false } = {}) {
     // Check if source's store should be source instead
-    const instance = (source instanceof internals_1._EnTTRoot ? internals_1._getInstanceMetadata(source).store : source);
+    const instance = source instanceof internals_1._EnTTRoot ? internals_1._getInstanceMetadata(source).store : source;
     // Serializable
     if (instance && !_isNativeClassInstance(instance) && (instance instanceof Array || instance instanceof Object)) {
         // Serializable array or object
@@ -45,8 +45,7 @@ function _serialize(source, type = 'object', { _customValue = internals_1._undef
             // Check if property not a method
             if (typeof instance[key] !== 'function') {
                 // Check if property has a getter or if both getter and setter aren't defined on plain property
-                const hasGetter = !!Object.getOwnPropertyDescriptor(instance, key).get
-                    || !Object.getOwnPropertyDescriptor(instance, key).set;
+                const hasGetter = !!Object.getOwnPropertyDescriptor(instance, key).get || !Object.getOwnPropertyDescriptor(instance, key).set;
                 // Check if property has or needs a getter
                 if (hasGetter) {
                     // Get @Serializable metadata (or defaults)
@@ -54,12 +53,12 @@ function _serialize(source, type = 'object', { _customValue = internals_1._undef
                         alias: undefined,
                         serialize: true,
                         deserialize: true,
-                        cast: undefined
+                        cast: undefined,
                     };
                     // Check if property is serializable
                     if (_directSerialize || metadata.serialize) {
                         // If custom serialization function, map value using the function
-                        const _customValue = (!_directSerialize && metadata.serialize instanceof Function ? metadata.serialize(instance, instance[key]) : internals_1._undefined);
+                        const _customValue = !_directSerialize && metadata.serialize instanceof Function ? metadata.serialize(instance, instance[key]) : internals_1._undefined;
                         // Serializable value (EnTT instance or raw value)
                         serialized[metadata.alias || key] = _serialize(instance[key], 'object', { _customValue });
                     }
@@ -67,13 +66,13 @@ function _serialize(source, type = 'object', { _customValue = internals_1._undef
             }
             // Return serialized
             return serialized;
-        }, (instance instanceof Array ? [] : {}));
+        }, instance instanceof Array ? [] : {});
         // Convert value
         return _obj2data(serialized, type);
     }
     else {
         // Convert raw value
-        return _obj2data((_customValue !== internals_1._undefined ? _customValue : instance), type);
+        return _obj2data(_customValue !== internals_1._undefined ? _customValue : instance, type);
     }
 }
 exports._serialize = _serialize;
@@ -83,11 +82,12 @@ exports._serialize = _serialize;
  * @param value Value being deserialized from
  * @param type Type of value to deserialized form
  * @param target Instance being deserialized into
+ * @param validate If deserialized instance should be validated after
  * @param _customValue Used for internal passing of custom deserialized values
  * @param _directDeserialize (Internal) If true, ignores all custom deserialization configuration (used by .clone())
  * @return Target with given value deserialized into it
  */
-function _deserialize(value, type = 'object', { target = undefined, _customValue = internals_1._undefined, _directDeserialize = false } = {}) {
+function _deserialize(value, type = 'object', { target = undefined, validate = true, _customValue = internals_1._undefined, _directDeserialize = false } = {}) {
     // Convert value
     const source = _data2obj(value, type);
     // Check if target defined
@@ -95,50 +95,55 @@ function _deserialize(value, type = 'object', { target = undefined, _customValue
         target = (source instanceof Array ? [] : {});
     }
     // Check if target's store should be source instead
-    const instance = (target instanceof internals_1._EnTTRoot ? internals_1._getInstanceMetadata(target).store : target);
+    const instance = target instanceof internals_1._EnTTRoot ? internals_1._getInstanceMetadata(target).store : target;
     // Check if value matches target shape
     if (!_isNativeClassInstance(source) && ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object))) {
+        // Disable validation
+        const validationEnabledStatus = instance[internals_2._symbolValidationEnabled];
+        if (instance instanceof internals_1._EnTTRoot) {
+            instance[internals_2._symbolValidationEnabled] = false;
+        }
         // Deserialize
         Object.keys(source).reduce((deserialized, key) => {
             var _a;
             // Check if target property exists and isn't a method
             if (source.hasOwnProperty(key) && typeof source[key] !== 'function') {
                 // Check if target property has a setter or if both setter and setter aren't defined on plain property
-                const hasSetter = !!Object.getOwnPropertyDescriptor(source, key).set
-                    || !Object.getOwnPropertyDescriptor(source, key).get;
+                const hasSetter = !!Object.getOwnPropertyDescriptor(source, key).set || !Object.getOwnPropertyDescriptor(source, key).get;
                 // Check if property has or needs a getter
                 if (hasSetter) {
                     // Get @Serializable metadata (or defaults)
-                    const properties = internals_1._getDecoratorMetadata(target.constructor, exports._symbolSerializable), alias = properties && ((_a = Object.values(properties).find((prop) => (prop.alias === key))) === null || _a === void 0 ? void 0 : _a.key) || key;
+                    const properties = internals_1._getDecoratorMetadata(target.constructor, exports._symbolSerializable), alias = (properties && ((_a = Object.values(properties).find(prop => prop.alias === key)) === null || _a === void 0 ? void 0 : _a.key)) || key;
                     const metadata = (properties === null || properties === void 0 ? void 0 : properties[alias]) || {
                         alias: undefined,
                         serialize: true,
                         deserialize: true,
-                        cast: undefined
+                        cast: undefined,
                     };
                     // Check if property is serializable
                     if (_directDeserialize || metadata.deserialize) {
                         // If custom deserialization function, map value using the function
-                        const _customValue = (!_directDeserialize && metadata.deserialize instanceof Function ? metadata.deserialize(source, source[key]) : internals_1._undefined);
-                        // Deserializable value (EnTT instance or raw value)            
-                        if (metadata.cast && (metadata.cast instanceof Array) && (metadata.cast.length === 1) && (typeof metadata.cast[0] === 'function')) {
+                        const _customValue = !_directDeserialize && metadata.deserialize instanceof Function ? metadata.deserialize(source, source[key]) : internals_1._undefined;
+                        // Deserializable value (EnTT instance or raw value)
+                        if (metadata.cast && metadata.cast instanceof Array && metadata.cast.length === 1 && typeof metadata.cast[0] === 'function') {
                             // Deserialize and cast array
-                            deserialized[alias] = source[key]
-                                .map((value) => {
-                                return _deserialize(value, 'object', { target: new (metadata.cast[0])(), _customValue });
+                            deserialized[alias] = source[key].map(value => {
+                                return _deserialize(value, 'object', { target: new metadata.cast[0](), _customValue });
                             });
                         }
-                        else if (metadata.cast && (metadata.cast instanceof Object) && (Object.values(metadata.cast).length === 1) && (typeof Object.values(metadata.cast)[0] === 'function')) {
+                        else if (metadata.cast &&
+                            metadata.cast instanceof Object &&
+                            Object.values(metadata.cast).length === 1 &&
+                            typeof Object.values(metadata.cast)[0] === 'function') {
                             // Deserialize and cast hashmap
-                            deserialized[alias] = Object.keys(source[key])
-                                .reduce((deserialized, k) => {
+                            deserialized[alias] = Object.keys(source[key]).reduce((deserialized, k) => {
                                 deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0])(), _customValue });
                                 return deserialized;
                             }, {});
                         }
-                        else if (metadata.cast && (typeof metadata.cast === 'function')) {
+                        else if (metadata.cast && typeof metadata.cast === 'function') {
                             // Deserialize and cast
-                            deserialized[alias] = _deserialize(source[key], 'object', { target: new (metadata.cast)(), _customValue });
+                            deserialized[alias] = _deserialize(source[key], 'object', { target: new metadata.cast(), _customValue });
                         }
                         else {
                             // Deserialize without casting
@@ -150,14 +155,20 @@ function _deserialize(value, type = 'object', { target = undefined, _customValue
             // Return deserialized
             return deserialized;
         }, instance);
+        // (Re)enable validation
+        if (instance instanceof internals_1._EnTTRoot) {
+            instance[internals_2._symbolValidationEnabled] = validationEnabledStatus;
+        }
         // Revalidate instance
-        internals_2._validateObject(target);
+        if (validate) {
+            internals_2._validateObject(target);
+        }
         // Return deserialized target
         return target;
     }
     else {
         // Just return a value as deserialized
-        return (_customValue !== internals_1._undefined ? _customValue : value);
+        return _customValue !== internals_1._undefined ? _customValue : value;
     }
 }
 exports._deserialize = _deserialize;
@@ -175,40 +186,43 @@ exports._deserialize = _deserialize;
  */
 function _cast(into) {
     // Check casting target
-    if (into && (into instanceof Array) && (into.length === 1) && (typeof into[0] === 'function')) {
+    if (into && into instanceof Array && into.length === 1 && typeof into[0] === 'function') {
         /**
          * Casts a array of values of given type as an array of instances of a given Class
          * @param value Array of values being cast
          * @param type Type of value being cast
+         * @param validate If cast instance should be validated after
          * @returns Array of instances of the class with deserialized data
          */
-        return (value = undefined, type = 'object') => {
-            return value.map(value => _deserialize(value, type, { target: new (into[0])() }));
+        return (value = undefined, type = 'object', { validate = true } = {}) => {
+            return value.map(value => _deserialize(value, type, { target: new into[0](), validate }));
         };
     }
-    else if (into && (into instanceof Object) && (Object.values(into).length === 1) && (typeof Object.values(into)[0] === 'function')) {
+    else if (into && into instanceof Object && Object.values(into).length === 1 && typeof Object.values(into)[0] === 'function') {
         /**
          * Casts a hashmap of values of given type as a hashmap of instances of a given Class
          * @param value Hashmap of values being cast
          * @param type Type of value being cast
+         * @param validate If cast instance should be validated after
          * @returns Hashmap of instances of the class with deserialized data
          */
-        return (value = undefined, type = 'object') => {
+        return (value = undefined, type = 'object', { validate = true } = {}) => {
             return Object.keys(value).reduce((hashmap, key) => {
-                hashmap[key] = _deserialize(value[key], type, { target: new (Object.values(into)[0])() });
+                hashmap[key] = _deserialize(value[key], type, { target: new (Object.values(into)[0])(), validate });
                 return hashmap;
             }, {});
         };
     }
-    else if (into && (typeof into === 'function')) {
+    else if (into && typeof into === 'function') {
         /**
          * Casts a value of given type as an instance of a given Class
          * @param value Value being cast
          * @param type Type of value being cast
+         * @param validate If cast instance should be validated after
          * @returns Instance of the class with deserialized data
          */
-        return (value = undefined, type = 'object') => {
-            return _deserialize(value, type, { target: new into() });
+        return (value = undefined, type = 'object', { validate = true } = {}) => {
+            return _deserialize(value, type, { target: new into(), validate });
         };
     }
     else {
@@ -221,11 +235,12 @@ exports._cast = _cast;
  * Clones an EnTT instance
  * @param instance EnTT instance to clone
  * @param target Instance being deserialized into
+ * @param validate If cloned instance should be validated after
  * @returns Cloned instance
  */
-function _clone(instance, { target = undefined } = {}) {
-    target = target || new (instance.constructor)();
-    return _deserialize(_serialize(instance, 'object', { _directSerialize: true }), 'object', { target, _directDeserialize: true });
+function _clone(instance, { target = undefined, validate = true } = {}) {
+    target = target || new instance.constructor();
+    return _deserialize(_serialize(instance, 'object', { _directSerialize: true }), 'object', { target, _directDeserialize: true, validate });
 }
 exports._clone = _clone;
 /**

@@ -8,6 +8,7 @@ import { _undefined, _EnTTRoot, _getClassMetadata, _getInstanceMetadata, _getDec
 import { _readPropertyMetadata, _readPropertyDescriptor, _findTaggedProperties } from '../decorators/property/internals';
 import { _rawDataType, _registerNativeClass, _cast, _clone, _serialize, _deserialize } from '../decorators/serializable/internals';
 import {
+  _symbolValidationEnabled,
   EnttValidationError,
   _readValidityMetadata,
   _validateObject,
@@ -52,9 +53,13 @@ export class EnTT extends _EnTTRoot {
    * - {MyEnTTClass}, will cast value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
    *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
    * @param type Type of value being cast
+   * @param validate If cast instance should be validated after
    * @returns Instance (or structure of instances) of the class with deserialized data, or (alternatively) a Promise about to resolve to such an instance
    */
-  public static cast(value, { into = undefined as (new () => EnTT) | (new () => EnTT)[] | Record<any, new () => EnTT>, type = 'object' as _rawDataType } = {}) {
+  public static cast(
+    value,
+    { into = undefined as (new () => EnTT) | (new () => EnTT)[] | Record<any, new () => EnTT>, type = 'object' as _rawDataType, validate = true } = {},
+  ) {
     // using @Serializable
     // Get casting target class
     into = into || (this.prototype.constructor as new () => any);
@@ -70,7 +75,7 @@ export class EnTT extends _EnTTRoot {
       });
     } else {
       // Cast value
-      return _cast(into)(value, type);
+      return _cast(into)(value, type, { validate });
     }
   }
 
@@ -78,11 +83,17 @@ export class EnTT extends _EnTTRoot {
    * Clones an EnTT instance
    * @param instance EnTT instance to clone
    * @param target Instance being deserialized into
+   * @param validate If cloned instance should be validated after
    * @returns Cloned instance
    */
-  public static clone(instance, { target = undefined as EnTT } = {}) {
-    return _clone(instance, { target });
+  public static clone(instance, { target = undefined as EnTT, validate = true } = {}) {
+    return _clone(instance, { target, validate });
   }
+
+  /**
+   * Exposes validation toggling status (for internal use only)
+   */
+  public [_symbolValidationEnabled] = true;
 
   /**
    * Initializes EnTT features for the extending class - should be called in extending class' constructor, right after "super()".
@@ -117,11 +128,12 @@ export class EnTT extends _EnTTRoot {
    * Deserializes value of given type into a target
    * @param value Value being deserialized from
    * @param type Type of value to deserialized form
+   * @param validate If deserialized instance should be validated after
    * @return Target with given value deserialized into it
    */
-  public deserialize(value, type = 'object' as _rawDataType) {
+  public deserialize(value, type = 'object' as _rawDataType, { validate = true } = {}) {
     // using @Serializable
-    return _deserialize(value, type, { target: this });
+    return _deserialize(value, type, { target: this, validate });
   }
 
   /**

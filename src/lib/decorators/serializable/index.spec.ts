@@ -424,6 +424,12 @@ describe('@Serializable', () => {
       assert(deserialized.serializeDeSerOnly !== undefined);
       assert(deserialized.serializeAlways !== undefined);
     });
+
+    it('Allows opting out of post-processing validation', () => {
+      // TODO: deserialize
+      // TODO: cast
+      // TODO: clone
+    });
   });
 });
 

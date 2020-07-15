@@ -23,7 +23,7 @@ describe('@Serializable', () => {
             this.null = null;
             this.undefined = undefined;
             return this;
-        }
+        },
     };
     class InnerNonEnTT {
         constructor() {
@@ -51,7 +51,7 @@ describe('@Serializable', () => {
         // preventing a fair check of serialization/deserialization
         initialize() {
             this.z = 'Z';
-            this.innernonentity = (new InnerNonEnTT()).initialize();
+            this.innernonentity = new InnerNonEnTT().initialize();
             return this;
         }
     }
@@ -70,7 +70,7 @@ describe('@Serializable', () => {
         // preventing a fair check of serialization/deserialization
         initialize() {
             this.y = 'Y';
-            this.nonentity = (new NonEnTT()).initialize();
+            this.nonentity = new NonEnTT().initialize();
             return this;
         }
     }
@@ -89,7 +89,7 @@ describe('@Serializable', () => {
         // preventing a fair check of serialization/deserialization
         initialize() {
             this.x = 'X';
-            this.innermost = (new InnerMostTest()).initialize();
+            this.innermost = new InnerMostTest().initialize();
             return this;
         }
     }
@@ -122,9 +122,9 @@ describe('@Serializable', () => {
         // preventing a fair check of serialization/deserialization
         initialize() {
             this.notaliased = '(not)aliased';
-            this.enttsingle = (new InnerTest()).initialize();
-            this.enttarrayliteral = [(new InnerTest()).initialize(), (new InnerTest()).initialize(), (new InnerTest()).initialize()];
-            this.enttobjectliteral = { a: (new InnerTest()).initialize(), b: (new InnerTest()).initialize(), c: (new InnerTest()).initialize() };
+            this.enttsingle = new InnerTest().initialize();
+            this.enttarrayliteral = [new InnerTest().initialize(), new InnerTest().initialize(), new InnerTest().initialize()];
+            this.enttobjectliteral = { a: new InnerTest().initialize(), b: new InnerTest().initialize(), c: new InnerTest().initialize() };
             this.nonenumerable = 'nonenumerable';
             this.setteronly = 'setteronly';
             this.customgetter = 'customgetter';
@@ -215,13 +215,13 @@ describe('@Serializable', () => {
     });
     describe('Works with non-EnTT class instances', () => {
         it('Serializes and Deserializes non-EnTT class instances', () => {
-            const instance = (new NonEnTT()).initialize(), { serialized, deserialized, reserialized } = verifySerialization(instance);
+            const instance = new NonEnTT().initialize(), { serialized, deserialized, reserialized } = verifySerialization(instance);
             verifyAny(instance, serialized, { verifyConstructors: false });
             verifyAny(instance, reserialized, { verifyConstructors: false });
             verifyAny(instance, deserialized, { verifyConstructors: true });
         });
         it('Casts as non-EnTTs', () => {
-            const instance = (new NonEnTT()).initialize(), { serialized, deserialized } = verifySerialization(instance), castSingle = internals_1._cast(NonEnTT)(serialized), castArray = internals_1._cast([NonEnTT])([serialized, serialized, serialized]), castHashmap = internals_1._cast({ NonEnTT })({ a: serialized, b: serialized, c: serialized });
+            const instance = new NonEnTT().initialize(), { serialized, deserialized } = verifySerialization(instance), castSingle = internals_1._cast(NonEnTT)(serialized), castArray = internals_1._cast([NonEnTT])([serialized, serialized, serialized]), castHashmap = internals_1._cast({ NonEnTT })({ a: serialized, b: serialized, c: serialized });
             verifyAny(castSingle, instance, { verifyConstructors: true });
             verifyAny(castSingle, deserialized, { verifyConstructors: true });
             tests_init_1.assert(castArray instanceof Array);
@@ -234,14 +234,14 @@ describe('@Serializable', () => {
             verifyAny(castHashmap.a, deserialized, { verifyConstructors: true });
         });
         it('Clones non-EnTT class instances', () => {
-            const instance = (new NonEnTT()).initialize(), cloned = __1.EnTT.clone(instance);
+            const instance = new NonEnTT().initialize(), cloned = __1.EnTT.clone(instance);
             tests_init_1.assert(instance !== cloned);
             tests_init_1.assert(internals_1._serialize(instance, 'json') === internals_1._serialize(cloned, 'json'));
         });
     });
     describe('Works with EnTT class instances', () => {
         it('Serializes and Deserializes EnTT class instances', () => {
-            const instance = (new Test()).initialize(), ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], { serialized, deserialized, reserialized } = verifySerialization(instance);
+            const instance = new Test().initialize(), ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], { serialized, deserialized, reserialized } = verifySerialization(instance);
             verifyAny(instance, serialized, { verifyConstructors: false, ignoreKeys });
             verifyAny(instance, reserialized, { verifyConstructors: false, ignoreKeys });
             verifyAny(instance, deserialized, { verifyConstructors: true, ignoreKeys });
@@ -251,7 +251,7 @@ describe('@Serializable', () => {
             expect(deserializedDirectly).toEqual(deserializedIndirectly);
         });
         it('Casts as EnTTs', () => {
-            const instance = (new Test()).initialize(), ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], { serialized, deserialized } = verifySerialization(instance), castSingle = internals_1._cast(Test)(serialized), castArray = internals_1._cast([Test])([serialized, serialized, serialized]), castHashmap = internals_1._cast({ Test })({ a: serialized, b: serialized, c: serialized });
+            const instance = new Test().initialize(), ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], { serialized, deserialized } = verifySerialization(instance), castSingle = internals_1._cast(Test)(serialized), castArray = internals_1._cast([Test])([serialized, serialized, serialized]), castHashmap = internals_1._cast({ Test })({ a: serialized, b: serialized, c: serialized });
             verifyAny(castSingle, instance, { verifyConstructors: true, ignoreKeys });
             verifyAny(castSingle, deserialized, { verifyConstructors: true, ignoreKeys });
             tests_init_1.assert(castArray instanceof Array);
@@ -268,14 +268,14 @@ describe('@Serializable', () => {
             expect(instance).toEqual(castIndirectly);
         });
         it('Clones EnTT class instances', () => {
-            const instance = (new Test()).initialize(), cloned = __1.EnTT.clone(instance);
+            const instance = new Test().initialize(), cloned = __1.EnTT.clone(instance);
             tests_init_1.assert(instance !== cloned);
             tests_init_1.assert(internals_1._serialize(instance, 'json') === internals_1._serialize(cloned, 'json'));
         });
     });
     describe('Works with extended EnTT class instances', () => {
         it('Serializes and Deserializes extended EnTT class instances', () => {
-            const instance = (new ExtendedTestEntity()).initialize(), ignoreKeys = ['dontserialize', 'notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], { serialized, deserialized, reserialized } = verifySerialization(instance, 'object', { skipDeserializeCheck: true });
+            const instance = new ExtendedTestEntity().initialize(), ignoreKeys = ['dontserialize', 'notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], { serialized, deserialized, reserialized } = verifySerialization(instance, 'object', { skipDeserializeCheck: true });
             verifyAny(instance, serialized, { verifyConstructors: false, ignoreKeys });
             verifyAny(instance, reserialized, { verifyConstructors: false, ignoreKeys });
             verifyAny(instance, deserialized, { verifyConstructors: true, ignoreKeys });
@@ -285,12 +285,12 @@ describe('@Serializable', () => {
     });
     describe('Works with multiple serialization target types', () => {
         it('Works with JS object target', () => {
-            const instance = (new Test()).initialize(), ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], serialized = internals_1._serialize(instance, 'object'), deserialized = internals_1._deserialize(serialized, 'object', { target: new Test() });
+            const instance = new Test().initialize(), ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], serialized = internals_1._serialize(instance, 'object'), deserialized = internals_1._deserialize(serialized, 'object', { target: new Test() });
             verifyAny(instance, deserialized, { verifyConstructors: true, ignoreKeys });
             tests_init_1.assert(typeof serialized === 'object');
         });
         it('Works with JSON target', () => {
-            const instance = (new Test()).initialize(), ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], serialized = internals_1._serialize(instance, 'json'), deserialized = internals_1._deserialize(serialized, 'json', { target: new Test() });
+            const instance = new Test().initialize(), ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'], serialized = internals_1._serialize(instance, 'json'), deserialized = internals_1._deserialize(serialized, 'json', { target: new Test() });
             verifyAny(instance, deserialized, { verifyConstructors: true, ignoreKeys });
             tests_init_1.assert(typeof serialized === 'string');
         });
@@ -383,7 +383,7 @@ describe('@Serializable', () => {
             tslib_1.__metadata("design:type", Object)
         ], LimitedTest.prototype, "serializeAlways", void 0);
         it('Respects @Serializable.serialize and @Serializable.deserialize serialization configuration', () => {
-            const instance = (new LimitedTest()).initialize(), serialized = internals_1._serialize(instance, 'object'), serializedCloned = Object.assign({}, serialized);
+            const instance = new LimitedTest().initialize(), serialized = internals_1._serialize(instance, 'object'), serializedCloned = Object.assign({}, serialized);
             serializedCloned.serializeNever = 'changed';
             serializedCloned.serializeSerOnly = 'changed';
             serializedCloned.serializeDeSerOnly = 'changed';
@@ -398,6 +398,11 @@ describe('@Serializable', () => {
             tests_init_1.assert(deserialized.serializeDeSerOnly !== undefined);
             tests_init_1.assert(deserialized.serializeAlways !== undefined);
         });
+        it('Allows opting out of post-processing validation', () => {
+            // TODO: deserialize
+            // TODO: cast
+            // TODO: clone
+        });
     });
 });
 /**
@@ -409,7 +414,7 @@ describe('@Serializable', () => {
  */
 function verifySerialization(obj, type = 'object', { skipDeserializeCheck = false } = {}) {
     // Serializable and deserialize and reserialize
-    const serialized = internals_1._serialize(obj, type), deserialized = internals_1._deserialize(serialized, type, { target: (obj.constructor ? new (obj.constructor)() : {}) }), reserialized = internals_1._serialize(deserialized, type);
+    const serialized = internals_1._serialize(obj, type), deserialized = internals_1._deserialize(serialized, type, { target: obj.constructor ? new obj.constructor() : {} }), reserialized = internals_1._serialize(deserialized, type);
     // Check if serialized and deserialized have correct types
     tests_init_1.assert(!(serialized instanceof __1.EnTT));
     tests_init_1.assert(deserialized instanceof obj.constructor);
@@ -417,7 +422,7 @@ function verifySerialization(obj, type = 'object', { skipDeserializeCheck = fals
     // Check if serialized and reserialized didn't lose data
     expect(serialized).toEqual(reserialized);
     // If original object was constructable, check if original object is same as deserialized one
-    if (obj.constructor && (obj.constructor !== Object) && !skipDeserializeCheck) {
+    if (obj.constructor && obj.constructor !== Object && !skipDeserializeCheck) {
         expect(obj).toEqual(deserialized);
     }
     // Return serialized, deserialized and reserialized for more processing
@@ -441,7 +446,7 @@ function verifyAny(original, exported, { verifyConstructors = false, ignoreKeys 
                 // Verify members' value match
                 verifyAny(original[key], exported[key]);
                 // If not checking method
-                if ((typeof original[key] !== 'function') && (typeof exported[key] !== 'function')) {
+                if (typeof original[key] !== 'function' && typeof exported[key] !== 'function') {
                     // Verify members' types match (unless one is a method)
                     tests_init_1.assert(typeof original[key] === typeof exported[key]);
                     // Verify members' constructors

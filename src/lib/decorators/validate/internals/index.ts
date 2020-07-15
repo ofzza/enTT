@@ -2,10 +2,11 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { _undefined, _getDecoratorMetadata, _getInstanceMetadata } from '../../../entt/internals';
+import { _undefined, _EnTTRoot, _getDecoratorMetadata, _getInstanceMetadata } from '../../../entt/internals';
 
 // Define a unique symbol for Serializable decorator
 export const _symbolValidate = Symbol('@Validate');
+export const _symbolValidationEnabled = Symbol('EnTT Validation enabled');
 
 // Define supported types
 export type _primitiveTypeName = 'boolean' | 'string' | 'number' | 'object';
@@ -61,6 +62,10 @@ export function _readValidityMetadata(target) {
  * @returns Hashmap of all properties having validation errors
  */
 export function _validateObject(target): Record<string, EnttValidationError[]> {
+  // Check if validation disabled
+  if (target && target instanceof _EnTTRoot && target[_symbolValidationEnabled] === false) {
+    return {} as Record<string, EnttValidationError[]>;
+  }
   // Validate all properties
   const keys = Object.keys(_getDecoratorMetadata(target.constructor, _symbolValidate) || {});
   return keys.reduce((errors, key) => {
@@ -82,6 +87,10 @@ export function _validateObject(target): Record<string, EnttValidationError[]> {
  * @returns Array of validation errors
  */
 export function _validateProperty(target, key, value = _undefined as any): EnttValidationError[] {
+  // Check if validation disabled
+  if (target && target instanceof _EnTTRoot && target[_symbolValidationEnabled] === false) {
+    return [] as EnttValidationError[];
+  }
   // Get property metadata
   const metadata = _getDecoratorMetadata(target.constructor, _symbolValidate)[key];
   if (!metadata) {

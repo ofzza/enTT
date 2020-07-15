@@ -24,7 +24,7 @@ describe('@Validate', () => {
     tslib_1.__decorate([
         __1.Validate({
             type: 'number',
-            provider: (obj, value) => ((typeof value === 'number') && (Math.trunc(value) === value) && (value > 0))
+            provider: (obj, value) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
         }),
         tslib_1.__metadata("design:type", Object)
     ], InnerTest.prototype, "naturalNum", void 0);
@@ -44,28 +44,28 @@ describe('@Validate', () => {
     tslib_1.__decorate([
         __1.Validate({
             type: 'number',
-            provider: (obj, value) => ((typeof value === 'number') && (Math.trunc(value) === value) && (value > 0))
+            provider: (obj, value) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
         }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "customNaturalNum", void 0);
     tslib_1.__decorate([
         __1.Validate({
             type: 'number',
-            provider: Joi.number().strict().integer().min(1)
+            provider: Joi.number().strict().integer().min(1),
         }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "joiNaturalNum", void 0);
     tslib_1.__decorate([
         __1.Validate({
             type: 'number',
-            provider: JoiBrowser.number().strict().integer().min(1)
+            provider: JoiBrowser.number().strict().integer().min(1),
         }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "joiBrowserNaturalNum", void 0);
     tslib_1.__decorate([
         __1.Validate({
             type: 'number',
-            provider: Yup.number().strict().integer().min(1)
+            provider: Yup.number().strict().integer().min(1),
         }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "yupNaturalNum", void 0);
@@ -105,7 +105,7 @@ describe('@Validate', () => {
         it('Nested EnTT array', () => {
             const instance = new Test();
             // Test invalid nested values
-            instance.enttarrayliteral.forEach((instance) => {
+            instance.enttarrayliteral.forEach(instance => {
                 instance.naturalNum = '-3.14';
             });
             {
@@ -114,7 +114,7 @@ describe('@Validate', () => {
                 tests_init_1.assert(errors.length === 6);
             }
             // Test valid nested values
-            instance.enttarrayliteral.forEach((instance) => {
+            instance.enttarrayliteral.forEach(instance => {
                 instance.naturalNum = 1;
             });
             {
@@ -126,7 +126,7 @@ describe('@Validate', () => {
         it('Nested EnTT hashmap', () => {
             const instance = new Test();
             // Test invalid nested values
-            Object.values(instance.enttobjectliteral).forEach((instance) => {
+            Object.values(instance.enttobjectliteral).forEach(instance => {
                 instance.naturalNum = '-3.14';
             });
             {
@@ -135,7 +135,7 @@ describe('@Validate', () => {
                 tests_init_1.assert(errors.length === 6);
             }
             // Test valid nested values
-            Object.values(instance.enttobjectliteral).forEach((instance) => {
+            Object.values(instance.enttobjectliteral).forEach(instance => {
                 instance.naturalNum = 1;
             });
             {
@@ -175,7 +175,7 @@ describe('@Validate', () => {
             tslib_1.__metadata("design:type", Object)
         ], Test.prototype, "propA", void 0);
         tslib_1.__decorate([
-            __1.Validate({ provider: (target, value) => (value < 10) }),
+            __1.Validate({ provider: (target, value) => value < 10 }),
             tslib_1.__metadata("design:type", Object)
         ], Test.prototype, "propB", void 0);
         const base = new TestBase();

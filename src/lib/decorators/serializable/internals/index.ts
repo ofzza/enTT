@@ -4,7 +4,7 @@
 // Import dependencies
 import { _undefined, _EnTTRoot, _getDecoratorMetadata, _getInstanceMetadata } from '../../../entt/internals';
 import { _readPropertyDescriptor } from '../../property/internals';
-import { _validateObject } from '../../validate/internals';
+import { _symbolValidationEnabled, _validateObject } from '../../validate/internals';
 
 // Define a unique symbols for Serializable decorator
 export const _symbolSerializable = Symbol('@Serializable');
@@ -97,6 +97,7 @@ export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _cus
  * @param value Value being deserialized from
  * @param type Type of value to deserialized form
  * @param target Instance being deserialized into
+ * @param validate If deserialized instance should be validated after
  * @param _customValue Used for internal passing of custom deserialized values
  * @param _directDeserialize (Internal) If true, ignores all custom deserialization configuration (used by .clone())
  * @return Target with given value deserialized into it
@@ -104,7 +105,7 @@ export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _cus
 export function _deserialize<T>(
   value,
   type = 'object' as _rawDataType,
-  { target = undefined as T, _customValue = _undefined as any, _directDeserialize = false } = {},
+  { target = undefined as T, validate = true, _customValue = _undefined as any, _directDeserialize = false } = {},
 ) {
   // Convert value
   const source = _data2obj(value, type);
@@ -119,6 +120,12 @@ export function _deserialize<T>(
 
   // Check if value matches target shape
   if (!_isNativeClassInstance(source) && ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object))) {
+    // Disable validation
+    const validationEnabledStatus = instance[_symbolValidationEnabled];
+    if (instance instanceof _EnTTRoot) {
+      instance[_symbolValidationEnabled] = false;
+    }
+
     // Deserialize
     Object.keys(source).reduce((deserialized, key) => {
       // Check if target property exists and isn't a method
@@ -174,8 +181,15 @@ export function _deserialize<T>(
       return deserialized;
     }, instance);
 
+    // (Re)enable validation
+    if (instance instanceof _EnTTRoot) {
+      instance[_symbolValidationEnabled] = validationEnabledStatus;
+    }
+
     // Revalidate instance
-    _validateObject(target);
+    if (validate) {
+      _validateObject(target);
+    }
 
     // Return deserialized target
     return target;
@@ -197,28 +211,32 @@ export function _deserialize<T>(
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  * @returns A casting function
  */
-export function _cast<T>(into: (new () => T) | (new () => T)[] | Record<any, new () => T>): (value: any, type?: _rawDataType) => any {
+export function _cast<T>(
+  into: (new () => T) | (new () => T)[] | Record<any, new () => T>,
+): (value: any, type?: _rawDataType, options?: { [key: string]: any }) => any {
   // Check casting target
   if (into && into instanceof Array && into.length === 1 && typeof into[0] === 'function') {
     /**
      * Casts a array of values of given type as an array of instances of a given Class
      * @param value Array of values being cast
      * @param type Type of value being cast
+     * @param validate If cast instance should be validated after
      * @returns Array of instances of the class with deserialized data
      */
-    return (value = undefined as T[], type = 'object' as _rawDataType) => {
-      return value.map(value => _deserialize<T>(value, type, { target: new into[0]() }));
+    return (value = undefined as T[], type = 'object' as _rawDataType, { validate = true } = {}) => {
+      return value.map(value => _deserialize<T>(value, type, { target: new into[0](), validate }));
     };
   } else if (into && into instanceof Object && Object.values(into).length === 1 && typeof Object.values(into)[0] === 'function') {
     /**
      * Casts a hashmap of values of given type as a hashmap of instances of a given Class
      * @param value Hashmap of values being cast
      * @param type Type of value being cast
+     * @param validate If cast instance should be validated after
      * @returns Hashmap of instances of the class with deserialized data
      */
-    return (value = undefined as Record<any, T>, type = 'object' as _rawDataType) => {
+    return (value = undefined as Record<any, T>, type = 'object' as _rawDataType, { validate = true } = {}) => {
       return Object.keys(value).reduce((hashmap, key) => {
-        hashmap[key] = _deserialize<T>(value[key], type, { target: new (Object.values(into)[0])() });
+        hashmap[key] = _deserialize<T>(value[key], type, { target: new (Object.values(into)[0])(), validate });
         return hashmap;
       }, {});
     };
@@ -227,10 +245,11 @@ export function _cast<T>(into: (new () => T) | (new () => T)[] | Record<any, new
      * Casts a value of given type as an instance of a given Class
      * @param value Value being cast
      * @param type Type of value being cast
+     * @param validate If cast instance should be validated after
      * @returns Instance of the class with deserialized data
      */
-    return (value = undefined as T, type = 'object' as _rawDataType) => {
-      return _deserialize<T>(value, type, { target: new into() });
+    return (value = undefined as T, type = 'object' as _rawDataType, { validate = true } = {}) => {
+      return _deserialize<T>(value, type, { target: new into(), validate });
     };
   } else {
     // Throw error
@@ -242,11 +261,12 @@ export function _cast<T>(into: (new () => T) | (new () => T)[] | Record<any, new
  * Clones an EnTT instance
  * @param instance EnTT instance to clone
  * @param target Instance being deserialized into
+ * @param validate If cloned instance should be validated after
  * @returns Cloned instance
  */
-export function _clone(instance, { target = undefined as _EnTTRoot } = {}) {
+export function _clone(instance, { target = undefined as _EnTTRoot, validate = true } = {}) {
   target = target || new instance.constructor();
-  return _deserialize(_serialize(instance, 'object', { _directSerialize: true }), 'object', { target, _directDeserialize: true });
+  return _deserialize(_serialize(instance, 'object', { _directSerialize: true }), 'object', { target, _directDeserialize: true, validate });
 }
 
 /**

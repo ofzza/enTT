@@ -91,7 +91,7 @@ describe('@Property', () => {
             test.customsetter = 'test';
             tests_init_1.assert(test.customsetter === 'plain:TEST');
         });
-        it('Custom getter and setter reflect changes to other, referenced properties\' values', () => {
+        it("Custom getter and setter reflect changes to other, referenced properties' values", () => {
             const test = new Test();
             test.plain = 'no-longer-plain';
             test.customsetter = 'test';
@@ -112,7 +112,7 @@ describe('@Property', () => {
             __1.Property({
                 enumerable: false,
                 set: false,
-                get: false
+                get: false,
             }),
             tslib_1.__metadata("design:type", Object)
         ], TestBase.prototype, "prop", void 0);
@@ -127,13 +127,15 @@ describe('@Property', () => {
             __1.Property({
                 enumerable: true,
                 set: (obj, value) => value && value.toUpperCase(),
-                get: (obj, value) => `!${value && value.toUpperCase()}!`
+                get: (obj, value) => `!${value && value.toUpperCase()}!`,
             }),
             tslib_1.__metadata("design:type", Object)
         ], Test.prototype, "prop", void 0);
         const base = new TestBase();
         tests_init_1.assert(Object.keys(base).length === 0);
-        expect(() => { base.prop = 'test'; }).toThrow();
+        expect(() => {
+            base.prop = 'test';
+        }).toThrow();
         tests_init_1.assert(base.prop === undefined);
         const test = new Test();
         tests_init_1.assert(Object.keys(test).length === 1);

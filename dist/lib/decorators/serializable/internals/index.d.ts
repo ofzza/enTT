@@ -2,7 +2,7 @@ import { _EnTTRoot } from '../../../entt/internals';
 export declare const _symbolSerializable: unique symbol;
 export declare type _serializeType = Symbol;
 export declare type _rawDataType = 'object' | 'json';
-export declare type _castType = (new () => any) | (Array<new () => any>) | Object;
+export declare type _castType = (new () => any) | Array<new () => any> | Object;
 /**
  * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
  * @param nativeClass Native JS class
@@ -33,12 +33,14 @@ export declare function _serialize<T>(source: T, type?: _rawDataType, { _customV
  * @param value Value being deserialized from
  * @param type Type of value to deserialized form
  * @param target Instance being deserialized into
+ * @param validate If deserialized instance should be validated after
  * @param _customValue Used for internal passing of custom deserialized values
  * @param _directDeserialize (Internal) If true, ignores all custom deserialization configuration (used by .clone())
  * @return Target with given value deserialized into it
  */
-export declare function _deserialize<T>(value: any, type?: _rawDataType, { target, _customValue, _directDeserialize }?: {
+export declare function _deserialize<T>(value: any, type?: _rawDataType, { target, validate, _customValue, _directDeserialize }?: {
     target?: T;
+    validate?: boolean;
     _customValue?: any;
     _directDeserialize?: boolean;
 }): any;
@@ -54,13 +56,17 @@ export declare function _deserialize<T>(value: any, type?: _rawDataType, { targe
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  * @returns A casting function
  */
-export declare function _cast<T>(into: ((new () => T) | (new () => T)[] | Record<any, (new () => T)>)): ((value: any, type?: _rawDataType) => any);
+export declare function _cast<T>(into: (new () => T) | (new () => T)[] | Record<any, new () => T>): (value: any, type?: _rawDataType, options?: {
+    [key: string]: any;
+}) => any;
 /**
  * Clones an EnTT instance
  * @param instance EnTT instance to clone
  * @param target Instance being deserialized into
+ * @param validate If cloned instance should be validated after
  * @returns Cloned instance
  */
-export declare function _clone(instance: any, { target }?: {
+export declare function _clone(instance: any, { target, validate }?: {
     target?: _EnTTRoot;
+    validate?: boolean;
 }): any;

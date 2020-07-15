@@ -13,7 +13,7 @@
  * @param enumerable (Optional) If the property is enumerable
  * @param tag (Optional) String or array of strings marking the property as belonging to a certain subset
  */
-export declare function Property({ get, set, enumerable, tag }?: {
+export declare function Property({ get, set, enumerable, tag, }?: {
     get?: boolean | ((target: any, value: any) => any);
     set?: boolean | ((target: any, value: any) => any);
     enumerable?: boolean;

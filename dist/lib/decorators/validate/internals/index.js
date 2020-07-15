@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const internals_1 = require("../../../entt/internals");
 // Define a unique symbol for Serializable decorator
 exports._symbolValidate = Symbol('@Validate');
+exports._symbolValidationEnabled = Symbol('EnTT Validation enabled');
 /**
  * Richer error class used for describing validation errors
  */
@@ -31,10 +32,11 @@ exports.EnttValidationError = EnttValidationError;
  */
 function _readValidityMetadata(target) {
     const metadata = internals_1._getInstanceMetadata(target);
-    return metadata.validity || (metadata.validity = {
-        valid: true,
-        errors: {}
-    });
+    return (metadata.validity ||
+        (metadata.validity = {
+            valid: true,
+            errors: {},
+        }));
 }
 exports._readValidityMetadata = _readValidityMetadata;
 /**
@@ -43,6 +45,10 @@ exports._readValidityMetadata = _readValidityMetadata;
  * @returns Hashmap of all properties having validation errors
  */
 function _validateObject(target) {
+    // Check if validation disabled
+    if (target && target instanceof internals_1._EnTTRoot && target[exports._symbolValidationEnabled] === false) {
+        return {};
+    }
     // Validate all properties
     const keys = Object.keys(internals_1._getDecoratorMetadata(target.constructor, exports._symbolValidate) || {});
     return keys.reduce((errors, key) => {
@@ -65,6 +71,10 @@ exports._validateObject = _validateObject;
  * @returns Array of validation errors
  */
 function _validateProperty(target, key, value = internals_1._undefined) {
+    // Check if validation disabled
+    if (target && target instanceof internals_1._EnTTRoot && target[exports._symbolValidationEnabled] === false) {
+        return [];
+    }
     // Get property metadata
     const metadata = internals_1._getDecoratorMetadata(target.constructor, exports._symbolValidate)[key];
     if (!metadata) {
@@ -101,7 +111,7 @@ function _validateProperty(target, key, value = internals_1._undefined) {
             }
             else if (err instanceof Array) {
                 // Take errors
-                err.forEach((err) => {
+                err.forEach(err => {
                     if (typeof err === 'string') {
                         // Create error from string
                         errors.push(new EnttValidationError({ message: err }));
@@ -114,24 +124,24 @@ function _validateProperty(target, key, value = internals_1._undefined) {
             }
         }
     }
-    else if ((typeof metadata.provider === 'object') && (typeof metadata.provider.validate === 'function') && metadata.provider.__isYupSchema__) {
+    else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function' && metadata.provider.__isYupSchema__) {
         // Validate using YUP validation
         try {
             metadata.provider.validateSync(value, { context: target });
         }
         catch (err) {
-            err.errors.forEach((msg) => {
-                msg = (msg.substr(0, 5) === 'this ' ? `Value ${JSON.stringify(value)} ${msg.substr(5)}` : msg);
+            err.errors.forEach(msg => {
+                msg = msg.substr(0, 5) === 'this ' ? `Value ${JSON.stringify(value)} ${msg.substr(5)}` : msg;
                 errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
             });
         }
     }
-    else if ((typeof metadata.provider === 'object') && (typeof metadata.provider.validate === 'function')) {
+    else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function') {
         // Validate using attached .validate() method
         const err = metadata.provider.validate(value, { context: target }).error;
         if (err && err.isJoi) {
             // Process JOI errors result
-            err.details.forEach((err) => {
+            err.details.forEach(err => {
                 const msg = err.message.replace(/"value"/g, `Value ${JSON.stringify(value)}`);
                 errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
             });
@@ -142,8 +152,7 @@ function _validateProperty(target, key, value = internals_1._undefined) {
         }
     }
     // Update target valid status
-    validity.valid = !Object.values(validity.errors)
-        .filter((errs) => !!errs.length).length;
+    validity.valid = !Object.values(validity.errors).filter((errs) => !!errs.length).length;
     // Output validation result
     return errors;
 }
@@ -181,8 +190,7 @@ function _getValidationErrors(target) {
     const allErrors = {};
     // Read local errors
     const errors = _readValidityMetadata(target).errors;
-    Object.keys(errors)
-        .forEach((key) => {
+    Object.keys(errors).forEach(key => {
         // Add local errors per each property
         if (errors[key].length) {
             if (!allErrors[key]) {
@@ -195,8 +203,7 @@ function _getValidationErrors(target) {
     for (const c of internals_1._getInstanceMetadata(target).children) {
         // Add child errors per each property
         const childErrors = c.child.errors;
-        Object.keys(childErrors)
-            .forEach((childKey) => {
+        Object.keys(childErrors).forEach(childKey => {
             if (childErrors[childKey].length) {
                 const compositeKey = `${c.path.join('.')}.${childKey}`;
                 if (!allErrors[compositeKey]) {

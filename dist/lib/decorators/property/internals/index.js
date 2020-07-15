@@ -28,35 +28,39 @@ function _readPropertyDescriptor({ target = undefined, key = undefined, store = 
         get: true,
         set: true,
         enumerable: true,
-        tag: []
+        tag: [],
     };
     return {
         // Define property getter
-        get: (metadata.get === false ? undefined : () => {
-            if (typeof metadata.get === 'function') {
-                // Use specified function in getter
-                return metadata.get(target, store[key]);
-            }
-            else if (metadata.get === true) {
-                // Use default, pass-through getter
-                return store[key];
-            }
-        }),
+        get: metadata.get === false
+            ? undefined
+            : () => {
+                if (typeof metadata.get === 'function') {
+                    // Use specified function in getter
+                    return metadata.get(target, store[key]);
+                }
+                else if (metadata.get === true) {
+                    // Use default, pass-through getter
+                    return store[key];
+                }
+            },
         // Define property setter
-        set: (metadata.set === false ? undefined : (value) => {
-            if (typeof metadata.set === 'function') {
-                // Use specified function in setter
-                store[key] = metadata.set(target, value);
-            }
-            else if (metadata.set === true) {
-                // Use default, pass-through setter
-                store[key] = value;
-            }
-        }),
+        set: metadata.set === false
+            ? undefined
+            : value => {
+                if (typeof metadata.set === 'function') {
+                    // Use specified function in setter
+                    store[key] = metadata.set(target, value);
+                }
+                else if (metadata.set === true) {
+                    // Use default, pass-through setter
+                    store[key] = value;
+                }
+            },
         // Define if property is enumerable
         enumerable: !!metadata.enumerable,
         // Define property tags
-        tag: metadata.tag
+        tag: metadata.tag,
     };
 }
 exports._readPropertyDescriptor = _readPropertyDescriptor;
@@ -69,16 +73,16 @@ function _findTaggedProperties(target = undefined, tag = undefined) {
     // Get @Property metadata (or defaults)
     const metadata = _readPropertyMetadata(target);
     // Find properties matching requested tab
-    return Object.keys(metadata).filter((key) => {
+    return Object.keys(metadata).filter(key => {
         const propertyMetadata = metadata[key];
         if (propertyMetadata && propertyMetadata.tag) {
-            if ((propertyMetadata.tag instanceof Array) && (propertyMetadata.tag.indexOf(tag) !== -1)) {
+            if (propertyMetadata.tag instanceof Array && propertyMetadata.tag.indexOf(tag) !== -1) {
                 return true;
             }
-            if ((typeof propertyMetadata.tag === 'symbol') && (propertyMetadata.tag === tag)) {
+            if (typeof propertyMetadata.tag === 'symbol' && propertyMetadata.tag === tag) {
                 return true;
             }
-            if ((typeof propertyMetadata.tag === 'string') && (propertyMetadata.tag === tag)) {
+            if (typeof propertyMetadata.tag === 'string' && propertyMetadata.tag === tag) {
                 return true;
             }
         }

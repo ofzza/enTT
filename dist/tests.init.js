@@ -8,7 +8,9 @@ const jasmine_spec_reporter_1 = require("jasmine-spec-reporter");
  * ASserts truthfulness of an expression
  * @param expr Expression to assert
  */
-function assert(expr) { expect(expr).toBeTruthy(); }
+function assert(expr) {
+    expect(expr).toBeTruthy();
+}
 exports.assert = assert;
 // Configure reporter
 jasmine.getEnv().clearReporters();
@@ -19,7 +21,7 @@ jasmine.getEnv().addReporter(new jasmine_spec_reporter_1.SpecReporter({
         displaySuccessful: true,
         displayFailed: true,
         displayPending: true,
-        displayDuration: true
-    }
+        displayDuration: true,
+    },
 }));
 //# sourceMappingURL=tests.init.js.map

@@ -22,13 +22,13 @@ const internals_2 = require("../../entt/internals");
  * @param enumerable (Optional) If the property is enumerable
  * @param tag (Optional) String or array of strings marking the property as belonging to a certain subset
  */
-function Property({ get = undefined, set = undefined, enumerable = undefined, tag = undefined } = {}) {
+function Property({ get = undefined, set = undefined, enumerable = undefined, tag = undefined, } = {}) {
     // Set defaults
     const defaults = {
         get: true,
         set: true,
         enumerable: true,
-        tag: []
+        tag: [],
     };
     // Return decorator
     return (target, key) => {
@@ -37,10 +37,10 @@ function Property({ get = undefined, set = undefined, enumerable = undefined, ta
         const metadata = internals_2._getDecoratorMetadata(target.constructor, internals_1._symbolProperty);
         metadata[key] = {
             key,
-            get: (get !== undefined ? get : (((_a = metadata[key]) === null || _a === void 0 ? void 0 : _a.get) !== undefined ? metadata[key].get : defaults.get)),
-            set: (set !== undefined ? set : (((_b = metadata[key]) === null || _b === void 0 ? void 0 : _b.set) !== undefined ? metadata[key].set : defaults.set)),
-            enumerable: (enumerable !== undefined ? enumerable : (((_c = metadata[key]) === null || _c === void 0 ? void 0 : _c.enumerable) !== undefined ? metadata[key].enumerable : defaults.enumerable)),
-            tag: (tag !== undefined ? tag : (((_d = metadata[key]) === null || _d === void 0 ? void 0 : _d.tag) !== undefined ? metadata[key].tag : defaults.tag))
+            get: get !== undefined ? get : ((_a = metadata[key]) === null || _a === void 0 ? void 0 : _a.get) !== undefined ? metadata[key].get : defaults.get,
+            set: set !== undefined ? set : ((_b = metadata[key]) === null || _b === void 0 ? void 0 : _b.set) !== undefined ? metadata[key].set : defaults.set,
+            enumerable: enumerable !== undefined ? enumerable : ((_c = metadata[key]) === null || _c === void 0 ? void 0 : _c.enumerable) !== undefined ? metadata[key].enumerable : defaults.enumerable,
+            tag: tag !== undefined ? tag : ((_d = metadata[key]) === null || _d === void 0 ? void 0 : _d.tag) !== undefined ? metadata[key].tag : defaults.tag,
         };
     };
 }

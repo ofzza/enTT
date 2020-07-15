@@ -58,7 +58,9 @@ describe('README examples', () => {
                     tslib_1.__metadata("design:type", Object)
                 ], MyEntityClass.prototype, "writeonly", void 0);
                 const instance = new MyEntityClass();
-                expect(() => { instance.readonly = 'value'; }).toThrow();
+                expect(() => {
+                    instance.readonly = 'value';
+                }).toThrow();
                 tests_init_1.assert(instance.readonly === 'readonly');
                 tests_init_1.assert((instance.writeonly = 'writeonly') === 'writeonly');
                 tests_init_1.assert(instance.writeonly === undefined);
@@ -67,7 +69,7 @@ describe('README examples', () => {
         describe('Custom getter and/or setter', () => {
             it('Example', () => {
                 function toTitleCase(value) {
-                    return (value && value[0] ? value[0].toUpperCase() + value.substr(1) : value);
+                    return value && value[0] ? value[0].toUpperCase() + value.substr(1) : value;
                 }
                 class MyEntityClass extends _1.EnTT {
                     constructor() {
@@ -149,7 +151,7 @@ describe('README examples', () => {
                 instance.firstName = 'John';
                 instance.lastName = 'Doe';
                 const serialized = instance.serialize();
-                tests_init_1.assert(JSON.stringify(serialized) === JSON.stringify({ firstName: "John", lastName: "Doe" }));
+                tests_init_1.assert(JSON.stringify(serialized) === JSON.stringify({ firstName: 'John', lastName: 'Doe' }));
                 const deserialized = new MyPersonClass();
                 deserialized.deserialize(serialized);
                 tests_init_1.assert(deserialized.firstName === 'John');
@@ -166,7 +168,7 @@ describe('README examples', () => {
                 tests_init_1.assert(castHashmap.a instanceof MyPersonClass);
                 tests_init_1.assert(castHashmap.a.firstName === 'John');
                 tests_init_1.assert(castHashmap.a.lastName === 'Doe');
-                MyPersonClass.cast(Promise.resolve(serialized)).then((castPromise) => {
+                MyPersonClass.cast(Promise.resolve(serialized)).then(castPromise => {
                     tests_init_1.assert(castPromise instanceof MyPersonClass);
                     tests_init_1.assert(castPromise.firstName === 'John');
                     tests_init_1.assert(castPromise.lastName === 'Doe');
@@ -198,7 +200,7 @@ describe('README examples', () => {
                 instance.firstName = 'John';
                 instance.lastName = 'Doe';
                 const serialized = instance.serialize();
-                tests_init_1.assert(JSON.stringify(serialized) === JSON.stringify({ first_name: "John", last_name: "Doe" }));
+                tests_init_1.assert(JSON.stringify(serialized) === JSON.stringify({ first_name: 'John', last_name: 'Doe' }));
                 const deserialized = new MyPersonClass();
                 deserialized.deserialize(serialized);
                 tests_init_1.assert(deserialized.firstName === 'John');
@@ -231,7 +233,7 @@ describe('README examples', () => {
                     instance.password = '123';
                     instance.repeatPassword = '123';
                     const serialized = instance.serialize();
-                    tests_init_1.assert(JSON.stringify(serialized) === JSON.stringify({ password: "123" }));
+                    tests_init_1.assert(JSON.stringify(serialized) === JSON.stringify({ password: '123' }));
                     const deserialized = new MyAuthenticationClass();
                     deserialized.deserialize(Object.assign(Object.assign({}, serialized), { repeatPassword: '123' }));
                     tests_init_1.assert(deserialized.password === '123');
@@ -253,7 +255,7 @@ describe('README examples', () => {
                     tslib_1.__decorate([
                         _1.Serializable({
                             deserialize: (obj, value) => new Date(value),
-                            serialize: (obj, value) => value.getTime()
+                            serialize: (obj, value) => value.getTime(),
                         }),
                         tslib_1.__metadata("design:type", Object)
                     ], MyTimestampedClass.prototype, "timestamp", void 0);
@@ -279,7 +281,7 @@ describe('README examples', () => {
                         this.siblings = [];
                         this.parents = {
                             mother: undefined,
-                            father: undefined
+                            father: undefined,
                         };
                         super.entt();
                         this.name = name;
@@ -303,43 +305,44 @@ describe('README examples', () => {
                 person.parents.mother = new MyPersonClass('Joanna Doe Sr.');
                 person.parents.father = new MyPersonClass('John Doe Sr.');
                 const serialized = person.serialize();
-                tests_init_1.assert(JSON.stringify(serialized) === JSON.stringify({
-                    name: "John Doe",
-                    spouse: {
-                        name: "Joanna Doe",
-                        siblings: [],
-                        parents: {}
-                    },
-                    siblings: [
-                        {
-                            name: "Jo Doe",
+                tests_init_1.assert(JSON.stringify(serialized) ===
+                    JSON.stringify({
+                        name: 'John Doe',
+                        spouse: {
+                            name: 'Joanna Doe',
                             siblings: [],
-                            parents: {}
+                            parents: {},
                         },
-                        {
-                            name: "Johnny Doe",
-                            siblings: [],
-                            parents: {}
+                        siblings: [
+                            {
+                                name: 'Jo Doe',
+                                siblings: [],
+                                parents: {},
+                            },
+                            {
+                                name: 'Johnny Doe',
+                                siblings: [],
+                                parents: {},
+                            },
+                            {
+                                name: 'Jay Doe',
+                                siblings: [],
+                                parents: {},
+                            },
+                        ],
+                        parents: {
+                            mother: {
+                                name: 'Joanna Doe Sr.',
+                                siblings: [],
+                                parents: {},
+                            },
+                            father: {
+                                name: 'John Doe Sr.',
+                                siblings: [],
+                                parents: {},
+                            },
                         },
-                        {
-                            name: "Jay Doe",
-                            siblings: [],
-                            parents: {}
-                        }
-                    ],
-                    parents: {
-                        mother: {
-                            name: "Joanna Doe Sr.",
-                            siblings: [],
-                            parents: {}
-                        },
-                        father: {
-                            name: "John Doe Sr.",
-                            siblings: [],
-                            parents: {}
-                        }
-                    }
-                }));
+                    }));
                 const deserialized = new MyPersonClass();
                 deserialized.deserialize(serialized);
                 tests_init_1.assert(deserialized instanceof MyPersonClass);
@@ -418,7 +421,7 @@ describe('README examples', () => {
                         }
                     }
                     tslib_1.__decorate([
-                        _1.Validate({ provider: (obj, value) => (value > 1900) && (value < 2100) }),
+                        _1.Validate({ provider: (obj, value) => value > 1900 && value < 2100 }),
                         tslib_1.__metadata("design:type", Object)
                     ], MyDatesClass.prototype, "born", void 0);
                     tslib_1.__decorate([
@@ -429,18 +432,18 @@ describe('README examples', () => {
                                     errs.push(new _1.EnttValidationError({
                                         type: 'custom',
                                         message: 'Graduation year must be greater than birth date!',
-                                        context: {}
+                                        context: {},
                                     }));
                                 }
                                 if (value >= obj.born) {
                                     errs.push(new _1.EnttValidationError({
                                         type: 'custom',
                                         message: 'Graduation year must be smaller than 2100!',
-                                        context: {}
+                                        context: {},
                                     }));
                                 }
                                 return errs;
-                            }
+                            },
                         }),
                         tslib_1.__metadata("design:type", Object)
                     ], MyDatesClass.prototype, "graduated", void 0);

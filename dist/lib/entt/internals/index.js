@@ -26,8 +26,8 @@ function _getClassMetadata(Class) {
             enumerable: false,
             value: {
                 // Initialize a private decorators store
-                decorators: {}
-            }
+                decorators: {},
+            },
         });
     }
     // Return metadata reference
@@ -48,7 +48,7 @@ function _getDecoratorMetadata(Class, _symbolDecorator) {
         // Initialized decorator
         decoratorsMetadata[_symbolDecorator] = {};
         // Check for inherited metadata
-        const prototypeClass = Object.getPrototypeOf(Class), prototypeDecoratorMetadata = (prototypeClass ? _getClassMetadata(prototypeClass).decorators : {});
+        const prototypeClass = Object.getPrototypeOf(Class), prototypeDecoratorMetadata = prototypeClass ? _getClassMetadata(prototypeClass).decorators : {};
         // Inherit metadata
         if (prototypeDecoratorMetadata[_symbolDecorator]) {
             for (const key in prototypeDecoratorMetadata[_symbolDecorator]) {
@@ -76,8 +76,8 @@ function _getInstanceMetadata(instance) {
                 // Initialize a private property values' store of last valid values
                 restore: {},
                 // Array of child EnTT instances
-                children: []
-            }
+                children: [],
+            },
         });
     }
     // Return metadata reference
