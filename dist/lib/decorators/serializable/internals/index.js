@@ -99,10 +99,7 @@ function _deserialize(value, type = 'object', { target = undefined, validate = t
     // Check if value matches target shape
     if (!_isNativeClassInstance(source) && ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object))) {
         // Disable validation
-        const validationEnabledStatus = instance[internals_2._symbolValidationEnabled];
-        if (instance instanceof internals_1._EnTTRoot) {
-            instance[internals_2._symbolValidationEnabled] = false;
-        }
+        internals_2._validationDisable();
         // Deserialize
         Object.keys(source).reduce((deserialized, key) => {
             var _a;
@@ -128,7 +125,7 @@ function _deserialize(value, type = 'object', { target = undefined, validate = t
                         if (metadata.cast && metadata.cast instanceof Array && metadata.cast.length === 1 && typeof metadata.cast[0] === 'function') {
                             // Deserialize and cast array
                             deserialized[alias] = source[key].map(value => {
-                                return _deserialize(value, 'object', { target: new metadata.cast[0](), _customValue });
+                                return _deserialize(value, 'object', { target: new metadata.cast[0](), _customValue, validate });
                             });
                         }
                         else if (metadata.cast &&
@@ -137,17 +134,17 @@ function _deserialize(value, type = 'object', { target = undefined, validate = t
                             typeof Object.values(metadata.cast)[0] === 'function') {
                             // Deserialize and cast hashmap
                             deserialized[alias] = Object.keys(source[key]).reduce((deserialized, k) => {
-                                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0])(), _customValue });
+                                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0])(), _customValue, validate });
                                 return deserialized;
                             }, {});
                         }
                         else if (metadata.cast && typeof metadata.cast === 'function') {
                             // Deserialize and cast
-                            deserialized[alias] = _deserialize(source[key], 'object', { target: new metadata.cast(), _customValue });
+                            deserialized[alias] = _deserialize(source[key], 'object', { target: new metadata.cast(), _customValue, validate });
                         }
                         else {
                             // Deserialize without casting
-                            deserialized[alias] = _deserialize(source[key], 'object', { _customValue });
+                            deserialized[alias] = _deserialize(source[key], 'object', { _customValue, validate });
                         }
                     }
                 }
@@ -156,9 +153,7 @@ function _deserialize(value, type = 'object', { target = undefined, validate = t
             return deserialized;
         }, instance);
         // (Re)enable validation
-        if (instance instanceof internals_1._EnTTRoot) {
-            instance[internals_2._symbolValidationEnabled] = validationEnabledStatus;
-        }
+        internals_2._validationEnable();
         // Revalidate instance
         if (validate) {
             internals_2._validateObject(target);

@@ -6,7 +6,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const internals_1 = require("../../../entt/internals");
 // Define a unique symbol for Serializable decorator
 exports._symbolValidate = Symbol('@Validate');
-exports._symbolValidationEnabled = Symbol('EnTT Validation enabled');
+/**
+ * Validation enabled status
+ */
+let _validationEnabled = 0;
+function _validationEnable() {
+    _validationEnabled--;
+}
+exports._validationEnable = _validationEnable;
+function _validationDisable() {
+    _validationEnabled++;
+}
+exports._validationDisable = _validationDisable;
 /**
  * Richer error class used for describing validation errors
  */
@@ -46,7 +57,7 @@ exports._readValidityMetadata = _readValidityMetadata;
  */
 function _validateObject(target) {
     // Check if validation disabled
-    if (target && target instanceof internals_1._EnTTRoot && target[exports._symbolValidationEnabled] === false) {
+    if (_validationEnabled !== 0) {
         return {};
     }
     // Validate all properties
@@ -72,7 +83,7 @@ exports._validateObject = _validateObject;
  */
 function _validateProperty(target, key, value = internals_1._undefined) {
     // Check if validation disabled
-    if (target && target instanceof internals_1._EnTTRoot && target[exports._symbolValidationEnabled] === false) {
+    if (_validationEnabled !== 0) {
         return [];
     }
     // Get property metadata

@@ -1,6 +1,6 @@
 import { _EnTTRoot } from './internals';
 import { _rawDataType } from '../decorators/serializable/internals';
-import { _symbolValidationEnabled, EnttValidationError } from '../decorators/validate/internals';
+import { EnttValidationError } from '../decorators/validate/internals';
 /**
  * Main, extensible EnTT class definition
  */
@@ -48,10 +48,6 @@ export declare class EnTT extends _EnTTRoot {
         target?: EnTT;
         validate?: boolean;
     }): any;
-    /**
-     * Exposes validation toggling status (for internal use only)
-     */
-    [_symbolValidationEnabled]: boolean;
     /**
      * Initializes EnTT features for the extending class - should be called in extending class' constructor, right after "super()".
      * Example:

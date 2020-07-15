@@ -1,7 +1,6 @@
 "use strict";
 // enTT lib main, extensible class
 // ----------------------------------------------------------------------------
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 // Import and (re)export internals
 const internals_1 = require("./internals");
@@ -13,13 +12,6 @@ const internals_4 = require("../decorators/validate/internals");
  * Main, extensible EnTT class definition
  */
 class EnTT extends internals_1._EnTTRoot {
-    constructor() {
-        super(...arguments);
-        /**
-         * Exposes validation toggling status (for internal use only)
-         */
-        this[_a] = true;
-    }
     /**
      * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
      * @param nativeClass Native JS class
@@ -63,7 +55,7 @@ class EnTT extends internals_1._EnTTRoot {
             return new Promise((resolve, reject) => {
                 value
                     .then(v => {
-                    resolve(EnTT.cast(v, { into, type }));
+                    resolve(EnTT.cast(v, { into, type, validate }));
                 })
                     .catch(reject);
             });
@@ -153,7 +145,6 @@ class EnTT extends internals_1._EnTTRoot {
     }
 }
 exports.EnTT = EnTT;
-_a = internals_4._symbolValidationEnabled;
 /**
  * Replaces properties with dynamic counterparts
  * @param store Private store for all property values

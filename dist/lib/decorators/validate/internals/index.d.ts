@@ -1,6 +1,7 @@
 export declare const _symbolValidate: unique symbol;
-export declare const _symbolValidationEnabled: unique symbol;
 export declare type _primitiveTypeName = 'boolean' | 'string' | 'number' | 'object';
+export declare function _validationEnable(): void;
+export declare function _validationDisable(): void;
 /**
  * Richer error class used for describing validation errors
  */

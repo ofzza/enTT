@@ -6,10 +6,20 @@ import { _undefined, _EnTTRoot, _getDecoratorMetadata, _getInstanceMetadata } fr
 
 // Define a unique symbol for Serializable decorator
 export const _symbolValidate = Symbol('@Validate');
-export const _symbolValidationEnabled = Symbol('EnTT Validation enabled');
 
 // Define supported types
 export type _primitiveTypeName = 'boolean' | 'string' | 'number' | 'object';
+
+/**
+ * Validation enabled status
+ */
+let _validationEnabled = 0;
+export function _validationEnable() {
+  _validationEnabled--;
+}
+export function _validationDisable() {
+  _validationEnabled++;
+}
 
 /**
  * Richer error class used for describing validation errors
@@ -63,7 +73,7 @@ export function _readValidityMetadata(target) {
  */
 export function _validateObject(target): Record<string, EnttValidationError[]> {
   // Check if validation disabled
-  if (target && target instanceof _EnTTRoot && target[_symbolValidationEnabled] === false) {
+  if (_validationEnabled !== 0) {
     return {} as Record<string, EnttValidationError[]>;
   }
   // Validate all properties
@@ -88,7 +98,7 @@ export function _validateObject(target): Record<string, EnttValidationError[]> {
  */
 export function _validateProperty(target, key, value = _undefined as any): EnttValidationError[] {
   // Check if validation disabled
-  if (target && target instanceof _EnTTRoot && target[_symbolValidationEnabled] === false) {
+  if (_validationEnabled !== 0) {
     return [] as EnttValidationError[];
   }
   // Get property metadata

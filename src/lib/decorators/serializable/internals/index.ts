@@ -4,7 +4,7 @@
 // Import dependencies
 import { _undefined, _EnTTRoot, _getDecoratorMetadata, _getInstanceMetadata } from '../../../entt/internals';
 import { _readPropertyDescriptor } from '../../property/internals';
-import { _symbolValidationEnabled, _validateObject } from '../../validate/internals';
+import { _validationDisable, _validationEnable, _validateObject } from '../../validate/internals';
 
 // Define a unique symbols for Serializable decorator
 export const _symbolSerializable = Symbol('@Serializable');
@@ -121,10 +121,7 @@ export function _deserialize<T>(
   // Check if value matches target shape
   if (!_isNativeClassInstance(source) && ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object))) {
     // Disable validation
-    const validationEnabledStatus = instance[_symbolValidationEnabled];
-    if (instance instanceof _EnTTRoot) {
-      instance[_symbolValidationEnabled] = false;
-    }
+    _validationDisable();
 
     // Deserialize
     Object.keys(source).reduce((deserialized, key) => {
@@ -153,7 +150,7 @@ export function _deserialize<T>(
             if (metadata.cast && metadata.cast instanceof Array && metadata.cast.length === 1 && typeof metadata.cast[0] === 'function') {
               // Deserialize and cast array
               deserialized[alias] = source[key].map(value => {
-                return _deserialize(value, 'object', { target: new metadata.cast[0](), _customValue });
+                return _deserialize(value, 'object', { target: new metadata.cast[0](), _customValue, validate });
               });
             } else if (
               metadata.cast &&
@@ -163,15 +160,15 @@ export function _deserialize<T>(
             ) {
               // Deserialize and cast hashmap
               deserialized[alias] = Object.keys(source[key]).reduce((deserialized, k) => {
-                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)(), _customValue });
+                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)(), _customValue, validate });
                 return deserialized;
               }, {});
             } else if (metadata.cast && typeof metadata.cast === 'function') {
               // Deserialize and cast
-              deserialized[alias] = _deserialize(source[key], 'object', { target: new metadata.cast(), _customValue });
+              deserialized[alias] = _deserialize(source[key], 'object', { target: new metadata.cast(), _customValue, validate });
             } else {
               // Deserialize without casting
-              deserialized[alias] = _deserialize(source[key], 'object', { _customValue });
+              deserialized[alias] = _deserialize(source[key], 'object', { _customValue, validate });
             }
           }
         }
@@ -182,9 +179,7 @@ export function _deserialize<T>(
     }, instance);
 
     // (Re)enable validation
-    if (instance instanceof _EnTTRoot) {
-      instance[_symbolValidationEnabled] = validationEnabledStatus;
-    }
+    _validationEnable();
 
     // Revalidate instance
     if (validate) {

@@ -8,7 +8,6 @@ import { _undefined, _EnTTRoot, _getClassMetadata, _getInstanceMetadata, _getDec
 import { _readPropertyMetadata, _readPropertyDescriptor, _findTaggedProperties } from '../decorators/property/internals';
 import { _rawDataType, _registerNativeClass, _cast, _clone, _serialize, _deserialize } from '../decorators/serializable/internals';
 import {
-  _symbolValidationEnabled,
   EnttValidationError,
   _readValidityMetadata,
   _validateObject,
@@ -69,7 +68,7 @@ export class EnTT extends _EnTTRoot {
       return new Promise((resolve, reject) => {
         value
           .then(v => {
-            resolve(EnTT.cast(v, { into, type }));
+            resolve(EnTT.cast(v, { into, type, validate }));
           })
           .catch(reject);
       });
@@ -89,11 +88,6 @@ export class EnTT extends _EnTTRoot {
   public static clone(instance, { target = undefined as EnTT, validate = true } = {}) {
     return _clone(instance, { target, validate });
   }
-
-  /**
-   * Exposes validation toggling status (for internal use only)
-   */
-  public [_symbolValidationEnabled] = true;
 
   /**
    * Initializes EnTT features for the extending class - should be called in extending class' constructor, right after "super()".
