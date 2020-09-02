@@ -39,11 +39,10 @@ export function _readSerializableMetadata(Class) {
  * @param T Source class
  * @param source Source being serialized from
  * @param type Value type to serialize as
- * @param _customValue (Internal) Used for internal passing of custom serialized values
  * @param _directSerialize (Internal) If true, ignores all custom serialization configuration (used by .clone())
  * @returns Serialized value of requested type
  */
-export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _customValue = _undefined as any, _directSerialize = false } = {}): any {
+export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _directSerialize = false } = {}): any {
   // Check if source's store should be source instead
   const instance = source instanceof _EnTTRoot ? _getInstanceMetadata(source).store : source;
 
@@ -70,9 +69,12 @@ export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _cus
             // Check if property is serializable
             if (_directSerialize || metadata.serialize) {
               // If custom serialization function, map value using the function
-              const _customValue = !_directSerialize && metadata.serialize instanceof Function ? metadata.serialize(instance, instance[key]) : _undefined;
+              if (!_directSerialize && metadata.serialize instanceof Function) {
+                serialized[metadata.alias || key] = metadata.serialize(instance, instance[key]);
+                return serialized;
+              }
               // Serializable value (EnTT instance or raw value)
-              serialized[metadata.alias || key] = _serialize(instance[key], 'object', { _customValue });
+              serialized[metadata.alias || key] = _serialize(instance[key], 'object');
             }
           }
         }
@@ -87,7 +89,7 @@ export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _cus
     return _obj2data(serialized, type);
   } else {
     // Convert raw value
-    return _obj2data(_customValue !== _undefined ? _customValue : instance, type);
+    return _obj2data(instance, type);
   }
 }
 
@@ -98,15 +100,10 @@ export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _cus
  * @param type Type of value to deserialized form
  * @param target Instance being deserialized into
  * @param validate If deserialized instance should be validated after
- * @param _customValue Used for internal passing of custom deserialized values
  * @param _directDeserialize (Internal) If true, ignores all custom deserialization configuration (used by .clone())
  * @return Target with given value deserialized into it
  */
-export function _deserialize<T>(
-  value,
-  type = 'object' as _rawDataType,
-  { target = undefined as T, validate = true, _customValue = _undefined as any, _directDeserialize = false } = {},
-) {
+export function _deserialize<T>(value, type = 'object' as _rawDataType, { target = undefined as T, validate = true, _directDeserialize = false } = {}) {
   // Convert value
   const source = _data2obj(value, type);
 
@@ -115,7 +112,7 @@ export function _deserialize<T>(
     target = (source instanceof Array ? [] : {}) as T;
   }
 
-  // Check if target's store should be source instead
+  // Check if target's store should be target instead
   const instance = target instanceof _EnTTRoot ? _getInstanceMetadata(target).store : target;
 
   // Check if value matches target shape
@@ -130,7 +127,7 @@ export function _deserialize<T>(
         // Check if target property has a setter or if both setter and setter aren't defined on plain property
         const hasSetter = !!Object.getOwnPropertyDescriptor(source, key).set || !Object.getOwnPropertyDescriptor(source, key).get;
 
-        // Check if property has or needs a getter
+        // Check if property has or needs a setter
         if (hasSetter) {
           // Get @Serializable metadata (or defaults)
           const properties = _getDecoratorMetadata(target.constructor, _symbolSerializable),
@@ -145,12 +142,15 @@ export function _deserialize<T>(
           // Check if property is serializable
           if (_directDeserialize || metadata.deserialize) {
             // If custom deserialization function, map value using the function
-            const _customValue = !_directDeserialize && metadata.deserialize instanceof Function ? metadata.deserialize(source, source[key]) : _undefined;
+            if (!_directDeserialize && metadata.deserialize instanceof Function) {
+              deserialized[alias] = metadata.deserialize(source, source[key]);
+              return deserialized;
+            }
             // Deserializable value (EnTT instance or raw value)
             if (metadata.cast && metadata.cast instanceof Array && metadata.cast.length === 1 && typeof metadata.cast[0] === 'function') {
               // Deserialize and cast array
               deserialized[alias] = source[key].map(value => {
-                return _deserialize(value, 'object', { target: new metadata.cast[0](), _customValue, validate });
+                return _deserialize(value, 'object', { target: new metadata.cast[0](), validate });
               });
             } else if (
               metadata.cast &&
@@ -160,15 +160,15 @@ export function _deserialize<T>(
             ) {
               // Deserialize and cast hashmap
               deserialized[alias] = Object.keys(source[key]).reduce((deserialized, k) => {
-                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)(), _customValue, validate });
+                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)(), validate });
                 return deserialized;
               }, {});
             } else if (metadata.cast && typeof metadata.cast === 'function') {
               // Deserialize and cast
-              deserialized[alias] = _deserialize(source[key], 'object', { target: new metadata.cast(), _customValue, validate });
+              deserialized[alias] = _deserialize(source[key], 'object', { target: new metadata.cast(), validate });
             } else {
               // Deserialize without casting
-              deserialized[alias] = _deserialize(source[key], 'object', { _customValue, validate });
+              deserialized[alias] = _deserialize(source[key], 'object', { validate });
             }
           }
         }
@@ -186,11 +186,11 @@ export function _deserialize<T>(
       _validateObject(target);
     }
 
-    // Return deserialized target
+    // Return deserialized instance
     return target;
   } else {
     // Just return a value as deserialized
-    return _customValue !== _undefined ? _customValue : value;
+    return value;
   }
 }
 

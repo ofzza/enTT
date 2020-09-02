@@ -1,3 +1,7 @@
+### Version 3.1.7
+
+- `@Serializable` direct serialization/deserialization via "`serialize`"/"`deserialize`" now directly uses returned value as property value with no additional processing
+
 ### Version 3.1.5 / 3.1.6 (2020-07-15)
 
 - No longer forcing validation during deserialization, due to performance issues - replaced with single validation run once deserialization complete

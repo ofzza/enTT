@@ -1,4 +1,4 @@
-### Version 3.1.5
+### Version 3.1.5 / 3.1.6 (2020-07-15)
 
 - No longer forcing validation during deserialization, due to performance issues - replaced with single validation run once deserialization complete
 - `.deserialize()`, `.cast()` and `.clone()` methods now accept an additional, optional `validate` argument, allowing to circumvent validation of newly created instance

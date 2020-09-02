@@ -19,12 +19,10 @@ export declare function _readSerializableMetadata(Class: any): any;
  * @param T Source class
  * @param source Source being serialized from
  * @param type Value type to serialize as
- * @param _customValue (Internal) Used for internal passing of custom serialized values
  * @param _directSerialize (Internal) If true, ignores all custom serialization configuration (used by .clone())
  * @returns Serialized value of requested type
  */
-export declare function _serialize<T>(source: T, type?: _rawDataType, { _customValue, _directSerialize }?: {
-    _customValue?: any;
+export declare function _serialize<T>(source: T, type?: _rawDataType, { _directSerialize }?: {
     _directSerialize?: boolean;
 }): any;
 /**
@@ -34,14 +32,12 @@ export declare function _serialize<T>(source: T, type?: _rawDataType, { _customV
  * @param type Type of value to deserialized form
  * @param target Instance being deserialized into
  * @param validate If deserialized instance should be validated after
- * @param _customValue Used for internal passing of custom deserialized values
  * @param _directDeserialize (Internal) If true, ignores all custom deserialization configuration (used by .clone())
  * @return Target with given value deserialized into it
  */
-export declare function _deserialize<T>(value: any, type?: _rawDataType, { target, validate, _customValue, _directDeserialize }?: {
+export declare function _deserialize<T>(value: any, type?: _rawDataType, { target, validate, _directDeserialize }?: {
     target?: T;
     validate?: boolean;
-    _customValue?: any;
     _directDeserialize?: boolean;
 }): any;
 /**
