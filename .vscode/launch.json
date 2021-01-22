@@ -8,7 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "Jasmin Tests",
-      "program": "${workspaceRoot}\\node_modules\\jasmine\\bin\\jasmine.js",
+      "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
       "args": ["--config=./jasmine.json"],
       "preLaunchTask": "build",
       "console": "internalConsole",

@@ -543,6 +543,37 @@ describe('README examples', () => {
       });
     });
 
+    describe('Validate using a multiple custom validators', () => {
+      it('Example', () => {
+        class MyDatesClass extends EnTT {
+          constructor() {
+            super();
+            super.entt();
+          }
+
+          // Validate year is within a predefined scope
+          @Validate({
+            provider: [
+              (value, obj) => value > 1900 && value < 2100,
+              Joi.number().strict().integer().min(1900).max(2100).required(),
+              Yup.number().strict().integer().min(1900).max(2100).required(),
+            ],
+          })
+          born = undefined as number;
+        }
+
+        const instance = new MyDatesClass();
+        assert(instance.valid === false);
+        assert(Object.keys(instance.errors).length === 1);
+        assert(instance.errors['born'].length === 3);
+
+        instance.born = 1800;
+        assert(instance.valid === false);
+        assert(Object.keys(instance.errors).length === 1);
+        assert(instance.errors['born'].length === 3);
+      });
+    });
+
     describe('Validating nested class instances', () => {
       it('Example', () => {
         class MyNestedClass extends EnTT {

@@ -755,6 +755,7 @@ import * as Joi from 'joi';
 <details><summary>EXAMPLE</summary>
 
 ```ts
+import * as Joi from 'joi';
 import { EnTT } from '@ofzza/entt';
 
 class MyDatesClass extends EnTT {
@@ -840,6 +841,7 @@ import * as Yup from 'yup';
 <details><summary>EXAMPLE</summary>
 
 ```ts
+import * as Yup from 'yup';
 import { EnTT } from '@ofzza/entt';
 
 class MyDatesClass extends EnTT {
@@ -906,6 +908,88 @@ console.log(instance.errors);
 //      new EnttValidationError({
 //        type: 'min',
 //        message: 'Value 1949 must be greater than or equal to 1950'
+//      })
+//    ]
+// }
+```
+
+</details>
+
+### Validate using a multiple custom validators
+
+On top of being able to set a custom validation provider, you can also set an array of multiple custom validation providers all of which will be evaluated in turn. This allows you to mix and match between different validation methods for the same property:
+
+```ts
+import * as Joi from 'joi';
+import * as Yup from 'yup';
+
+@Validate({
+  provider: [
+    (value, obj) => Error[] | Error | string | boolean }),
+    Joi.any(),
+    Yup.any()
+  ]
+});
+```
+
+<details><summary>EXAMPLE</summary>
+
+```ts
+import * as Joi from 'joi';
+import * as Yup from 'yup';
+import { EnTT } from '@ofzza/entt';
+
+class MyDatesClass extends EnTT {
+  constructor() {
+    super();
+    super.entt();
+  }
+
+  // Validate year is within a predefined scope
+  @Validate({
+    provider: [
+      (value, obj) => value > 1900 && value < 2100,
+      Joi.number().strict().integer().min(1900).max(2100).required(),
+      Yup.number().strict().integer().min(1900).max(2100).required(),
+    ],
+  })
+  born = undefined as number;
+}
+
+const instance = new MyDatesClass();
+console.log(instance.valid); // Outputs: false
+console.log(instance.errors);
+// Outputs: {
+//    born: [
+//      new EnttValidationError({
+//        message: 'Value undefined not allowed!'
+//      })
+//      new EnttValidationError({
+//        type: 'any.required',
+//        message: 'Value undefined is required'
+//      }),
+//      new EnttValidationError({
+//        type: 'required',
+//        message: 'Value undefined is a required field'
+//      })
+//    ],
+// }
+
+instance.born = 1800;
+console.log(instance.valid); // Outputs: false
+console.log(instance.errors);
+// Outputs: {
+//    born: [
+//      new EnttValidationError({
+//        message: 'Value 1800 not allowed!'
+//      }),
+//      new EnttValidationError({
+//        type: 'number.min',
+//        message: 'Value 1800 must be larger than or equal to 1900'
+//      }),
+//      new EnttValidationError({
+//        type: 'min',
+//        message: 'Value 1800 must be greater than or equal to 1900'
 //      })
 //    ]
 // }

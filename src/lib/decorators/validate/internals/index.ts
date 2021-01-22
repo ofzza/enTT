@@ -10,6 +10,7 @@ export const _symbolValidate = Symbol('@Validate');
 
 // Define supported types
 export type _primitiveTypeName = 'boolean' | 'string' | 'number' | 'object';
+export type _providerCustomFunctionType = (value: any, obj: any) => Error[] | Error | string | boolean;
 
 /**
  * Validation enabled status
@@ -129,64 +130,67 @@ export function _validateProperty<T>(target: T, key, value = _undefined as any):
     }
   }
 
-  // Validate using validation provider, if available
-  if (typeof metadata.provider === 'function') {
-    // Validate using custom validation function
-    const err = metadata.provider(value, target);
-    if (err !== undefined && err !== null && err !== true) {
-      // Generic error
-      if (err === false) {
-        errors.push(new EnttValidationError({ message: `Value ${JSON.stringify(value)} not allowed!` }));
+  // Process with all providers in row
+  for (const provider of metadata.provider instanceof Array ? metadata.provider : [metadata.provider]) {
+    // Validate using validation provider, if available
+    if (typeof provider === 'function') {
+      // Validate using custom validation function
+      const err = provider(value, target);
+      if (err !== undefined && err !== null && err !== true) {
+        // Generic error
+        if (err === false) {
+          errors.push(new EnttValidationError({ message: `Value ${JSON.stringify(value)} not allowed!` }));
+        }
+        // Create error from string
+        else if (typeof err === 'string') {
+          errors.push(new EnttValidationError({ message: err }));
+        }
+        // Take error
+        else if (err instanceof Error) {
+          errors.push(err);
+        }
+        // Take errors
+        else if (err instanceof Array) {
+          err.forEach(err => {
+            // Create error from string
+            if (typeof err === 'string') {
+              errors.push(new EnttValidationError({ message: err }));
+            }
+            // Take error
+            else if (err instanceof Error) {
+              errors.push(err);
+            }
+          });
+        }
       }
-      // Create error from string
-      else if (typeof err === 'string') {
-        errors.push(new EnttValidationError({ message: err }));
-      }
-      // Take error
-      else if (err instanceof Error) {
-        errors.push(err);
-      }
-      // Take errors
-      else if (err instanceof Array) {
-        err.forEach(err => {
-          // Create error from string
-          if (typeof err === 'string') {
-            errors.push(new EnttValidationError({ message: err }));
-          }
-          // Take error
-          else if (err instanceof Error) {
-            errors.push(err);
-          }
+    }
+
+    // Validate using YUP validation
+    else if (typeof provider === 'object' && typeof provider.validate === 'function' && provider.__isYupSchema__) {
+      try {
+        provider.validateSync(value, { context: target });
+      } catch (err) {
+        err.errors.forEach(msg => {
+          msg = msg.substr(0, 5) === 'this ' ? `Value ${JSON.stringify(value)} ${msg.substr(5)}` : msg;
+          errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
         });
       }
     }
-  }
 
-  // Validate using YUP validation
-  else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function' && metadata.provider.__isYupSchema__) {
-    try {
-      metadata.provider.validateSync(value, { context: target });
-    } catch (err) {
-      err.errors.forEach(msg => {
-        msg = msg.substr(0, 5) === 'this ' ? `Value ${JSON.stringify(value)} ${msg.substr(5)}` : msg;
-        errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
-      });
-    }
-  }
-
-  // Validate using attached .validate() method
-  else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function') {
-    const err = metadata.provider.validate(value, { context: target }).error;
-    // Process JOI errors result
-    if (err && err.isJoi) {
-      err.details.forEach(err => {
-        const msg = err.message.replace(/"value"/g, `Value ${JSON.stringify(value)}`);
-        errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
-      });
-    }
-    // Process explicit errors
-    else if (err instanceof Error) {
-      errors.push(err);
+    // Validate using attached .validate() method
+    else if (typeof provider === 'object' && typeof provider.validate === 'function') {
+      const err = provider.validate(value, { context: target }).error;
+      // Process JOI errors result
+      if (err && err.isJoi) {
+        err.details.forEach(err => {
+          const msg = err.message.replace(/"value"/g, `Value ${JSON.stringify(value)}`);
+          errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
+        });
+      }
+      // Process explicit errors
+      else if (err instanceof Error) {
+        errors.push(err);
+      }
     }
   }
 
