@@ -27,7 +27,7 @@ export function Property({
   get = undefined as ((target: any, value: any) => any) | boolean,
   set = undefined as ((target: any, value: any) => any) | boolean,
   enumerable = undefined as boolean,
-  tag = undefined as string | string[] | Symbol | Symbol[],
+  tag = undefined as string | string[] | symbol | symbol[],
 } = {}) {
   // Set defaults
   const defaults = {

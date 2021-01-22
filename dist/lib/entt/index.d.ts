@@ -1,3 +1,4 @@
+import { TNew } from './internals';
 import { _EnTTRoot } from './internals';
 import { _rawDataType } from '../decorators/serializable/internals';
 import { EnttValidationError } from '../decorators/validate/internals';
@@ -16,7 +17,7 @@ export declare class EnTT extends _EnTTRoot {
      * @param from (Optional) EnTT class whose properties to search
      */
     static findTaggedProperties(tag: string | symbol, { from }?: {
-        from?: new () => EnTT;
+        from?: TNew<EnTT>;
     }): string[];
     /**
      * Casts a value of given type as an instance of a parent EnTT Class
@@ -32,11 +33,51 @@ export declare class EnTT extends _EnTTRoot {
      * @param validate If cast instance should be validated after
      * @returns Instance (or structure of instances) of the class with deserialized data, or (alternatively) a Promise about to resolve to such an instance
      */
-    static cast(value: any, { into, type, validate }?: {
-        into?: (new () => EnTT) | (new () => EnTT)[] | Record<any, new () => EnTT>;
+    static cast<T>(this: TNew<T>, value: Promise<any>, params?: {
+        into?: TNew<T>;
         type?: _rawDataType;
         validate?: boolean;
-    }): any;
+    }): Promise<T>;
+    static cast<T>(this: TNew<T>, value: Promise<any>, params?: {
+        into?: TNew<T>[];
+        type?: _rawDataType;
+        validate?: boolean;
+    }): Promise<T[]>;
+    static cast<T>(this: TNew<T>, value: Promise<any>, params?: {
+        into?: Record<any, TNew<T>>;
+        type?: _rawDataType;
+        validate?: boolean;
+    }): Promise<Record<any, T>>;
+    static cast<T>(this: TNew<T>, value: Promise<any>, params?: {
+        into?: TNew<T> | TNew<T>[] | Record<any, TNew<T>>;
+        type?: _rawDataType;
+        validate?: boolean;
+    }): Promise<T | T[] | Record<any, T>>;
+    static cast<T>(this: TNew<T>, value: any, params?: {
+        into?: TNew<T>;
+        type?: _rawDataType;
+        validate?: boolean;
+    }): T;
+    static cast<T>(this: TNew<T>, value: any, params?: {
+        into?: TNew<T>[];
+        type?: _rawDataType;
+        validate?: boolean;
+    }): T[];
+    static cast<T>(this: TNew<T>, value: any, params?: {
+        into?: Record<any, TNew<T>>;
+        type?: _rawDataType;
+        validate?: boolean;
+    }): Record<any, T>;
+    static cast<T>(this: TNew<T>, value: any, params?: {
+        into?: TNew<T> | TNew<T>[] | Record<any, TNew<T>>;
+        type?: _rawDataType;
+        validate?: boolean;
+    }): T | T[] | Record<any, T>;
+    static cast<T>(this: TNew<T>, value: Promise<any> | any, params?: {
+        into?: TNew<T> | TNew<T>[] | Record<any, TNew<T>>;
+        type?: _rawDataType;
+        validate?: boolean;
+    }): T | T[] | Record<any, T> | Promise<T | T[] | Record<any, T>>;
     /**
      * Clones an EnTT instance
      * @param instance EnTT instance to clone
@@ -44,10 +85,10 @@ export declare class EnTT extends _EnTTRoot {
      * @param validate If cloned instance should be validated after
      * @returns Cloned instance
      */
-    static clone(instance: any, { target, validate }?: {
-        target?: EnTT;
+    static clone<T>(this: TNew<any>, instance: T, { target, validate }?: {
+        target?: T;
         validate?: boolean;
-    }): any;
+    }): T;
     /**
      * Initializes EnTT features for the extending class - should be called in extending class' constructor, right after "super()".
      * Example:
@@ -69,7 +110,7 @@ export declare class EnTT extends _EnTTRoot {
      */
     deserialize(value: any, type?: _rawDataType, { validate }?: {
         validate?: boolean;
-    }): any;
+    }): EnTT;
     /**
      * Returns validation status of the instance
      * @returns If instance is validated

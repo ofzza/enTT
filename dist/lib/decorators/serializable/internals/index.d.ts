@@ -1,8 +1,7 @@
-import { _EnTTRoot } from '../../../entt/internals';
+import { TNew } from '../../../entt/internals';
 export declare const _symbolSerializable: unique symbol;
-export declare type _serializeType = Symbol;
+export declare type _serializeType = symbol;
 export declare type _rawDataType = 'object' | 'json';
-export declare type _castType = (new () => any) | Array<new () => any> | Object;
 /**
  * Registers a native JS class which will not be attempter to be serialized or de-serialized, but will be copied as is
  * @param nativeClass Native JS class
@@ -10,10 +9,10 @@ export declare type _castType = (new () => any) | Array<new () => any> | Object;
 export declare function _registerNativeClass(nativeClass: any): void;
 /**
  * Gets @Serializable decorator metadata store
- * @param Class EnTT class containing the metadata
+ * @param aClass EnTT class containing the metadata
  * @returns Stored @Serializable decorator metadata
  */
-export declare function _readSerializableMetadata(Class: any): any;
+export declare function _readSerializableMetadata<T extends Function>(aClass: T): any;
 /**
  * Serializes anything as value of given type
  * @param T Source class
@@ -39,7 +38,7 @@ export declare function _deserialize<T>(value: any, type?: _rawDataType, { targe
     target?: T;
     validate?: boolean;
     _directDeserialize?: boolean;
-}): any;
+}): T;
 /**
  * Returns a casting function that casts a value of given type as an instance of a given Class
  * @param T Class type to cast into
@@ -52,9 +51,18 @@ export declare function _deserialize<T>(value: any, type?: _rawDataType, { targe
  *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
  * @returns A casting function
  */
-export declare function _cast<T>(into: (new () => T) | (new () => T)[] | Record<any, new () => T>): (value: any, type?: _rawDataType, options?: {
-    [key: string]: any;
-}) => any;
+export declare function _cast<T>(into: TNew<T>): (value: any, type?: _rawDataType, options?: {
+    validate?: boolean;
+}) => T;
+export declare function _cast<T>(into: TNew<T>[]): (value: any, type?: _rawDataType, options?: {
+    validate?: boolean;
+}) => T[];
+export declare function _cast<T>(into: Record<any, TNew<T>>): (value: any, type?: _rawDataType, options?: {
+    validate?: boolean;
+}) => Record<any, T>;
+export declare function _cast<T>(into: TNew<T> | TNew<T>[] | Record<any, TNew<T>>): (value: any, type?: _rawDataType, options?: {
+    validate?: boolean;
+}) => T | T[] | Record<any, T>;
 /**
  * Clones an EnTT instance
  * @param instance EnTT instance to clone
@@ -62,7 +70,7 @@ export declare function _cast<T>(into: (new () => T) | (new () => T)[] | Record<
  * @param validate If cloned instance should be validated after
  * @returns Cloned instance
  */
-export declare function _clone(instance: any, { target, validate }?: {
-    target?: _EnTTRoot;
+export declare function _clone<T>(instance: T, { target, validate }?: {
+    target?: T;
     validate?: boolean;
-}): any;
+}): T;

@@ -256,7 +256,7 @@ class MyEntityClass extends EnTT {
 
   public deserialize (value: object|string, type = 'object' as 'object'|'json', { validate = true }) => void
 
-  public static cast (value: object|string, { into = undefined as ((new() => EnTT) | (new() => EnTT)[] | Record<any, (new() => EnTT)>), type = 'object' as ('object'|'json'), validate = true } = {}) => MyEntityClass
+  public static cast (value: object|string, { into = undefined as ((new () => EnTT) | (new () => EnTT)[] | Record<any, (new () => EnTT)>), type = 'object' as ('object'|'json'), validate = true } = {}) => MyEntityClass
 
   public static clone (instance: MyEntityClass, { target: MyEntityClass, validate = true }) => MyEntityClass
 

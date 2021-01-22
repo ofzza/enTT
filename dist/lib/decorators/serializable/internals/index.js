@@ -3,7 +3,6 @@
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
 exports._clone = exports._cast = exports._deserialize = exports._serialize = exports._readSerializableMetadata = exports._registerNativeClass = exports._symbolSerializable = void 0;
-// Import dependencies
 const internals_1 = require("../../../entt/internals");
 const internals_2 = require("../../validate/internals");
 // Define a unique symbols for Serializable decorator
@@ -20,11 +19,12 @@ function _registerNativeClass(nativeClass) {
 exports._registerNativeClass = _registerNativeClass;
 /**
  * Gets @Serializable decorator metadata store
- * @param Class EnTT class containing the metadata
+ * @param aClass EnTT class containing the metadata
  * @returns Stored @Serializable decorator metadata
  */
-function _readSerializableMetadata(Class) {
-    return internals_1._getDecoratorMetadata(Class, exports._symbolSerializable) || {};
+// tslint:disable-next-line: ban-types
+function _readSerializableMetadata(aClass) {
+    return internals_1._getDecoratorMetadata(aClass, exports._symbolSerializable) || {};
 }
 exports._readSerializableMetadata = _readSerializableMetadata;
 /**
@@ -41,7 +41,9 @@ function _serialize(source, type = 'object', { _directSerialize = false } = {}) 
     // Serializable
     if (instance && !_isNativeClassInstance(instance) && (instance instanceof Array || instance instanceof Object)) {
         // Serializable array or object
-        const serialized = Object.keys(instance).reduce((serialized, key) => {
+        const serialized = Object.keys(instance).reduce(
+        // tslint:disable-next-line: no-shadowed-variable
+        (serialized, key) => {
             // Check if property not a method
             if (typeof instance[key] !== 'function') {
                 // Check if property has a getter or if both getter and setter aren't defined on plain property
@@ -129,6 +131,7 @@ function _deserialize(value, type = 'object', { target = undefined, validate = t
                         // Deserializable value (EnTT instance or raw value)
                         if (metadata.cast && metadata.cast instanceof Array && metadata.cast.length === 1 && typeof metadata.cast[0] === 'function') {
                             // Deserialize and cast array
+                            // tslint:disable-next-line: no-shadowed-variable
                             deserialized[alias] = source[key].map(value => {
                                 return _deserialize(value, 'object', { target: new metadata.cast[0](), validate });
                             });
@@ -138,6 +141,7 @@ function _deserialize(value, type = 'object', { target = undefined, validate = t
                             Object.values(metadata.cast).length === 1 &&
                             typeof Object.values(metadata.cast)[0] === 'function') {
                             // Deserialize and cast hashmap
+                            // tslint:disable-next-line: no-shadowed-variable
                             deserialized[alias] = Object.keys(source[key]).reduce((deserialized, k) => {
                                 deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0])(), validate });
                                 return deserialized;
@@ -172,18 +176,6 @@ function _deserialize(value, type = 'object', { target = undefined, validate = t
     }
 }
 exports._deserialize = _deserialize;
-/**
- * Returns a casting function that casts a value of given type as an instance of a given Class
- * @param T Class type to cast into
- * @param into Casting target class, or structure:
- * - MyEnTTClass, will cast value as instance of MyEnTTClass
- *    => new myEnTTClass()
- * - [MyEnTTClass], will cast value (assumed to be an array) as an array of instances of MyEnTTClass
- *    => [ new myEnTTClass(), new myEnTTClass(), new myEnTTClass(), ... ]
- * - {MyEnTTClass}, will cast value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
- *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
- * @returns A casting function
- */
 function _cast(into) {
     // Check casting target
     if (into && into instanceof Array && into.length === 1 && typeof into[0] === 'function') {
@@ -194,8 +186,12 @@ function _cast(into) {
          * @param validate If cast instance should be validated after
          * @returns Array of instances of the class with deserialized data
          */
-        return (value = undefined, type = 'object', { validate = true } = {}) => {
-            return value.map(value => _deserialize(value, type, { target: new into[0](), validate }));
+        return (value, type = 'object', { validate = true } = {}) => {
+            // tslint:disable-next-line: no-shadowed-variable
+            return value.map(value => _deserialize(value, type, {
+                target: new into[0](),
+                validate,
+            }));
         };
     }
     else if (into && into instanceof Object && Object.values(into).length === 1 && typeof Object.values(into)[0] === 'function') {
@@ -206,9 +202,12 @@ function _cast(into) {
          * @param validate If cast instance should be validated after
          * @returns Hashmap of instances of the class with deserialized data
          */
-        return (value = undefined, type = 'object', { validate = true } = {}) => {
+        return (value, type = 'object', { validate = true } = {}) => {
             return Object.keys(value).reduce((hashmap, key) => {
-                hashmap[key] = _deserialize(value[key], type, { target: new (Object.values(into)[0])(), validate });
+                hashmap[key] = _deserialize(value[key], type, {
+                    target: new (Object.values(into)[0])(),
+                    validate,
+                });
                 return hashmap;
             }, {});
         };
@@ -221,8 +220,11 @@ function _cast(into) {
          * @param validate If cast instance should be validated after
          * @returns Instance of the class with deserialized data
          */
-        return (value = undefined, type = 'object', { validate = true } = {}) => {
-            return _deserialize(value, type, { target: new into(), validate });
+        return (value, type = 'object', { validate = true } = {}) => {
+            return _deserialize(value, type, {
+                target: new into(),
+                validate,
+            });
         };
     }
     else {
@@ -240,7 +242,8 @@ exports._cast = _cast;
  */
 function _clone(instance, { target = undefined, validate = true } = {}) {
     target = target || new instance.constructor();
-    return _deserialize(_serialize(instance, 'object', { _directSerialize: true }), 'object', { target, _directDeserialize: true, validate });
+    const serialized = _serialize(instance, 'object', { _directSerialize: true }), deserialized = _deserialize(serialized, 'object', { target, _directDeserialize: true, validate });
+    return deserialized;
 }
 exports._clone = _clone;
 /**
@@ -257,30 +260,30 @@ function _isNativeClassInstance(obj) {
 }
 /**
  * Converts an object into serialized value of given type
- * @param obj Object being serialized
+ * @param data Data being serialized
  * @param type Type to serialize to
  * @returns Given object, serialized into given type
  */
-function _obj2data(obj, type = 'object') {
+function _obj2data(data, type = 'object') {
     if (type === 'object') {
-        return obj;
+        return data;
     }
     else if (type === 'json') {
-        return JSON.stringify(obj, null, 2);
+        return JSON.stringify(data, null, 2);
     }
 }
 /**
  * Converts serialized value of given type into an object
- * @param str Value being deserialized
+ * @param data Data being deserialized
  * @param type Type to deserialize from
  * @returns Object, deserialized from given type
  */
-function _data2obj(str, type = 'object') {
+function _data2obj(data, type = 'object') {
     if (type === 'object') {
-        return str;
+        return data;
     }
     else if (type === 'json') {
-        return JSON.parse(str);
+        return JSON.parse(data);
     }
 }
 //# sourceMappingURL=index.js.map

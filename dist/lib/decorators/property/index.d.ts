@@ -17,5 +17,5 @@ export declare function Property({ get, set, enumerable, tag, }?: {
     get?: boolean | ((target: any, value: any) => any);
     set?: boolean | ((target: any, value: any) => any);
     enumerable?: boolean;
-    tag?: string | Symbol | string[] | Symbol[];
+    tag?: string | symbol | string[] | symbol[];
 }): (target: any, key: any) => void;

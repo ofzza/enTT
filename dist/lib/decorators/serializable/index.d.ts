@@ -1,4 +1,5 @@
-import { _castType, _registerNativeClass } from './internals';
+import { _registerNativeClass } from './internals';
+import { TNew } from '../../entt/internals';
 /**
  * @Serializable() decorator, configures property serialization behavior
  * @param alias (Optional) Configures property getter
@@ -20,7 +21,7 @@ export declare function Serializable({ alias, serialize, deserialize, cast, }?: 
     alias?: string;
     serialize?: boolean | ((target: any, value: any) => any);
     deserialize?: boolean | ((target: any, value: any) => any);
-    cast?: _castType;
+    cast?: TNew<any> | TNew<any>[] | Record<any, TNew<any>>;
 }): (target: any, key: any) => void;
 export declare namespace Serializable {
     var registerNativeClass: typeof _registerNativeClass;

@@ -9,11 +9,12 @@ const internals_1 = require("../../../entt/internals");
 exports._symbolProperty = Symbol('@Property');
 /**
  * Gets @Property decorator metadata store
- * @param Class EnTT class containing the metadata
+ * @param aClass EnTT class containing the metadata
  * @returns Stored @Property decorator metadata
  */
-function _readPropertyMetadata(Class) {
-    return internals_1._getDecoratorMetadata(Class, exports._symbolProperty) || {};
+// tslint:disable-next-line: ban-types
+function _readPropertyMetadata(aClass) {
+    return internals_1._getDecoratorMetadata(aClass, exports._symbolProperty) || {};
 }
 exports._readPropertyMetadata = _readPropertyMetadata;
 /**

@@ -11,5 +11,21 @@
   "prettier.resolveGlobalModules": false,
   "editor.formatOnSave": true,
 
-  "cSpell.words": ["region", "endregion", "entt", "enttclass", "Serializable", "Validate"]
+  "cSpell.words": [
+    "ofzza",
+    "region",
+    "endregion",
+    "instanceof",
+    "entt",
+    "enttclass",
+    "serializable",
+    "deserialization",
+    "deserializable",
+    "deserializes",
+    "validate",
+    "nonenumerable",
+    "writeonly",
+    "callsign",
+    "Delorean"
+  ]
 }

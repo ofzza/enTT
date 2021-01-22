@@ -31,13 +31,16 @@ export declare class EnttValidationError extends Error {
  * @param target EnTT class instance containing the validity data
  * @returns Instance's validity store
  */
-export declare function _readValidityMetadata(target: any): any;
+export declare function _readValidityMetadata<T>(target: T): {
+    valid: boolean;
+    errors: Record<string, EnttValidationError[]>;
+};
 /**
  * Validates all properties of object instance
  * @param target Object instance to validate all properties of
  * @returns Hashmap of all properties having validation errors
  */
-export declare function _validateObject(target: any): Record<string, EnttValidationError[]>;
+export declare function _validateObject<T>(target: T): Record<string, EnttValidationError[]>;
 /**
  * Validates a property of target object instance
  * @param target Object instance to validate a property of
@@ -45,16 +48,16 @@ export declare function _validateObject(target: any): Record<string, EnttValidat
  * @param value (Optional) Property value being validated; if not present, current property value will be validated instead
  * @returns Array of validation errors
  */
-export declare function _validateProperty(target: any, key: any, value?: any): EnttValidationError[];
+export declare function _validateProperty<T>(target: T, key: any, value?: any): EnttValidationError[];
 /**
  * Returns validation status of the instance
  * @param target target instance being validated
  * @returns If instance is validated
  */
-export declare function _isValid(target: any): boolean;
+export declare function _isValid<T>(target: T): boolean;
 /**
  * Returns validation errors of all properties
  * @param target target instance being validated
  * @returns A hashmap of arrays of errors per property
  */
-export declare function _getValidationErrors(target: any): Record<string, EnttValidationError[]>;
+export declare function _getValidationErrors<T>(target: T): Record<string, EnttValidationError[]>;

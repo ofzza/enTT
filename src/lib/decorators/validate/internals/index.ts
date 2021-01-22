@@ -2,7 +2,8 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { _undefined, _EnTTRoot, _getDecoratorMetadata, _getInstanceMetadata } from '../../../entt/internals';
+import { _undefined, TNew } from '../../../entt/internals';
+import { _EnTTRoot, _getDecoratorMetadata, _getInstanceMetadata } from '../../../entt/internals';
 
 // Define a unique symbol for Serializable decorator
 export const _symbolValidate = Symbol('@Validate');
@@ -55,13 +56,18 @@ export class EnttValidationError extends Error {
  * @param target EnTT class instance containing the validity data
  * @returns Instance's validity store
  */
-export function _readValidityMetadata(target) {
+export function _readValidityMetadata<T>(
+  target: T,
+): {
+  valid: boolean;
+  errors: Record<string, EnttValidationError[]>;
+} {
   const metadata = _getInstanceMetadata(target);
   return (
-    metadata.validity ||
-    (metadata.validity = {
+    metadata.custom.validity ||
+    (metadata.custom.validity = {
       valid: true,
-      errors: {},
+      errors: {} as Record<string, EnttValidationError[]>,
     })
   );
 }
@@ -71,7 +77,7 @@ export function _readValidityMetadata(target) {
  * @param target Object instance to validate all properties of
  * @returns Hashmap of all properties having validation errors
  */
-export function _validateObject(target): Record<string, EnttValidationError[]> {
+export function _validateObject<T>(target: T): Record<string, EnttValidationError[]> {
   // Check if validation disabled
   if (_validationEnabled !== 0) {
     return {} as Record<string, EnttValidationError[]>;
@@ -96,7 +102,7 @@ export function _validateObject(target): Record<string, EnttValidationError[]> {
  * @param value (Optional) Property value being validated; if not present, current property value will be validated instead
  * @returns Array of validation errors
  */
-export function _validateProperty(target, key, value = _undefined as any): EnttValidationError[] {
+export function _validateProperty<T>(target: T, key, value = _undefined as any): EnttValidationError[] {
   // Check if validation disabled
   if (_validationEnabled !== 0) {
     return [] as EnttValidationError[];
@@ -123,7 +129,7 @@ export function _validateProperty(target, key, value = _undefined as any): EnttV
     }
   }
 
-  // Validate using valifation provider, if available
+  // Validate using validation provider, if available
   if (typeof metadata.provider === 'function') {
     // Validate using custom validation function
     const err = metadata.provider(target, value);
@@ -187,7 +193,7 @@ export function _validateProperty(target, key, value = _undefined as any): EnttV
  * @param target target instance being validated
  * @returns If instance is validated
  */
-export function _isValid(target): boolean {
+export function _isValid<T>(target: T): boolean {
   // using @Validate
 
   // Return if local invalid
@@ -212,7 +218,7 @@ export function _isValid(target): boolean {
  * @param target target instance being validated
  * @returns A hashmap of arrays of errors per property
  */
-export function _getValidationErrors(target): Record<string, EnttValidationError[]> {
+export function _getValidationErrors<T>(target: T): Record<string, EnttValidationError[]> {
   // using @Validate
 
   // Initialize all errors

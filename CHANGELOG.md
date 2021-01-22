@@ -1,6 +1,6 @@
 ### Version 3.1.8
 
-...
+- All methods are now strongly typed
 
 ### Version 3.1.7
 

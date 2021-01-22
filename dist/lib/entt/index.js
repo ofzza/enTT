@@ -3,7 +3,6 @@
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EnTT = void 0;
-// Import and (re)export internals
 const internals_1 = require("./internals");
 // Import dependencies
 const internals_2 = require("../decorators/property/internals");
@@ -32,20 +31,7 @@ class EnTT extends internals_1._EnTTRoot {
         // Find tagged properties
         return internals_2._findTaggedProperties(from, tag);
     }
-    /**
-     * Casts a value of given type as an instance of a parent EnTT Class
-     * @param value Value (or structure of values) being cast, or (alternatively) a Promise about to resolve such a value
-     * @param into Casting target class, or structure:
-     * - MyEnTTClass, will cast value as instance of MyEnTTClass
-     *    => new myEnTTClass()
-     * - [MyEnTTClass], will cast value (assumed to be an array) as an array of instances of MyEnTTClass
-     *    => [ new myEnTTClass(), new myEnTTClass(), new myEnTTClass(), ... ]
-     * - {MyEnTTClass}, will cast value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
-     *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
-     * @param type Type of value being cast
-     * @param validate If cast instance should be validated after
-     * @returns Instance (or structure of instances) of the class with deserialized data, or (alternatively) a Promise about to resolve to such an instance
-     */
+    // Implementation
     static cast(value, { into = undefined, type = 'object', validate = true } = {}) {
         // using @Serializable
         // Get casting target class
@@ -55,8 +41,9 @@ class EnTT extends internals_1._EnTTRoot {
             // Return promise of cast, resolved value
             return new Promise((resolve, reject) => {
                 value
-                    .then(v => {
-                    resolve(EnTT.cast(v, { into, type, validate }));
+                    .then((v) => {
+                    const result = internals_3._cast(into)(v, type, { validate });
+                    resolve(result);
                 })
                     .catch(reject);
             });

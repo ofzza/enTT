@@ -7,7 +7,6 @@ import {
   _symbolSerializable,
   _serializeType,
   _rawDataType,
-  _castType,
   _readSerializableMetadata,
   _serialize,
   _deserialize,
@@ -16,7 +15,7 @@ import {
 } from './internals';
 
 // Import dependencies
-import { _getDecoratorMetadata } from '../../entt/internals';
+import { TNew, _getDecoratorMetadata } from '../../entt/internals';
 
 /**
  * @Serializable() decorator, configures property serialization behavior
@@ -39,14 +38,14 @@ export function Serializable({
   alias = undefined as string,
   serialize = undefined as ((target: any, value: any) => any) | boolean,
   deserialize = undefined as ((target: any, value: any) => any) | boolean,
-  cast = undefined as _castType,
+  cast = undefined as TNew<any> | TNew<any>[] | Record<any, TNew<any>>,
 } = {}) {
   // Set defaults
   const defaults = {
     alias: undefined as string,
     serialize: true as ((target: any, value: any) => any) | boolean,
     deserialize: true as ((target: any, value: any) => any) | boolean,
-    cast: undefined as _castType,
+    cast: undefined as TNew<any> | TNew<any>[] | Record<any, TNew<any>>,
   };
 
   // Return decorator

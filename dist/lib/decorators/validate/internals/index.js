@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports._getValidationErrors = exports._isValid = exports._validateProperty = exports._validateObject = exports._readValidityMetadata = exports.EnttValidationError = exports._validationDisable = exports._validationEnable = exports._symbolValidate = void 0;
 // Import dependencies
 const internals_1 = require("../../../entt/internals");
+const internals_2 = require("../../../entt/internals");
 // Define a unique symbol for Serializable decorator
 exports._symbolValidate = Symbol('@Validate');
 /**
@@ -43,9 +44,9 @@ exports.EnttValidationError = EnttValidationError;
  * @returns Instance's validity store
  */
 function _readValidityMetadata(target) {
-    const metadata = internals_1._getInstanceMetadata(target);
-    return (metadata.validity ||
-        (metadata.validity = {
+    const metadata = internals_2._getInstanceMetadata(target);
+    return (metadata.custom.validity ||
+        (metadata.custom.validity = {
             valid: true,
             errors: {},
         }));
@@ -62,7 +63,7 @@ function _validateObject(target) {
         return {};
     }
     // Validate all properties
-    const keys = Object.keys(internals_1._getDecoratorMetadata(target.constructor, exports._symbolValidate) || {});
+    const keys = Object.keys(internals_2._getDecoratorMetadata(target.constructor, exports._symbolValidate) || {});
     return keys.reduce((errors, key) => {
         const propertyErrors = _validateProperty(target, key);
         if (propertyErrors && propertyErrors.length) {
@@ -88,7 +89,7 @@ function _validateProperty(target, key, value = internals_1._undefined) {
         return [];
     }
     // Get property metadata
-    const metadata = internals_1._getDecoratorMetadata(target.constructor, exports._symbolValidate)[key];
+    const metadata = internals_2._getDecoratorMetadata(target.constructor, exports._symbolValidate)[key];
     if (!metadata) {
         return [];
     }
@@ -104,7 +105,7 @@ function _validateProperty(target, key, value = internals_1._undefined) {
             errors.push(new EnttValidationError({ message: `Value ${JSON.stringify(value)} is not of required type "${metadata.type}"!` }));
         }
     }
-    // Validate using valifation provider, if available
+    // Validate using validation provider, if available
     if (typeof metadata.provider === 'function') {
         // Validate using custom validation function
         const err = metadata.provider(target, value);
@@ -182,7 +183,7 @@ function _isValid(target) {
         return false;
     }
     // Return if any of children invalid
-    for (const c of internals_1._getInstanceMetadata(target).children) {
+    for (const c of internals_2._getInstanceMetadata(target).children) {
         if (!c.child.valid) {
             return false;
         }
@@ -212,7 +213,7 @@ function _getValidationErrors(target) {
         }
     });
     // Read children
-    for (const c of internals_1._getInstanceMetadata(target).children) {
+    for (const c of internals_2._getInstanceMetadata(target).children) {
         // Add child errors per each property
         const childErrors = c.child.errors;
         Object.keys(childErrors).forEach(childKey => {
