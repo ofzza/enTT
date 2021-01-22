@@ -2,6 +2,7 @@
 // enTT lib @Property decorator's internals
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
+exports._findTaggedProperties = exports._readPropertyDescriptor = exports._readPropertyMetadata = exports._symbolProperty = void 0;
 // Import dependencies
 const internals_1 = require("../../../entt/internals");
 // Define a unique symbol for Property decorator

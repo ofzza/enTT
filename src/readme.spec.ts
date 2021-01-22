@@ -6,7 +6,7 @@ import { assert } from './tests.init';
 import { EnTT, Property, Serializable, Validate, EnttValidationError } from './';
 
 // Import validation providers
-import * as Joi from '@hapi/joi';
+import * as Joi from 'joi';
 import * as Yup from 'yup';
 
 // Test ...

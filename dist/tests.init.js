@@ -2,6 +2,7 @@
 // Configure testing library
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.assert = void 0;
 // Import dependencies
 const jasmine_spec_reporter_1 = require("jasmine-spec-reporter");
 /**

@@ -7,7 +7,7 @@ import { EnTT, Validate } from '../../../';
 import { _validateObject, _validateProperty } from './internals';
 
 // Import validation providers
-import * as Joi from '@hapi/joi';
+import * as Joi from 'joi';
 import * as JoiBrowser from 'joi-browser';
 import * as Yup from 'yup';
 
@@ -70,7 +70,7 @@ describe('@Validate', () => {
       verifyNaturalNumProperty(Test, 'customNaturalNum');
     });
 
-    it('@hapi/joi', () => {
+    it('joi', () => {
       verifyNaturalNumProperty(Test, 'joiNaturalNum');
     });
 

@@ -7,7 +7,7 @@ const tslib_1 = require("tslib");
 const tests_init_1 = require("./tests.init");
 const _1 = require("./");
 // Import validation providers
-const Joi = tslib_1.__importStar(require("@hapi/joi"));
+const Joi = tslib_1.__importStar(require("joi"));
 const Yup = tslib_1.__importStar(require("yup"));
 // Test ...
 describe('README examples', () => {

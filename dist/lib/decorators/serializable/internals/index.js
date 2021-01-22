@@ -2,6 +2,7 @@
 // enTT lib @Serializable decorator's internals
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
+exports._clone = exports._cast = exports._deserialize = exports._serialize = exports._readSerializableMetadata = exports._registerNativeClass = exports._symbolSerializable = void 0;
 // Import dependencies
 const internals_1 = require("../../../entt/internals");
 const internals_2 = require("../../validate/internals");

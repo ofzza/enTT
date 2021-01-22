@@ -23,7 +23,12 @@ export function _readPropertyMetadata(Class) {
  * @param store Private store for all property values
  * @returns Property descriptor
  */
-export function _readPropertyDescriptor({ target = undefined as any, key = undefined as string | symbol, store = undefined as object } = {}) {
+export function _readPropertyDescriptor({ target = undefined as any, key = undefined as string | symbol, store = undefined as object } = {}): {
+  get: () => any;
+  set: (value: any) => void;
+  enumerable: boolean;
+  tag: any;
+} {
   // Get @Property metadata (or defaults)
   const metadata = _readPropertyMetadata(target.constructor)[key] || {
     get: true,
@@ -69,7 +74,7 @@ export function _readPropertyDescriptor({ target = undefined as any, key = undef
  * @param target Class to search for tagged properties
  * @param tag Tag to search for
  */
-export function _findTaggedProperties(target = undefined as any, tag = undefined as string | Symbol) {
+export function _findTaggedProperties(target = undefined as any, tag = undefined as string | Symbol): string[] {
   // Get @Property metadata (or defaults)
   const metadata = _readPropertyMetadata(target);
   // Find properties matching requested tab

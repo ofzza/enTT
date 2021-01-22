@@ -2,6 +2,7 @@
 // enTT lib @Validate decorator's internals
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
+exports._getValidationErrors = exports._isValid = exports._validateProperty = exports._validateObject = exports._readValidityMetadata = exports.EnttValidationError = exports._validationDisable = exports._validationEnable = exports._symbolValidate = void 0;
 // Import dependencies
 const internals_1 = require("../../../entt/internals");
 // Define a unique symbol for Serializable decorator

@@ -4,10 +4,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // Import and (re)export decorators
 var property_1 = require("./property");
-exports.Property = property_1.Property;
+Object.defineProperty(exports, "Property", { enumerable: true, get: function () { return property_1.Property; } });
 var serializable_1 = require("./serializable");
-exports.Serializable = serializable_1.Serializable;
+Object.defineProperty(exports, "Serializable", { enumerable: true, get: function () { return serializable_1.Serializable; } });
 var validate_1 = require("./validate");
-exports.Validate = validate_1.Validate;
-exports.EnttValidationError = validate_1.EnttValidationError;
+Object.defineProperty(exports, "Validate", { enumerable: true, get: function () { return validate_1.Validate; } });
+Object.defineProperty(exports, "EnttValidationError", { enumerable: true, get: function () { return validate_1.EnttValidationError; } });
 //# sourceMappingURL=index.js.map

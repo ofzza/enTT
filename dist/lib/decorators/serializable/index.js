@@ -3,6 +3,7 @@
 // Configures an EnTT property serialization behavior
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Serializable = void 0;
 // Import and (re)export internals
 const internals_1 = require("./internals");
 // Import dependencies

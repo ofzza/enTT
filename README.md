@@ -748,7 +748,7 @@ console.log(instance.errors);
 EnTT will also know to recognize [JOI](https://github.com/hapijs/joi) validation expressions:
 
 ```ts
-import * as Joi from '@hapi/joi';
+import * as Joi from 'joi';
 @Validate({ provider: Joi.any() });
 ```
 

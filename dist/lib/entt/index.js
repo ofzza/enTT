@@ -2,6 +2,7 @@
 // enTT lib main, extensible class
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EnTT = void 0;
 // Import and (re)export internals
 const internals_1 = require("./internals");
 // Import dependencies

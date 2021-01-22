@@ -8,7 +8,7 @@ const tests_init_1 = require("../../../tests.init");
 const __1 = require("../../../");
 const internals_1 = require("./internals");
 // Import validation providers
-const Joi = tslib_1.__importStar(require("@hapi/joi"));
+const Joi = tslib_1.__importStar(require("joi"));
 const JoiBrowser = tslib_1.__importStar(require("joi-browser"));
 const Yup = tslib_1.__importStar(require("yup"));
 // Test ...
@@ -74,7 +74,7 @@ describe('@Validate', () => {
         it('custom', () => {
             verifyNaturalNumProperty(Test, 'customNaturalNum');
         });
-        it('@hapi/joi', () => {
+        it('joi', () => {
             verifyNaturalNumProperty(Test, 'joiNaturalNum');
         });
         it('joi-browser', () => {

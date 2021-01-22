@@ -1,3 +1,7 @@
+### Version 3.1.8
+
+...
+
 ### Version 3.1.7
 
 - `@Serializable` direct serialization/deserialization via "`serialize`"/"`deserialize`" now directly uses returned value as property value with no additional processing

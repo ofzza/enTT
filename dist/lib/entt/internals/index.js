@@ -2,6 +2,7 @@
 // enTT lib main, extensible class's internals
 // ----------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", { value: true });
+exports._getInstanceMetadata = exports._getDecoratorMetadata = exports._getClassMetadata = exports._EnTTRoot = exports._undefined = exports._symbolEnTTInstance = exports._symbolEnTTClass = void 0;
 // Define a unique symbol for Property decorator
 exports._symbolEnTTClass = Symbol('EnTT Class Metadata');
 exports._symbolEnTTInstance = Symbol('EnTT Instance Metadata');
