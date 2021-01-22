@@ -470,9 +470,8 @@ function verifySerialization(obj, type = 'object' as _rawDataType, { skipDeseria
  * @params ignoreKeys Array of properties which are to be omitted from comparison
  */
 function verifyAny(original, exported, { verifyConstructors = false, ignoreKeys = [] } = {}) {
-  // Check if object or array
+  // Arrays and objects aren't copied by reference
   if (original instanceof Array || original instanceof Object) {
-    // Arrays and objects aren't copied by reference
     assert(exported !== original);
 
     // Compare object or array members
@@ -493,8 +492,10 @@ function verifyAny(original, exported, { verifyConstructors = false, ignoreKeys 
         }
       }
     }
-  } else {
-    // Primitives are copied and equal
+  }
+
+  // Primitives are copied and equal
+  else {
     assert(exported === original);
   }
 }

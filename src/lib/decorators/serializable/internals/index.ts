@@ -47,9 +47,8 @@ export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _dir
   // Check if source's store should be source instead
   const instance = source instanceof _EnTTRoot ? _getInstanceMetadata(source).store : source;
 
-  // Serializable
+  // Serializable array or object
   if (instance && !_isNativeClassInstance(instance) && (instance instanceof Array || instance instanceof Object)) {
-    // Serializable array or object
     const serialized = Object.keys(instance).reduce(
       // tslint:disable-next-line: no-shadowed-variable
       (serialized, key) => {
@@ -89,8 +88,10 @@ export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _dir
 
     // Convert value
     return _obj2data(serialized, type);
-  } else {
-    // Convert raw value
+  }
+
+  // Convert raw value
+  else {
     return _obj2data(instance, type);
   }
 }
@@ -117,7 +118,7 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
   // Check if target's store should be target instead
   const instance = target instanceof _EnTTRoot ? _getInstanceMetadata(target).store : target;
 
-  // Check if value matches target shape
+  // Deserialize if value matches target shape
   if (!_isNativeClassInstance(source) && ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object))) {
     // Disable validation
     _validationDisable();
@@ -148,30 +149,32 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
               deserialized[alias] = metadata.deserialize(source[key], source);
               return deserialized;
             }
-            // Deserializable value (EnTT instance or raw value)
+            // Deserialize and cast array
             if (metadata.cast && metadata.cast instanceof Array && metadata.cast.length === 1 && typeof metadata.cast[0] === 'function') {
-              // Deserialize and cast array
               // tslint:disable-next-line: no-shadowed-variable
               deserialized[alias] = source[key].map(value => {
                 return _deserialize(value, 'object', { target: new metadata.cast[0](), validate });
               });
-            } else if (
+            }
+            // Deserialize and cast hashmap
+            else if (
               metadata.cast &&
               metadata.cast instanceof Object &&
               Object.values(metadata.cast).length === 1 &&
               typeof Object.values(metadata.cast)[0] === 'function'
             ) {
-              // Deserialize and cast hashmap
               // tslint:disable-next-line: no-shadowed-variable
               deserialized[alias] = Object.keys(source[key]).reduce((deserialized, k) => {
                 deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)(), validate });
                 return deserialized;
               }, {});
-            } else if (metadata.cast && typeof metadata.cast === 'function') {
-              // Deserialize and cast
+            }
+            // Deserialize and cast
+            else if (metadata.cast && typeof metadata.cast === 'function') {
               deserialized[alias] = _deserialize(source[key], 'object', { target: new metadata.cast(), validate });
-            } else {
-              // Deserialize without casting
+            }
+            // Deserialize without casting
+            else {
               deserialized[alias] = _deserialize(source[key], 'object', { validate });
             }
           }
@@ -192,8 +195,10 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
 
     // Return deserialized instance
     return target;
-  } else {
-    // Just return a value as deserialized
+  }
+
+  // Skip deserialization and just return a value as deserialized
+  else {
     return value;
   }
 }
@@ -221,7 +226,7 @@ export function _cast<T>(
 export function _cast<T>(
   into: TNew<T> | TNew<T>[] | Record<any, TNew<T>>,
 ): (value: any, type?: _rawDataType, options?: { validate?: boolean }) => T | T[] | Record<any, T> {
-  // Check casting target
+  // Cast as array
   if (into && into instanceof Array && into.length === 1 && typeof into[0] === 'function') {
     /**
      * Casts a array of values of given type as an array of instances of a given Class
@@ -239,7 +244,10 @@ export function _cast<T>(
         }),
       );
     };
-  } else if (into && into instanceof Object && Object.values(into).length === 1 && typeof Object.values(into)[0] === 'function') {
+  }
+
+  // Cast as hashmap
+  else if (into && into instanceof Object && Object.values(into).length === 1 && typeof Object.values(into)[0] === 'function') {
     /**
      * Casts a hashmap of values of given type as a hashmap of instances of a given Class
      * @param value Hashmap of values being cast
@@ -256,7 +264,10 @@ export function _cast<T>(
         return hashmap;
       }, {});
     };
-  } else if (into && typeof into === 'function') {
+  }
+
+  // Cast as single value
+  else if (into && typeof into === 'function') {
     /**
      * Casts a value of given type as an instance of a given Class
      * @param value Value being cast
@@ -270,7 +281,10 @@ export function _cast<T>(
         validate,
       });
     };
-  } else {
+  }
+
+  // Casting failed
+  else {
     // Throw error
     throw new Error(`Can't recognize casting target class or structure!`);
   }

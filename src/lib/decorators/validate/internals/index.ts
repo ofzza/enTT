@@ -134,23 +134,27 @@ export function _validateProperty<T>(target: T, key, value = _undefined as any):
     // Validate using custom validation function
     const err = metadata.provider(value, target);
     if (err !== undefined && err !== null && err !== true) {
+      // Generic error
       if (err === false) {
-        // Generic error
         errors.push(new EnttValidationError({ message: `Value ${JSON.stringify(value)} not allowed!` }));
-      } else if (typeof err === 'string') {
-        // Create error from string
+      }
+      // Create error from string
+      else if (typeof err === 'string') {
         errors.push(new EnttValidationError({ message: err }));
-      } else if (err instanceof Error) {
-        // Take error
+      }
+      // Take error
+      else if (err instanceof Error) {
         errors.push(err);
-      } else if (err instanceof Array) {
-        // Take errors
+      }
+      // Take errors
+      else if (err instanceof Array) {
         err.forEach(err => {
+          // Create error from string
           if (typeof err === 'string') {
-            // Create error from string
             errors.push(new EnttValidationError({ message: err }));
-          } else if (err instanceof Error) {
-            // Take error
+          }
+          // Take error
+          else if (err instanceof Error) {
             errors.push(err);
           }
         });
@@ -173,14 +177,15 @@ export function _validateProperty<T>(target: T, key, value = _undefined as any):
   // Validate using attached .validate() method
   else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function') {
     const err = metadata.provider.validate(value, { context: target }).error;
+    // Process JOI errors result
     if (err && err.isJoi) {
-      // Process JOI errors result
       err.details.forEach(err => {
         const msg = err.message.replace(/"value"/g, `Value ${JSON.stringify(value)}`);
         errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
       });
-    } else if (err instanceof Error) {
-      // Process explicit errors
+    }
+    // Process explicit errors
+    else if (err instanceof Error) {
       errors.push(err);
     }
   }

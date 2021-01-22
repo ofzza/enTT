@@ -103,9 +103,8 @@ export class EnTT extends _EnTTRoot {
     // using @Serializable
     // Get casting target class
     into = into || ((this.prototype.constructor as unknown) as TNew<T>);
-    // Check if value is a Promise
+    // Return promise of cast, resolved value
     if (value instanceof Promise) {
-      // Return promise of cast, resolved value
       return new Promise<T | T[] | Record<any, T>>((resolve, reject) => {
         value
           .then((v: any) => {
@@ -114,8 +113,9 @@ export class EnTT extends _EnTTRoot {
           })
           .catch(reject);
       });
-    } else {
-      // Cast value
+    }
+    // Return immediately cast value
+    else {
       return _cast<T>(into)(value, type, { validate });
     }
   }
@@ -279,12 +279,15 @@ function _replacePropertiesWithGetterSetters({ store = undefined as object, rest
 function _findChildEnTTs(path: string[], value: any): { path: string[]; child: EnTT }[] {
   // Find child EnTTs
   const children: { path: string[]; child: EnTT }[] = [];
+  // Register direct child
   if (value instanceof EnTT) {
     children.push({
       path,
       child: value,
     });
-  } else if (value instanceof Array || value instanceof Object) {
+  }
+  // Register children contained within array or hashmap
+  else if (value instanceof Array || value instanceof Object) {
     for (const key of Object.keys(value)) {
       children.push(..._findChildEnTTs([...path, key], value[key]));
     }
