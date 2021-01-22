@@ -81,15 +81,15 @@ describe('README examples', () => {
                     }
                 }
                 tslib_1.__decorate([
-                    _1.Property({ set: (obj, value) => toTitleCase(value) }),
+                    _1.Property({ set: (value, obj) => toTitleCase(value) }),
                     tslib_1.__metadata("design:type", Object)
                 ], MyEntityClass.prototype, "firstName", void 0);
                 tslib_1.__decorate([
-                    _1.Property({ set: (obj, value) => toTitleCase(value) }),
+                    _1.Property({ set: (value, obj) => toTitleCase(value) }),
                     tslib_1.__metadata("design:type", Object)
                 ], MyEntityClass.prototype, "lastName", void 0);
                 tslib_1.__decorate([
-                    _1.Property({ get: (obj, value) => `${obj.firstName} ${obj.lastName}` }),
+                    _1.Property({ get: (value, obj) => `${obj.firstName} ${obj.lastName}` }),
                     tslib_1.__metadata("design:type", Object)
                 ], MyEntityClass.prototype, "fullName", void 0);
                 const instance = new MyEntityClass();
@@ -254,8 +254,8 @@ describe('README examples', () => {
                     }
                     tslib_1.__decorate([
                         _1.Serializable({
-                            deserialize: (obj, value) => new Date(value),
-                            serialize: (obj, value) => value.getTime(),
+                            deserialize: (value, obj) => new Date(value),
+                            serialize: (value, obj) => value.getTime(),
                         }),
                         tslib_1.__metadata("design:type", Object)
                     ], MyTimestampedClass.prototype, "timestamp", void 0);
@@ -421,12 +421,12 @@ describe('README examples', () => {
                         }
                     }
                     tslib_1.__decorate([
-                        _1.Validate({ provider: (obj, value) => value > 1900 && value < 2100 }),
+                        _1.Validate({ provider: (value, obj) => value > 1900 && value < 2100 }),
                         tslib_1.__metadata("design:type", Object)
                     ], MyDatesClass.prototype, "born", void 0);
                     tslib_1.__decorate([
                         _1.Validate({
-                            provider: (obj, value) => {
+                            provider: (value, obj) => {
                                 const errs = [];
                                 if (value < obj.born) {
                                     errs.push(new _1.EnttValidationError({

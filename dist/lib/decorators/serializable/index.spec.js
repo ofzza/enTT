@@ -161,11 +161,11 @@ describe('@Serializable', () => {
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "setteronly", void 0);
     tslib_1.__decorate([
-        __1.Property({ get: (obj, value) => `${obj.nonenumerable}:${value && value.toUpperCase()}` }),
+        __1.Property({ get: (value, obj) => `${obj.nonenumerable}:${value && value.toUpperCase()}` }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "customgetter", void 0);
     tslib_1.__decorate([
-        __1.Property({ set: (obj, value) => `${obj.nonenumerable}:${value && value.toUpperCase()}` }),
+        __1.Property({ set: (value, obj) => `${obj.nonenumerable}:${value && value.toUpperCase()}` }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "customsetter", void 0);
     class ExtendedTestEntity extends Test {

@@ -144,9 +144,9 @@ console.log(instance.writeonly); // Outputs: undefined
 Any property can be augmented with a custom setter and/or getter modifying the property value before reading and/or writing, like so:
 
 ```ts
-@Property({ set: (obj, value) => any })
+@Property({ set: (value, obj) => any })
 
-@Property({ get: (obj, value) => any })
+@Property({ get: (value, obj) => any })
 ```
 
 <details><summary>EXAMPLE</summary>
@@ -160,13 +160,13 @@ class MyPersonClass extends EnTT {
     super.entt();
   }
 
-  @Property({ set: (obj, value) => toTitleCase(value) })
+  @Property({ set: (value, obj) => toTitleCase(value) })
   public firstName = undefined as string;
 
-  @Property({ set: (obj, value) => toTitleCase(value) })
+  @Property({ set: (value, obj) => toTitleCase(value) })
   public lastName = undefined as string;
 
-  @Property({ get: (obj, value) => `${obj.firstName} ${obj.lastName}` })
+  @Property({ get: (value, obj) => `${obj.firstName} ${obj.lastName}` })
   public fullName = undefined as string;
 }
 
@@ -419,9 +419,9 @@ console.log(serialized); // Outputs: { password: '123' }
 Any property can also have defined custom serialization and/or de-serialization mapping functions, like so:
 
 ```ts
-@Serializable({ deserialize: (obj, value) => any })
+@Serializable({ deserialize: (value, obj) => any })
 
-@Serializable({ serialize: (obj, value) => any, })
+@Serializable({ serialize: (value, obj) => any, })
 ```
 
 <details><summary>EXAMPLE</summary>
@@ -436,8 +436,8 @@ class MyTimestampedClass extends EnTT {
   }
 
   @Serializable({
-    deserialize: (obj, value) => new Date(value),
-    serialize: (obj, value) => value.getTime(),
+    deserialize: (value, obj) => new Date(value),
+    serialize: (value, obj) => value.getTime(),
   })
   public timestamp = undefined as Date;
 }
@@ -659,7 +659,7 @@ To validate against more complex criteria, you can use a custom validator.
 The most basic custom validator is just a function evaluating the validity of a property value within the context of the EnTT instance:
 
 ```ts
-@Validate({ provider: (obj, value) => Error[] | Error | string | boolean }) });
+@Validate({ provider: (value, obj) => Error[] | Error | string | boolean }) });
 ```
 
 <details><summary>EXAMPLE</summary>
@@ -674,12 +674,12 @@ class MyDatesClass extends EnTT {
   }
 
   // Validate year is within a predefined scope
-  @Validate({ provider: (obj, value) => value > 1900 && value < 2100 })
+  @Validate({ provider: (value, obj) => value > 1900 && value < 2100 })
   born = undefined as number;
 
   // Validate year is within dynamic scope and throw custom validation errors
   @Validate({
-    provider: (obj, value) => {
+    provider: (value, obj) => {
       const errs = [];
       if (value < obj.born) {
         errs.push(

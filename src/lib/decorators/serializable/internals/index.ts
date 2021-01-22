@@ -72,7 +72,7 @@ export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _dir
             if (_directSerialize || metadata.serialize) {
               // If custom serialization function, map value using the function
               if (!_directSerialize && metadata.serialize instanceof Function) {
-                serialized[metadata.alias || key] = metadata.serialize(instance, instance[key]);
+                serialized[metadata.alias || key] = metadata.serialize(instance[key], instance);
                 return serialized;
               }
               // Serializable value (EnTT instance or raw value)
@@ -145,7 +145,7 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
           if (_directDeserialize || metadata.deserialize) {
             // If custom deserialization function, map value using the function
             if (!_directDeserialize && metadata.deserialize instanceof Function) {
-              deserialized[alias] = metadata.deserialize(source, source[key]);
+              deserialized[alias] = metadata.deserialize(source[key], source);
               return deserialized;
             }
             // Deserializable value (EnTT instance or raw value)

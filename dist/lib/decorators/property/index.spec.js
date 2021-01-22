@@ -38,11 +38,11 @@ describe('@Property', () => {
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "setteronly", void 0);
     tslib_1.__decorate([
-        __1.Property({ get: (obj, value) => `${obj.plain}:${value && value.toUpperCase()}` }),
+        __1.Property({ get: (value, obj) => `${obj.plain}:${value && value.toUpperCase()}` }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "customgetter", void 0);
     tslib_1.__decorate([
-        __1.Property({ set: (obj, value) => `${obj.plain}:${value && value.toUpperCase()}` }),
+        __1.Property({ set: (value, obj) => `${obj.plain}:${value && value.toUpperCase()}` }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "customsetter", void 0);
     it('Replaces properties with dynamic counterparts', () => {
@@ -126,8 +126,8 @@ describe('@Property', () => {
         tslib_1.__decorate([
             __1.Property({
                 enumerable: true,
-                set: (obj, value) => value && value.toUpperCase(),
-                get: (obj, value) => `!${value && value.toUpperCase()}!`,
+                set: (value, obj) => value && value.toUpperCase(),
+                get: (value, obj) => `!${value && value.toUpperCase()}!`,
             }),
             tslib_1.__metadata("design:type", Object)
         ], Test.prototype, "prop", void 0);

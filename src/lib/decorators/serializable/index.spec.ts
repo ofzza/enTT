@@ -133,10 +133,10 @@ describe('@Serializable', () => {
     @Property({ get: false })
     public setteronly = undefined as string;
 
-    @Property({ get: (obj, value) => `${obj.nonenumerable}:${value && value.toUpperCase()}` })
+    @Property({ get: (value, obj) => `${obj.nonenumerable}:${value && value.toUpperCase()}` })
     public customgetter = undefined as string;
 
-    @Property({ set: (obj, value) => `${obj.nonenumerable}:${value && value.toUpperCase()}` })
+    @Property({ set: (value, obj) => `${obj.nonenumerable}:${value && value.toUpperCase()}` })
     public customsetter = undefined as string;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,

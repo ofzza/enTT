@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { _undefined, TNew } from '../../../entt/internals';
+import { _undefined } from '../../../entt/internals';
 import { _EnTTRoot, _getDecoratorMetadata, _getInstanceMetadata } from '../../../entt/internals';
 
 // Define a unique symbol for Serializable decorator
@@ -132,7 +132,7 @@ export function _validateProperty<T>(target: T, key, value = _undefined as any):
   // Validate using validation provider, if available
   if (typeof metadata.provider === 'function') {
     // Validate using custom validation function
-    const err = metadata.provider(target, value);
+    const err = metadata.provider(value, target);
     if (err !== undefined && err !== null && err !== true) {
       if (err === false) {
         // Generic error
@@ -156,8 +156,10 @@ export function _validateProperty<T>(target: T, key, value = _undefined as any):
         });
       }
     }
-  } else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function' && metadata.provider.__isYupSchema__) {
-    // Validate using YUP validation
+  }
+
+  // Validate using YUP validation
+  else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function' && metadata.provider.__isYupSchema__) {
     try {
       metadata.provider.validateSync(value, { context: target });
     } catch (err) {
@@ -166,8 +168,10 @@ export function _validateProperty<T>(target: T, key, value = _undefined as any):
         errors.push(new EnttValidationError({ type: err.type, message: msg, context: err.context }));
       });
     }
-  } else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function') {
-    // Validate using attached .validate() method
+  }
+
+  // Validate using attached .validate() method
+  else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function') {
     const err = metadata.provider.validate(value, { context: target }).error;
     if (err && err.isJoi) {
       // Process JOI errors result

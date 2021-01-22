@@ -108,7 +108,7 @@ function _validateProperty(target, key, value = internals_1._undefined) {
     // Validate using validation provider, if available
     if (typeof metadata.provider === 'function') {
         // Validate using custom validation function
-        const err = metadata.provider(target, value);
+        const err = metadata.provider(value, target);
         if (err !== undefined && err !== null && err !== true) {
             if (err === false) {
                 // Generic error
@@ -137,8 +137,8 @@ function _validateProperty(target, key, value = internals_1._undefined) {
             }
         }
     }
+    // Validate using YUP validation
     else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function' && metadata.provider.__isYupSchema__) {
-        // Validate using YUP validation
         try {
             metadata.provider.validateSync(value, { context: target });
         }
@@ -149,8 +149,8 @@ function _validateProperty(target, key, value = internals_1._undefined) {
             });
         }
     }
+    // Validate using attached .validate() method
     else if (typeof metadata.provider === 'object' && typeof metadata.provider.validate === 'function') {
-        // Validate using attached .validate() method
         const err = metadata.provider.validate(value, { context: target }).error;
         if (err && err.isJoi) {
             // Process JOI errors result

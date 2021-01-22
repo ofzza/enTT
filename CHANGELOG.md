@@ -1,4 +1,13 @@
-### Version 3.1.8
+### Version 3.2.0
+
+##### Breaking changes
+
+- Arguments order changed in callbacks for:
+  - `@Property` custom getter/setter callback functions changed from `(obj: any, value: any) => any` to `(value: any, obj: any) => any`
+  - `@Serializable` custom serialize/deserialize callback functions changed from `(obj: any, value: any) => any` to `(value: any, obj: any) => any`
+  - `@Validate` custom provider validation function changed from `(obj: any, value: any) => Error[] | Error | string | boolean` to `(value: any, obj: any) => Error[] | Error | string | boolean`
+
+##### Non breaking changes
 
 - All methods are now strongly typed
 

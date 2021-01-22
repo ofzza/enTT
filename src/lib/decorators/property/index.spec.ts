@@ -27,10 +27,10 @@ describe('@Property', () => {
     @Property({ get: false })
     public setteronly = 'setteronly';
 
-    @Property({ get: (obj, value) => `${obj.plain}:${value && value.toUpperCase()}` })
+    @Property({ get: (value, obj) => `${obj.plain}:${value && value.toUpperCase()}` })
     public customgetter = 'customgetter';
 
-    @Property({ set: (obj, value) => `${obj.plain}:${value && value.toUpperCase()}` })
+    @Property({ set: (value, obj) => `${obj.plain}:${value && value.toUpperCase()}` })
     public customsetter = 'customsetter';
   }
 
@@ -119,8 +119,8 @@ describe('@Property', () => {
 
       @Property({
         enumerable: true,
-        set: (obj, value) => value && value.toUpperCase(),
-        get: (obj, value) => `!${value && value.toUpperCase()}!`,
+        set: (value, obj) => value && value.toUpperCase(),
+        get: (value, obj) => `!${value && value.toUpperCase()}!`,
       })
       public prop = undefined as any;
     }

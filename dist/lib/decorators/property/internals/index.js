@@ -39,7 +39,7 @@ function _readPropertyDescriptor({ target = undefined, key = undefined, store = 
             : () => {
                 if (typeof metadata.get === 'function') {
                     // Use specified function in getter
-                    return metadata.get(target, store[key]);
+                    return metadata.get(store[key], target);
                 }
                 else if (metadata.get === true) {
                     // Use default, pass-through getter
@@ -52,7 +52,7 @@ function _readPropertyDescriptor({ target = undefined, key = undefined, store = 
             : value => {
                 if (typeof metadata.set === 'function') {
                     // Use specified function in setter
-                    store[key] = metadata.set(target, value);
+                    store[key] = metadata.set(value, target);
                 }
                 else if (metadata.set === true) {
                     // Use default, pass-through setter

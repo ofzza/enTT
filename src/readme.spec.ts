@@ -72,13 +72,13 @@ describe('README examples', () => {
             super.entt();
           }
 
-          @Property({ set: (obj, value) => toTitleCase(value) })
+          @Property({ set: (value, obj) => toTitleCase(value) })
           public firstName = undefined as string;
 
-          @Property({ set: (obj, value) => toTitleCase(value) })
+          @Property({ set: (value, obj) => toTitleCase(value) })
           public lastName = undefined as string;
 
-          @Property({ get: (obj, value) => `${obj.firstName} ${obj.lastName}` })
+          @Property({ get: (value, obj) => `${obj.firstName} ${obj.lastName}` })
           public fullName = undefined as string;
         }
 
@@ -253,8 +253,8 @@ describe('README examples', () => {
             }
 
             @Serializable({
-              deserialize: (obj, value) => new Date(value),
-              serialize: (obj, value) => value.getTime(),
+              deserialize: (value, obj) => new Date(value),
+              serialize: (value, obj) => value.getTime(),
             })
             public timestamp = undefined as Date;
           }
@@ -420,12 +420,12 @@ describe('README examples', () => {
             }
 
             // Validate year is within a predefined scope
-            @Validate({ provider: (obj, value) => value > 1900 && value < 2100 })
+            @Validate({ provider: (value, obj) => value > 1900 && value < 2100 })
             born = undefined as number;
 
             // Validate year is within dynamic scope and throw custom validation errors
             @Validate({
-              provider: (obj, value) => {
+              provider: (value, obj) => {
                 const errs = [];
                 if (value < obj.born) {
                   errs.push(

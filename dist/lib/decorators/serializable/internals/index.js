@@ -61,7 +61,7 @@ function _serialize(source, type = 'object', { _directSerialize = false } = {}) 
                     if (_directSerialize || metadata.serialize) {
                         // If custom serialization function, map value using the function
                         if (!_directSerialize && metadata.serialize instanceof Function) {
-                            serialized[metadata.alias || key] = metadata.serialize(instance, instance[key]);
+                            serialized[metadata.alias || key] = metadata.serialize(instance[key], instance);
                             return serialized;
                         }
                         // Serializable value (EnTT instance or raw value)
@@ -125,7 +125,7 @@ function _deserialize(value, type = 'object', { target = undefined, validate = t
                     if (_directDeserialize || metadata.deserialize) {
                         // If custom deserialization function, map value using the function
                         if (!_directDeserialize && metadata.deserialize instanceof Function) {
-                            deserialized[alias] = metadata.deserialize(source, source[key]);
+                            deserialized[alias] = metadata.deserialize(source[key], source);
                             return deserialized;
                         }
                         // Deserializable value (EnTT instance or raw value)

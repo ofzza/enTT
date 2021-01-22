@@ -24,7 +24,7 @@ describe('@Validate', () => {
     tslib_1.__decorate([
         __1.Validate({
             type: 'number',
-            provider: (obj, value) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
+            provider: (value, obj) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
         }),
         tslib_1.__metadata("design:type", Object)
     ], InnerTest.prototype, "naturalNum", void 0);
@@ -44,7 +44,7 @@ describe('@Validate', () => {
     tslib_1.__decorate([
         __1.Validate({
             type: 'number',
-            provider: (obj, value) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
+            provider: (value, obj) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
         }),
         tslib_1.__metadata("design:type", Object)
     ], Test.prototype, "customNaturalNum", void 0);
@@ -159,7 +159,7 @@ describe('@Validate', () => {
             tslib_1.__metadata("design:type", Object)
         ], TestBase.prototype, "propA", void 0);
         tslib_1.__decorate([
-            __1.Validate({ provider: (target, value) => !!value }),
+            __1.Validate({ provider: (value, obj) => !!value }),
             tslib_1.__metadata("design:type", Object)
         ], TestBase.prototype, "propB", void 0);
         class Test extends TestBase {
@@ -175,7 +175,7 @@ describe('@Validate', () => {
             tslib_1.__metadata("design:type", Object)
         ], Test.prototype, "propA", void 0);
         tslib_1.__decorate([
-            __1.Validate({ provider: (target, value) => value < 10 }),
+            __1.Validate({ provider: (value, obj) => value < 10 }),
             tslib_1.__metadata("design:type", Object)
         ], Test.prototype, "propB", void 0);
         const base = new TestBase();

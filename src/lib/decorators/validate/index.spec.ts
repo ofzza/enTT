@@ -22,7 +22,7 @@ describe('@Validate', () => {
 
     @Validate({
       type: 'number',
-      provider: (obj, value) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
+      provider: (value, obj) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
     })
     public naturalNum = 1;
   }
@@ -35,7 +35,7 @@ describe('@Validate', () => {
 
     @Validate({
       type: 'number',
-      provider: (obj, value) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
+      provider: (value, obj) => typeof value === 'number' && Math.trunc(value) === value && value > 0,
     })
     public customNaturalNum = 1;
 
@@ -157,7 +157,7 @@ describe('@Validate', () => {
       @Validate({ type: 'boolean' })
       public propA = true as any;
 
-      @Validate({ provider: (target, value) => !!value })
+      @Validate({ provider: (value, obj) => !!value })
       public propB = true as any;
     }
 
@@ -170,7 +170,7 @@ describe('@Validate', () => {
       @Validate({ type: 'number' })
       public propA = 0 as any;
 
-      @Validate({ provider: (target, value) => value < 10 })
+      @Validate({ provider: (value, obj) => value < 10 })
       public propB = 0 as any;
     }
 
