@@ -18,7 +18,6 @@ jasmine.getEnv().addReporter(
   new SpecReporter({
     spec: {
       displayErrorMessages: true,
-      displayStacktrace: true,
       displaySuccessful: true,
       displayFailed: true,
       displayPending: true,

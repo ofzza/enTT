@@ -858,7 +858,7 @@ class MyDatesClass extends EnTT {
 
   // Validate year is within dynamic scope and throw custom validation errors
   @Validate({
-    provider: Yup.number().strict().integer().min(Yup.ref('$.born')).max(2100).required(),
+    provider: Yup.number().strict().integer().min(Yup.ref('$.born') as any).max(2100).required(),
   })
   graduated = undefined as number;
 }
