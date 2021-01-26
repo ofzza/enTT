@@ -442,12 +442,19 @@ class MyTimestampedClass extends EnTT {
   public timestamp = undefined as Date;
 }
 
-const instance = new MyAuthenticationClass();
-instance.password = '123';
-instance.repeatPassword = '123';
+const now = Date.now(),
+instance = new MyTimestampedClass();
+instance.timestamp = new Date(now);
 
 const serialized = instance.serialize();
-console.log(serialized); // Outputs: { password: '123' }
+console.log(JSON.stringify(serialized) === JSON.stringify({ timestamp: now }); // Outputs: true
+
+const deserialized = new MyTimestampedClass();
+deserialized.deserialize({ ...serialized });
+console.log(deserialized.timestamp.getTime() === instance.timestamp.getTime()); // Outputs: true
+
+const cast = MyTimestampedClass.cast(serialized);
+console.log(cast.timestamp.getTime() === instance.timestamp.getTime()); // Outputs: true
 ```
 
 </details>
@@ -858,7 +865,12 @@ class MyDatesClass extends EnTT {
 
   // Validate year is within dynamic scope and throw custom validation errors
   @Validate({
-    provider: Yup.number().strict().integer().min(Yup.ref('$.born') as any).max(2100).required(),
+    provider: Yup.number()
+      .strict()
+      .integer()
+      .min(Yup.ref('$.born') as any)
+      .max(2100)
+      .required(),
   })
   graduated = undefined as number;
 }
