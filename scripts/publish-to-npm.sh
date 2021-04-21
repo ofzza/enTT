@@ -1,5 +1,6 @@
 #!/bin/bash
-cd "$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)";
+DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)";
+cd $DIR
 
 # Exit when any command fails
 set -e
@@ -8,13 +9,19 @@ set -e
 echo '';
 echo '> Building latest library version ...';
 tsc;
-cp -f ../README.md ../dist;
-cp -f ../CHANGELOG.md ../dist;
-cp -f ../LICENSE ../dist;
-cp -f ../package.json ../dist;
+
+echo '';
+echo '> Running tests ...';
+(cd $DIR/../; npx jasmine --config=./jasmine.json)
+
+echo '';
+echo '> Publishing resources...';
+cp -f $DIR/../README.md $DIR/../dist;
+cp -f $DIR/../CHANGELOG.md $DIR/../dist;
+cp -f $DIR/../LICENSE $DIR/../dist;
+cp -f $DIR/../package.json $DIR/../dist;
 
 # Publish via NPM
 echo '';
 echo '> Publishing to NPM ...';
-cd ../dist;
-npm publish --access public
+(cd $DIR/../dist; npm publish --access public)

@@ -58,57 +58,87 @@ export class EnTT extends _EnTTRoot {
    */
   // OVERLOADS: Casting promises
   // Promise<any> => Promise<EnTT>
-  public static cast<T>(this: TNew<T>, value: Promise<any>, params?: { into?: TNew<T>; type?: _rawDataType; validate?: boolean }): Promise<T>;
+  public static cast<TThis, TInto>(
+    this: TNew<TThis>,
+    value: Promise<any>,
+    params?: { into?: TNew<TInto>; type?: _rawDataType; validate?: boolean },
+  ): Promise<unknown extends TInto ? TThis : TInto>;
   // Promise<any[]> => Promise<EnTT[]>
-  public static cast<T>(this: TNew<T>, value: Promise<any>, params?: { into?: TNew<T>[]; type?: _rawDataType; validate?: boolean }): Promise<T[]>;
+  public static cast<TThis, TInto>(
+    this: TNew<TThis>,
+    value: Promise<any>,
+    params?: { into?: TNew<TInto>[]; type?: _rawDataType; validate?: boolean },
+  ): Promise<(unknown extends TInto ? TThis : TInto)[]>;
   // Promise<Record<any, any> => Promise<Record<any, EnTT>>
-  public static cast<T>(
-    this: TNew<T>,
+  public static cast<TThis, TInto>(
+    this: TNew<TThis>,
     value: Promise<any>,
-    params?: { into?: Record<any, TNew<T>>; type?: _rawDataType; validate?: boolean },
-  ): Promise<Record<any, T>>;
+    params?: { into?: Record<any, TNew<TInto>>; type?: _rawDataType; validate?: boolean },
+  ): Promise<Record<any, unknown extends TInto ? TThis : TInto>>;
   // Promise<any | any[] | Record<any, any> => Promise<EnTT | EnTT[] | Record<any, EnTT>
-  public static cast<T>(
-    this: TNew<T>,
+  public static cast<TThis, TInto>(
+    this: TNew<TThis>,
     value: Promise<any>,
-    params?: { into?: TNew<T> | TNew<T>[] | Record<any, TNew<T>>; type?: _rawDataType; validate?: boolean },
-  ): Promise<T | T[] | Record<any, T>>;
+    params?: { into?: TNew<TInto> | TNew<TInto>[] | Record<any, TNew<TInto>>; type?: _rawDataType; validate?: boolean },
+  ): Promise<(unknown extends TInto ? TThis : TInto) | (unknown extends TInto ? TThis : TInto)[] | Record<any, unknown extends TInto ? TThis : TInto>>;
   // OVERLOADS: Casting values
   // any => EnTT
-  public static cast<T>(this: TNew<T>, value: any, params?: { into?: TNew<T>; type?: _rawDataType; validate?: boolean }): T;
-  // any[] => EnTT[]
-  public static cast<T>(this: TNew<T>, value: any, params?: { into?: TNew<T>[]; type?: _rawDataType; validate?: boolean }): T[];
-  // Record<any, any> => Record<any, EnTT>
-  public static cast<T>(this: TNew<T>, value: any, params?: { into?: Record<any, TNew<T>>; type?: _rawDataType; validate?: boolean }): Record<any, T>;
-  // any | any[] | Record<any, any> => EnTT | EnTT[] | Record<any, EnTT>
-  public static cast<T>(
-    this: TNew<T>,
+  public static cast<TThis, TInto>(
+    this: TNew<TThis>,
     value: any,
-    params?: { into?: TNew<T> | TNew<T>[] | Record<any, TNew<T>>; type?: _rawDataType; validate?: boolean },
-  ): T | T[] | Record<any, T>;
+    params?: { into?: TNew<TInto>; type?: _rawDataType; validate?: boolean },
+  ): unknown extends TInto ? TThis : TInto;
+  // any[] => EnTT[]
+  public static cast<TThis, TInto>(
+    this: TNew<TThis>,
+    value: any,
+    params?: { into?: TNew<TInto>[]; type?: _rawDataType; validate?: boolean },
+  ): (unknown extends TInto ? TThis : TInto)[];
+  // Record<any, any> => Record<any, EnTT>
+  public static cast<TThis, TInto>(
+    this: TNew<TThis>,
+    value: any,
+    params?: { into?: Record<any, TNew<TInto>>; type?: _rawDataType; validate?: boolean },
+  ): Record<any, unknown extends TInto ? TThis : TInto>;
+  // any | any[] | Record<any, any> => EnTT | EnTT[] | Record<any, EnTT>
+  public static cast<TThis, TInto>(
+    this: TNew<TThis>,
+    value: any,
+    params?: { into?: TNew<TInto> | TNew<TInto>[] | Record<any, TNew<TInto>>; type?: _rawDataType; validate?: boolean },
+  ): (unknown extends TInto ? TThis : TInto) | (unknown extends TInto ? TThis : TInto)[] | Record<any, unknown extends TInto ? TThis : TInto>;
   // OVERLOAD: Combined
   // Promise<any | any[] | Record<any, any> => Promise<EnTT | EnTT[] | Record<any, EnTT>
   // any | any[] | Record<any, any> => EnTT | EnTT[] | Record<any, EnTT>
-  public static cast<T>(
-    this: TNew<T>,
+  public static cast<TThis, TInto>(
+    this: TNew<TThis>,
     value: Promise<any> | any,
-    params?: { into?: TNew<T> | TNew<T>[] | Record<any, TNew<T>>; type?: _rawDataType; validate?: boolean },
-  ): T | T[] | Record<any, T> | Promise<T | T[] | Record<any, T>>;
+    params?: { into?: TNew<TInto> | TNew<TInto>[] | Record<any, TNew<TInto>>; type?: _rawDataType; validate?: boolean },
+  ):
+    | (unknown extends TInto ? TThis : TInto)
+    | (unknown extends TInto ? TThis : TInto)[]
+    | Record<any, unknown extends TInto ? TThis : TInto>
+    | Promise<(unknown extends TInto ? TThis : TInto) | (unknown extends TInto ? TThis : TInto)[] | Record<any, unknown extends TInto ? TThis : TInto>>;
   // Implementation
-  public static cast<T>(
-    this: TNew<T>,
+  public static cast<TThis, TInto>(
+    this: TNew<TThis>,
     value: Promise<any> | any,
-    { into = undefined as TNew<T> | TNew<T>[] | Record<any, TNew<T>>, type = 'object' as _rawDataType, validate = true } = {},
-  ): T | T[] | Record<any, T> | Promise<T | T[] | Record<any, T>> {
+    { into = undefined as TNew<TInto> | TNew<TInto>[] | Record<any, TNew<TInto>>, type = 'object' as _rawDataType, validate = true } = {},
+  ):
+    | (unknown extends TInto ? TThis : TInto)
+    | (unknown extends TInto ? TThis : TInto)[]
+    | Record<any, unknown extends TInto ? TThis : TInto>
+    | Promise<(unknown extends TInto ? TThis : TInto) | (unknown extends TInto ? TThis : TInto)[] | Record<any, unknown extends TInto ? TThis : TInto>> {
     // using @Serializable
     // Get casting target class
-    into = into || ((this.prototype.constructor as unknown) as TNew<T>);
+    const resolvedInto = (into || (this.prototype.constructor as any)) as TNew<unknown extends TInto ? TThis : TInto>;
     // Return promise of cast, resolved value
     if (value instanceof Promise) {
-      return new Promise<T | T[] | Record<any, T>>((resolve, reject) => {
+      return new Promise<
+        (unknown extends TInto ? TThis : TInto) | (unknown extends TInto ? TThis : TInto)[] | Record<any, unknown extends TInto ? TThis : TInto>
+      >((resolve, reject) => {
         value
           .then((v: any) => {
-            const result = _cast<T>(into)(v, type, { validate });
+            const result = _cast<unknown extends TInto ? TThis : TInto>(resolvedInto)(v, type, { validate });
             resolve(result);
           })
           .catch(reject);
@@ -116,7 +146,7 @@ export class EnTT extends _EnTTRoot {
     }
     // Return immediately cast value
     else {
-      return _cast<T>(into)(value, type, { validate });
+      return _cast<unknown extends TInto ? TThis : TInto>(resolvedInto)(value, type, { validate });
     }
   }
 
@@ -127,7 +157,7 @@ export class EnTT extends _EnTTRoot {
    * @param validate If cloned instance should be validated after
    * @returns Cloned instance
    */
-  public static clone<T>(this: TNew<any>, instance: T, { target = undefined as T, validate = true } = {}): T {
+  public static clone<TThis, TInto>(instance: TThis, { target = undefined as TInto, validate = true } = {}): unknown extends TInto ? TThis : TInto {
     return _clone(instance, { target, validate });
   }
 
@@ -167,7 +197,7 @@ export class EnTT extends _EnTTRoot {
    * @param validate If deserialized instance should be validated after
    * @return Target with given value deserialized into it
    */
-  public deserialize(value: any, type = 'object' as _rawDataType, { validate = true } = {}): EnTT {
+  public deserialize<TThis>(this: TThis, value: any, type = 'object' as _rawDataType, { validate = true } = {}): TThis {
     // using @Serializable
     return _deserialize(value, type, { target: this, validate });
   }

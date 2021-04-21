@@ -1,6 +1,6 @@
 {
   "name": "@ofzza/entt",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Modular TypeScript data-modeling solution, implementing nestable serialization/deserialization and flexible validation",
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",

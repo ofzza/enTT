@@ -1,3 +1,7 @@
+### Version 3.2.1
+
+- Fix making sure EnTT.cast() type definition is correct when base type and 'into' argument types aren't the same
+
 ### Version 3.2.0
 
 ##### Breaking changes

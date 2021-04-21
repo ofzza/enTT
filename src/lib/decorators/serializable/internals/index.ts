@@ -297,10 +297,16 @@ export function _cast<T>(
  * @param validate If cloned instance should be validated after
  * @returns Cloned instance
  */
-export function _clone<T>(instance: T, { target = undefined as T, validate = true } = {}): T {
-  target = target || (new (instance as any).constructor() as T);
+export function _clone<TInstance, TInto>(
+  instance: TInstance,
+  { target = undefined as TInto, validate = true } = {},
+): unknown extends TInto ? TInstance : TInto {
   const serialized = _serialize(instance, 'object', { _directSerialize: true }),
-    deserialized = _deserialize<T>(serialized, 'object', { target, _directDeserialize: true, validate });
+    deserialized = _deserialize<unknown extends TInto ? TInstance : TInto>(serialized, 'object', {
+      target: (target || (new (instance as any).constructor() as TInstance)) as unknown extends TInto ? TInstance : TInto,
+      _directDeserialize: true,
+      validate,
+    });
   return deserialized;
 }
 

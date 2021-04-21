@@ -280,11 +280,23 @@ describe('@Serializable', () => {
       verifyAny(castHashmap.a, deserialized, { verifyConstructors: true });
 
       const castExplicitlyDirectly = Test.cast(serialized, { into: Test }),
+        castExplicitlyViaEnTT = EnTT.cast(serialized, { into: Test }),
         castImplicitlyDirectly = Test.cast(serialized),
         castIndirectly = _cast(Test)(serialized);
       expect(instance).toEqual(castExplicitlyDirectly);
+      expect(instance).toEqual(castExplicitlyViaEnTT);
       expect(instance).toEqual(castImplicitlyDirectly);
       expect(instance).toEqual(castIndirectly);
+
+      const castExplicitlyDirectlyArray = Test.cast([serialized], { into: [Test] }),
+        castExplicitlyViaEnTTArray = EnTT.cast([serialized], { into: [Test] });
+      expect(instance).toEqual(castExplicitlyDirectlyArray[0]);
+      expect(instance).toEqual(castExplicitlyViaEnTTArray[0]);
+
+      const castExplicitlyDirectlyHashmap = Test.cast({ a: serialized }, { into: { Test } }),
+        castExplicitlyViaEnTTHashmap = EnTT.cast({ a: serialized }, { into: { Test } });
+      expect(instance).toEqual(castExplicitlyDirectlyHashmap.a);
+      expect(instance).toEqual(castExplicitlyViaEnTTHashmap.a);
     });
 
     it('Clones EnTT class instances', () => {
