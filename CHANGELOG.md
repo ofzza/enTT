@@ -1,6 +1,9 @@
 ### Version 3.2.1
 
 - Fix making sure EnTT.cast() type definition is correct when base type and 'into' argument types aren't the same
+- Fix making .deserialize() return type definition pick up parent class being called from
+- Fix making .clone() return type definition pick up parent class being called from
+- Code-style cleanup of README code examples and unit tests
 
 ### Version 3.2.0
 

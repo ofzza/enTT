@@ -34,7 +34,7 @@ describe('@Serializable', () => {
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
-    initialize() {
+    public initialize() {
       this.w = 'W';
       this.false = false;
       this.null = null;
@@ -51,7 +51,7 @@ describe('@Serializable', () => {
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
-    initialize() {
+    public initialize() {
       this.z = 'Z';
       this.innernonentity = new InnerNonEnTT().initialize();
       return this;
@@ -71,7 +71,7 @@ describe('@Serializable', () => {
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
-    initialize() {
+    public initialize() {
       this.y = 'Y';
       this.nonentity = new NonEnTT().initialize();
       return this;
@@ -91,7 +91,7 @@ describe('@Serializable', () => {
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
-    initialize() {
+    public initialize() {
       this.x = 'X';
       this.innermost = new InnerMostTest().initialize();
       return this;
@@ -133,15 +133,15 @@ describe('@Serializable', () => {
     @Property({ get: false })
     public setteronly = undefined as string;
 
-    @Property({ get: (value, obj) => `${obj.nonenumerable}:${value && value.toUpperCase()}` })
+    @Property({ get: (value, instance) => `${instance.nonenumerable}:${value && value.toUpperCase()}` })
     public customgetter = undefined as string;
 
-    @Property({ set: (value, obj) => `${obj.nonenumerable}:${value && value.toUpperCase()}` })
+    @Property({ set: (value, instance) => `${instance.nonenumerable}:${value && value.toUpperCase()}` })
     public customsetter = undefined as string;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
-    initialize() {
+    public initialize() {
       this.notaliased = '(not)aliased';
       this.enttsingle = new InnerTest().initialize();
       this.enttarrayliteral = [new InnerTest().initialize(), new InnerTest().initialize(), new InnerTest().initialize()];
@@ -165,7 +165,7 @@ describe('@Serializable', () => {
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
-    initialize() {
+    public initialize() {
       super.initialize();
       this.dontserialize = 'dontserialize';
       return this;
@@ -186,8 +186,8 @@ describe('@Serializable', () => {
       const instance = obj.initialize(),
         { serialized, deserialized } = verifySerialization(instance),
         castSingle = _cast(Object)(serialized),
-        castArray = _cast<Object>([Object])([serialized, serialized, serialized]),
-        castHashmap = _cast<Object>({ Object })({ a: serialized, b: serialized, c: serialized });
+        castArray = _cast<object>([Object])([serialized, serialized, serialized]),
+        castHashmap = _cast<object>({ Object })({ a: serialized, b: serialized, c: serialized });
       verifyAny(castSingle, instance, { verifyConstructors: true });
       verifyAny(castSingle, deserialized, { verifyConstructors: true });
       assert(castArray instanceof Array);
@@ -221,8 +221,8 @@ describe('@Serializable', () => {
       const instance = new NonEnTT().initialize(),
         { serialized, deserialized } = verifySerialization(instance),
         castSingle = _cast(NonEnTT)(serialized),
-        castArray = _cast<Object>([NonEnTT])([serialized, serialized, serialized]),
-        castHashmap = _cast<Object>({ NonEnTT })({ a: serialized, b: serialized, c: serialized });
+        castArray = _cast<object>([NonEnTT])([serialized, serialized, serialized]),
+        castHashmap = _cast<object>({ NonEnTT })({ a: serialized, b: serialized, c: serialized });
       verifyAny(castSingle, instance, { verifyConstructors: true });
       verifyAny(castSingle, deserialized, { verifyConstructors: true });
       assert(castArray instanceof Array);
@@ -266,8 +266,8 @@ describe('@Serializable', () => {
         ignoreKeys = ['notaliased', 'aliased', 'getteronly', 'setteronly', 'customgetter', 'customsetter'],
         { serialized, deserialized } = verifySerialization(instance),
         castSingle = _cast(Test)(serialized),
-        castArray = _cast<Object>([Test])([serialized, serialized, serialized]),
-        castHashmap = _cast<Object>({ Test })({ a: serialized, b: serialized, c: serialized });
+        castArray = _cast<object>([Test])([serialized, serialized, serialized]),
+        castHashmap = _cast<object>({ Test })({ a: serialized, b: serialized, c: serialized });
       verifyAny(castSingle, instance, { verifyConstructors: true, ignoreKeys });
       verifyAny(castSingle, deserialized, { verifyConstructors: true, ignoreKeys });
       assert(castArray instanceof Array);
@@ -364,7 +364,7 @@ describe('@Serializable', () => {
       public propB = undefined as any;
     }
 
-    class Test extends TestBase {
+    class TestExtended extends TestBase {
       constructor() {
         super();
         super.entt();
@@ -383,7 +383,7 @@ describe('@Serializable', () => {
     assert(base.propB instanceof Inner);
     assert(base.propB.prop === true);
 
-    const test = new Test();
+    const test = new TestExtended();
     test.deserialize({ propA: false, propB2: [{ prop: true }, { prop: false }] });
     assert(test.propA === false);
     assert(test.propB instanceof Array);
@@ -408,7 +408,7 @@ describe('@Serializable', () => {
       @Serializable({ serialize: true, deserialize: true })
       public serializeAlways = undefined as string;
 
-      initialize() {
+      public initialize() {
         this.serializeNever = 'initialized';
         this.serializeSerOnly = 'initialized';
         this.serializeDeSerOnly = 'initialized';

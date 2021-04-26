@@ -301,13 +301,20 @@ export function _clone<TInstance, TInto>(
   instance: TInstance,
   { target = undefined as TInto, validate = true } = {},
 ): unknown extends TInto ? TInstance : TInto {
-  const serialized = _serialize(instance, 'object', { _directSerialize: true }),
-    deserialized = _deserialize<unknown extends TInto ? TInstance : TInto>(serialized, 'object', {
-      target: (target || (new (instance as any).constructor() as TInstance)) as unknown extends TInto ? TInstance : TInto,
+  const serialized = _serialize(instance, 'object', { _directSerialize: true });
+  if (target) {
+    return _deserialize<unknown extends TInto ? TInstance : TInto>(serialized, 'object', {
+      target: target as unknown extends TInto ? TInstance : TInto,
       _directDeserialize: true,
       validate,
     });
-  return deserialized;
+  } else {
+    return _deserialize<unknown extends TInto ? TInstance : TInto>(serialized, 'object', {
+      target: new (instance as any).constructor() as unknown extends TInto ? TInstance : TInto,
+      _directDeserialize: true,
+      validate,
+    });
+  }
 }
 
 /**

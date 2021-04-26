@@ -608,16 +608,16 @@ class MyValidClass extends EnTT {
   }
 
   @Validate({ type: 'boolean' })
-  aBoolean = false as boolean;
+  public aBoolean = false as boolean;
 
   @Validate({ type: 'number' })
-  aNumber = 123 as number;
+  public aNumber = 123 as number;
 
   @Validate({ type: 'string' })
-  aString = 'abc' as string;
+  public aString = 'abc' as string;
 
   @Validate({ type: 'object' })
-  anObject = {} as object;
+  public anObject = {} as object;
 }
 
 const instance = new MyValidClass();
@@ -682,7 +682,7 @@ class MyDatesClass extends EnTT {
 
   // Validate year is within a predefined scope
   @Validate({ provider: (value, obj) => value > 1900 && value < 2100 })
-  born = undefined as number;
+  public born = undefined as number;
 
   // Validate year is within dynamic scope and throw custom validation errors
   @Validate({
@@ -709,7 +709,7 @@ class MyDatesClass extends EnTT {
       return errs;
     },
   })
-  graduated = undefined as number;
+  public graduated = undefined as number;
 }
 
 const instance = new MyDatesClass();
@@ -775,13 +775,13 @@ class MyDatesClass extends EnTT {
   @Validate({
     provider: Joi.number().strict().integer().min(1900).max(2100).required(),
   })
-  born = undefined as number;
+  public born = undefined as number;
 
   // Validate year is within dynamic scope and throw custom validation errors
   @Validate({
     provider: Joi.number().strict().integer().min(Joi.ref('$.born')).max(2100).required(),
   })
-  graduated = undefined as number;
+  public graduated = undefined as number;
 }
 
 const instance = new MyDatesClass();
@@ -861,7 +861,7 @@ class MyDatesClass extends EnTT {
   @Validate({
     provider: Yup.number().strict().integer().min(1900).max(2100).required(),
   })
-  born = undefined as number;
+  public born = undefined as number;
 
   // Validate year is within dynamic scope and throw custom validation errors
   @Validate({
@@ -872,7 +872,7 @@ class MyDatesClass extends EnTT {
       .max(2100)
       .required(),
   })
-  graduated = undefined as number;
+  public graduated = undefined as number;
 }
 
 const instance = new MyDatesClass();
@@ -965,7 +965,7 @@ class MyDatesClass extends EnTT {
       Yup.number().strict().integer().min(1900).max(2100).required(),
     ],
   })
-  born = undefined as number;
+  public born = undefined as number;
 }
 
 const instance = new MyDatesClass();
@@ -1025,7 +1025,7 @@ class MyNestedClass extends EnTT {
   }
 
   @Validate({ provider: Yup.number().strict().required() })
-  aNumber = undefined as number;
+  public aNumber = undefined as number;
 }
 
 class MyParentClass extends EnTT {
@@ -1035,9 +1035,9 @@ class MyParentClass extends EnTT {
   }
 
   @Validate({ provider: Yup.boolean().strict().required() })
-  aBoolean = undefined as boolean;
+  public aBoolean = undefined as boolean;
 
-  nested = new MyNestedClass();
+  public nested = new MyNestedClass();
 }
 
 const instance = new MyParentClass();
