@@ -1,5 +1,7 @@
 ### Version 3.2.2
 
+- Updated typescript version to `4.2.4`
+- Updated yup version to `0.32.9`
 - `@Property` custom getter/setter callback's second argument is now optional: `(value: any, obj?: any) => any`
 - `@Serializable` custom serialize/deserialize callback's second argument is now optional: `(value: any, obj?: any) => any`
 - `@Validate` custom provider validation function's second argument is now optional: `(value: any, obj?: any) => Error[] | Error | string | boolean`
