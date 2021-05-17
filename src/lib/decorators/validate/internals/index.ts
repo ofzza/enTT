@@ -10,7 +10,7 @@ export const _symbolValidate = Symbol('@Validate');
 
 // Define supported types
 export type _primitiveTypeName = 'boolean' | 'string' | 'number' | 'object';
-export type _providerCustomFunctionType = (value: any, obj: any) => Error[] | Error | string | boolean;
+export type _providerCustomFunctionType = (value: any, obj?: any) => Error[] | Error | string | boolean;
 
 /**
  * Validation enabled status

@@ -1,3 +1,9 @@
+### Version 3.2.2
+
+- `@Property` custom getter/setter callback's second argument is now optional: `(value: any, obj?: any) => any`
+- `@Serializable` custom serialize/deserialize callback's second argument is now optional: `(value: any, obj?: any) => any`
+- `@Validate` custom provider validation function's second argument is now optional: `(value: any, obj?: any) => Error[] | Error | string | boolean`
+
 ### Version 3.2.1
 
 - Fix making sure EnTT.cast() type definition is correct when base type and 'into' argument types aren't the same
