@@ -118,11 +118,20 @@ describe('@Serializable', () => {
     @Serializable({ cast: InnerTest })
     public enttsingle = undefined as InnerTest;
 
+    @Serializable({ cast: () => InnerTest })
+    public enttsinglefactory = undefined as InnerTest;
+
     @Serializable({ cast: [InnerTest] })
     public enttarrayliteral = undefined as InnerTest[];
 
+    @Serializable({ cast: () => [InnerTest] })
+    public enttarrayliteralfactory = undefined as InnerTest[];
+
     @Serializable({ cast: { InnerTest } })
     public enttobjectliteral = undefined as any;
+
+    @Serializable({ cast: () => ({ InnerTest }) })
+    public enttobjectliteralfactory = undefined as any;
 
     @Property({ enumerable: false })
     public nonenumerable = undefined as string;
@@ -144,8 +153,11 @@ describe('@Serializable', () => {
     public initialize() {
       this.notaliased = '(not)aliased';
       this.enttsingle = new InnerTest().initialize();
+      this.enttsinglefactory = new InnerTest().initialize();
       this.enttarrayliteral = [new InnerTest().initialize(), new InnerTest().initialize(), new InnerTest().initialize()];
+      this.enttarrayliteralfactory = [new InnerTest().initialize(), new InnerTest().initialize(), new InnerTest().initialize()];
       this.enttobjectliteral = { a: new InnerTest().initialize(), b: new InnerTest().initialize(), c: new InnerTest().initialize() };
+      this.enttobjectliteralfactory = { a: new InnerTest().initialize(), b: new InnerTest().initialize(), c: new InnerTest().initialize() };
       this.nonenumerable = 'nonenumerable';
       this.setteronly = 'setteronly';
       this.customgetter = 'customgetter';

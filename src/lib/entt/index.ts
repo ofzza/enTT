@@ -302,7 +302,7 @@ function _replacePropertiesWithGetterSetters({ store = undefined as object, rest
 }
 
 /**
- * Finds akk EnTT instances nested within the given child
+ * Finds all EnTT instances nested within the given child
  * @param value Value being searched for EnTTs
  * @returns Array of found EnTT children
  */

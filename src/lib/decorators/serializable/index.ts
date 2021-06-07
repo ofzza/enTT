@@ -32,13 +32,20 @@ import { TNew, _getDecoratorMetadata } from '../../entt/internals';
  * - { cast: [MyEnTTClass] }, will cast property value (assumed to be an array) as an array of instances of MyEnTTClass
  *    => [ new myEnTTClass(), new myEnTTClass(), new myEnTTClass(), ... ]
  * - { cast: {MyEnTTClass} }, will cast property value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
- *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... }
+ *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... } *
+ * Also supports a factory function returning a shape, which can be used to get around circular dependency problems:
+ * - { cast: () => MyEnTTClass }, will cast property value as instance of MyEnTTClass
+ *    => new myEnTTClass()
+ * - { cast: () => [MyEnTTClass] }, will cast property value (assumed to be an array) as an array of instances of MyEnTTClass
+ *    => [ new myEnTTClass(), new myEnTTClass(), new myEnTTClass(), ... ]
+ * - { cast: () => ({MyEnTTClass}) }, will cast property value (assumed to be a hashmap) as a hashmap of instances of MyEnTTClass
+ *    => { a: new myEnTTClass(), b: new myEnTTClass(), c: new myEnTTClass(), ... } *
  */
 export function Serializable({
   alias = undefined as string,
   serialize = undefined as ((value: any, target?: any) => any) | boolean,
   deserialize = undefined as ((value: any, target?: any) => any) | boolean,
-  cast = undefined as TNew<any> | TNew<any>[] | Record<any, TNew<any>>,
+  cast = undefined as TNew<any> | (() => TNew<any>) | TNew<any>[] | (() => TNew<any>[]) | Record<any, TNew<any>> | (() => Record<any, TNew<any>>),
 } = {}) {
   // Set defaults
   const defaults = {

@@ -471,6 +471,16 @@ Any property can hold nested instances of other EnTT classes, either directly or
 @Serializable({ cast: {MyEnTTClass} })
 ```
 
+... or using alternative syntax meant to help get around circular dependency problems:
+
+```ts
+@Serializable({ cast: () => MyEnTTClass })
+
+@Serializable({ cast: () => [MyEnTTClass] })
+
+@Serializable({ cast: () => ({MyEnTTClass}) })
+```
+
 <details><summary>EXAMPLE</summary>
 
 ```ts

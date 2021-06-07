@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { _undefined, TNew } from '../../../entt/internals';
+import { _undefined, TNew, _symbolEnTTClass } from '../../../entt/internals';
 import { _EnTTRoot, _getDecoratorMetadata, _getInstanceMetadata } from '../../../entt/internals';
 import { _readPropertyDescriptor } from '../../property/internals';
 import { _validationDisable, _validationEnable, _validateObject } from '../../validate/internals';
@@ -149,29 +149,33 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
               deserialized[alias] = metadata.deserialize(source[key], source);
               return deserialized;
             }
+
+            // Resolve casting target (check if factory returning a target or target given directly)
+            let castTarget = typeof metadata.cast === 'function' && !metadata.cast.prototype ? metadata.cast() : metadata.cast;
+
             // Deserialize and cast array
-            if (metadata.cast && metadata.cast instanceof Array && metadata.cast.length === 1 && typeof metadata.cast[0] === 'function') {
+            if (castTarget && castTarget instanceof Array && castTarget.length === 1 && typeof castTarget[0] === 'function') {
               // tslint:disable-next-line: no-shadowed-variable
               deserialized[alias] = source[key].map(value => {
-                return _deserialize(value, 'object', { target: new metadata.cast[0](), validate });
+                return _deserialize(value, 'object', { target: new castTarget[0](), validate });
               });
             }
             // Deserialize and cast hashmap
             else if (
-              metadata.cast &&
-              metadata.cast instanceof Object &&
-              Object.values(metadata.cast).length === 1 &&
-              typeof Object.values(metadata.cast)[0] === 'function'
+              castTarget &&
+              castTarget instanceof Object &&
+              Object.values(castTarget).length === 1 &&
+              typeof Object.values(castTarget)[0] === 'function'
             ) {
               // tslint:disable-next-line: no-shadowed-variable
               deserialized[alias] = Object.keys(source[key]).reduce((deserialized, k) => {
-                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(metadata.cast)[0] as any)(), validate });
+                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(castTarget)[0] as any)(), validate });
                 return deserialized;
               }, {});
             }
             // Deserialize and cast
-            else if (metadata.cast && typeof metadata.cast === 'function') {
-              deserialized[alias] = _deserialize(source[key], 'object', { target: new metadata.cast(), validate });
+            else if (castTarget && typeof castTarget === 'function') {
+              deserialized[alias] = _deserialize(source[key], 'object', { target: new castTarget(), validate });
             }
             // Deserialize without casting
             else {
