@@ -1,3 +1,7 @@
+### Version 3.2.3
+
+- Fixed issues with keeping track of nested EnTT instances when setting values by deserializing. This was causing validation errors and status not to propagate properly after deserializing.
+
 ### Version 3.2.2
 
 - Now allowing alternative (factory pattern) declaration of `@Serializable({ cast })` argument, to help mitigate circular dependency problems when using nested models: `@Serializable({ cast: () => MyEnTTClass })`

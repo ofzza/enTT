@@ -5,6 +5,7 @@
 import { assert } from '../../../tests.init';
 import { EnTT, Validate } from '../../../';
 import { _validateObject, _validateProperty } from './internals';
+import { Serializable } from '../serializable';
 
 // Import validation providers
 import * as Joi from 'joi';
@@ -68,145 +69,210 @@ describe('@Validate', () => {
     })
     public allNaturalNum = 5;
 
+    @Serializable({ cast: InnerTest })
     public enttsingle = new InnerTest();
 
+    @Serializable({ cast: [InnerTest] })
     public enttarrayliteral = [new InnerTest(), new InnerTest(), new InnerTest()];
 
+    @Serializable({ cast: { InnerTest } })
     public enttobjectliteral = { a: new InnerTest(), b: new InnerTest(), c: new InnerTest() };
   }
 
   // Run tests
-  // describe('Works with different validation providers', () => {
-  //   it('custom', () => {
-  //     verifyNaturalNumProperty(Test, 'customNaturalNum');
-  //   });
+  describe('Works with different validation providers', () => {
+    it('custom', () => {
+      verifyNaturalNumProperty(Test, 'customNaturalNum');
+    });
 
-  //   it('joi', () => {
-  //     verifyNaturalNumProperty(Test, 'joiNaturalNum');
-  //   });
+    it('joi', () => {
+      verifyNaturalNumProperty(Test, 'joiNaturalNum');
+    });
 
-  //   it('joi-browser', () => {
-  //     verifyNaturalNumProperty(Test, 'joiBrowserNaturalNum');
-  //   });
+    it('joi-browser', () => {
+      verifyNaturalNumProperty(Test, 'joiBrowserNaturalNum');
+    });
 
-  //   it('yup', () => {
-  //     verifyNaturalNumProperty(Test, 'yupNaturalNum');
-  //   });
-  // });
+    it('yup', () => {
+      verifyNaturalNumProperty(Test, 'yupNaturalNum');
+    });
+  });
 
   it('Works with multiple providers per property', () => {
     verifyNaturalNumProperty(Test, 'allNaturalNum', 4);
   });
 
-  // describe('Works with nested EnTTs', () => {
-  //   it('Nested single EnTT', () => {
-  //     const instance = new Test();
-  //     // Test invalid nested values
-  //     (instance.enttsingle.naturalNum as any) = '-3.14';
-  //     {
-  //       const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
-  //       assert(instance.valid === false);
-  //       assert(errors.length === 2);
-  //     }
-  //     // Test valid nested values
-  //     (instance.enttsingle.naturalNum as any) = 1;
-  //     {
-  //       const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
-  //       assert(instance.valid === true);
-  //       assert(errors.length === 0);
-  //     }
-  //   });
+  describe('Works with nested EnTTs', () => {
+    it('Nested single EnTT', () => {
+      const instance = new Test();
+      const deserialized = Test.clone(instance);
+      const serialized = instance.serialize();
+      // Test invalid nested values
+      (instance.enttsingle.naturalNum as any) = '-3.14';
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === false);
+        assert(errors.length === 2);
+      }
+      // Test invalid nested values when set by deserialization
+      (serialized.enttsingle.naturalNum as any) = '-3.14';
+      deserialized.deserialize(serialized);
+      {
+        const errors = Object.values(deserialized.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(deserialized.valid === false);
+        assert(errors.length === 2);
+      }
+      // Test valid nested values
+      (instance.enttsingle.naturalNum as any) = 1;
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === true);
+        assert(errors.length === 0);
+      }
+      // Test valid nested values when set by deserialization
+      (serialized.enttsingle.naturalNum as any) = 1;
+      deserialized.deserialize(serialized);
+      {
+        const errors = Object.values(deserialized.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(deserialized.valid === true);
+        assert(errors.length === 0);
+      }
+    });
 
-  //   it('Nested EnTT array', () => {
-  //     const instance = new Test();
-  //     // Test invalid nested values
-  //     instance.enttarrayliteral.forEach(instance => {
-  //       (instance.naturalNum as any) = '-3.14';
-  //     });
-  //     {
-  //       const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
-  //       assert(instance.valid === false);
-  //       assert(errors.length === 6);
-  //     }
-  //     // Test valid nested values
-  //     instance.enttarrayliteral.forEach(instance => {
-  //       (instance.naturalNum as any) = 1;
-  //     });
-  //     {
-  //       const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
-  //       assert(instance.valid === true);
-  //       assert(errors.length === 0);
-  //     }
-  //   });
+    it('Nested EnTT array', () => {
+      const instance = new Test();
+      const deserialized = Test.clone(instance);
+      const serialized = instance.serialize();
+      // Test invalid nested values
+      instance.enttarrayliteral.forEach(instance => {
+        (instance.naturalNum as any) = '-3.14';
+      });
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === false);
+        assert(errors.length === 6);
+      }
+      // Test invalid nested values when set by deserialization
+      serialized.enttarrayliteral.forEach(serialized => {
+        (serialized.naturalNum as any) = '-3.14';
+      });
+      deserialized.deserialize(serialized);
+      {
+        const errors = Object.values(deserialized.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(deserialized.valid === false);
+        assert(errors.length === 6);
+      }
+      // Test valid nested values
+      instance.enttarrayliteral.forEach(instance => {
+        (instance.naturalNum as any) = 1;
+      });
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === true);
+        assert(errors.length === 0);
+      }
+      // Test valid nested values when set by deserialization
+      serialized.enttarrayliteral.forEach(serialized => {
+        (serialized.naturalNum as any) = 1;
+      });
+      deserialized.deserialize(serialized);
+      {
+        const errors = Object.values(deserialized.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(deserialized.valid === true);
+        assert(errors.length === 0);
+      }
+    });
 
-  //   it('Nested EnTT hashmap', () => {
-  //     const instance = new Test();
-  //     // Test invalid nested values
-  //     Object.values(instance.enttobjectliteral).forEach(instance => {
-  //       (instance.naturalNum as any) = '-3.14';
-  //     });
-  //     {
-  //       const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
-  //       assert(instance.valid === false);
-  //       assert(errors.length === 6);
-  //     }
-  //     // Test valid nested values
-  //     Object.values(instance.enttobjectliteral).forEach(instance => {
-  //       (instance.naturalNum as any) = 1;
-  //     });
-  //     {
-  //       const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
-  //       assert(instance.valid === true);
-  //       assert(errors.length === 0);
-  //     }
-  //   });
-  // });
+    it('Nested EnTT hashmap', () => {
+      const instance = new Test();
+      const deserialized = Test.clone(instance);
+      const serialized = instance.serialize();
+      // Test invalid nested values
+      Object.values(instance.enttobjectliteral).forEach(instance => {
+        (instance.naturalNum as any) = '-3.14';
+      });
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === false);
+        assert(errors.length === 6);
+      }
+      // Test invalid nested values when set by deserialization
+      Object.values(serialized.enttobjectliteral).forEach((serialized: InnerTest) => {
+        (serialized.naturalNum as any) = '-3.14';
+      });
+      deserialized.deserialize(serialized);
+      {
+        const errors = Object.values(deserialized.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(deserialized.valid === false);
+        assert(errors.length === 6);
+      }
+      // Test valid nested values
+      Object.values(instance.enttobjectliteral).forEach(instance => {
+        (instance.naturalNum as any) = 1;
+      });
+      {
+        const errors = Object.values(instance.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(instance.valid === true);
+        assert(errors.length === 0);
+      }
+      // Test valid nested values when set by deserialization
+      Object.values(serialized.enttobjectliteral).forEach((serialized: InnerTest) => {
+        (serialized.naturalNum as any) = 1;
+      });
+      deserialized.deserialize(serialized);
+      {
+        const errors = Object.values(deserialized.errors).reduce((errors, errs) => [...errors, ...errs], []);
+        assert(deserialized.valid === true);
+        assert(errors.length === 0);
+      }
+    });
+  });
 
-  // it('Allows overriding when extending EnTT classes', () => {
-  //   class TestBase extends EnTT {
-  //     constructor() {
-  //       super();
-  //       this.entt();
-  //     }
+  it('Allows overriding when extending EnTT classes', () => {
+    class TestBase extends EnTT {
+      constructor() {
+        super();
+        this.entt();
+      }
 
-  //     @Validate({ type: 'boolean' })
-  //     public propA = true as any;
+      @Validate({ type: 'boolean' })
+      public propA = true as any;
 
-  //     @Validate({ provider: (value, obj) => !!value })
-  //     public propB = true as any;
-  //   }
+      @Validate({ provider: (value, obj) => !!value })
+      public propB = true as any;
+    }
 
-  //   class Test extends TestBase {
-  //     constructor() {
-  //       super();
-  //       this.entt();
-  //     }
+    class Test extends TestBase {
+      constructor() {
+        super();
+        this.entt();
+      }
 
-  //     @Validate({ type: 'number' })
-  //     public propA = 0 as any;
+      @Validate({ type: 'number' })
+      public propA = 0 as any;
 
-  //     @Validate({ provider: (value, obj) => value < 10 })
-  //     public propB = 0 as any;
-  //   }
+      @Validate({ provider: (value, obj) => value < 10 })
+      public propB = 0 as any;
+    }
 
-  //   const base = new TestBase();
-  //   assert(base.valid === true);
-  //   assert(base.valid === true);
-  //   base.propA = false;
-  //   assert(base.valid === true);
-  //   base.propB = false;
-  //   assert(base.valid === false);
+    const base = new TestBase();
+    assert(base.valid === true);
+    assert(base.valid === true);
+    base.propA = false;
+    assert(base.valid === true);
+    base.propB = false;
+    assert(base.valid === false);
 
-  //   const test = new Test();
-  //   assert(test.valid === true);
-  //   assert(test.valid === true);
-  //   test.propA = false;
-  //   assert(test.valid === false);
-  //   assert(test.errors.propA.length === 1);
-  //   test.propB = 100;
-  //   assert(test.valid === false);
-  //   assert(test.errors.propB.length === 1);
-  // });
+    const test = new Test();
+    assert(test.valid === true);
+    assert(test.valid === true);
+    test.propA = false;
+    assert(test.valid === false);
+    assert(test.errors.propA.length === 1);
+    test.propB = 100;
+    assert(test.valid === false);
+    assert(test.errors.propB.length === 1);
+  });
 });
 
 /**

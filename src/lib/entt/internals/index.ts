@@ -111,3 +111,43 @@ export function _getInstanceMetadata<T>(
   // Return metadata reference
   return instance[_symbolEnTTInstance];
 }
+
+/**
+ *
+ * @param instance
+ * @param key
+ */
+export function _updateChildrenOnPropertyValueChange(key: string, store = undefined as object, children = undefined as object[]) {
+  // Remove previously found children of this property
+  for (let i = children.length - 1; i >= 0; i--) {
+    if ((children[i] as any).path[0] === key) {
+      children.splice(i, 1);
+    }
+  }
+  // Search newly added children of this property
+  children.push(..._findChildEnTTs([key], store[key]));
+}
+
+/**
+ * Finds all EnTT instances nested within the given child
+ * @param value Value being searched for EnTTs
+ * @returns Array of found EnTT children
+ */
+function _findChildEnTTs(path: string[], value: any): { path: string[]; child: _EnTTRoot }[] {
+  // Find child EnTTs
+  const children: { path: string[]; child: _EnTTRoot }[] = [];
+  // Register direct child
+  if (value instanceof _EnTTRoot) {
+    children.push({
+      path,
+      child: value,
+    });
+  }
+  // Register children contained within array or hashmap
+  else if (value instanceof Array || value instanceof Object) {
+    for (const key of Object.keys(value)) {
+      children.push(..._findChildEnTTs([...path, key], value[key]));
+    }
+  }
+  return children;
+}

@@ -3,7 +3,7 @@
 
 // Import dependencies
 import { _undefined, TNew, _symbolEnTTClass } from '../../../entt/internals';
-import { _EnTTRoot, _getDecoratorMetadata, _getInstanceMetadata } from '../../../entt/internals';
+import { _EnTTRoot, _getDecoratorMetadata, _getInstanceMetadata, _updateChildrenOnPropertyValueChange } from '../../../entt/internals';
 import { _readPropertyDescriptor } from '../../property/internals';
 import { _validationDisable, _validationEnable, _validateObject } from '../../validate/internals';
 
@@ -44,8 +44,14 @@ export function _readSerializableMetadata<T extends Function>(aClass: T): any {
  * @returns Serialized value of requested type
  */
 export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _directSerialize = false } = {}): any {
-  // Check if source's store should be source instead
-  const instance = source instanceof _EnTTRoot ? _getInstanceMetadata(source).store : source;
+  // Get source to read from
+  let readingDirectlyFromEnTTStore = false;
+  let instance: any = source;
+  // For EnTT instances, read directly from the store to bypass getters and speed up import
+  if (source instanceof _EnTTRoot) {
+    readingDirectlyFromEnTTStore = true;
+    instance = _getInstanceMetadata(source).store;
+  }
 
   // Serializable array or object
   if (instance && !_isNativeClassInstance(instance) && (instance instanceof Array || instance instanceof Object)) {
@@ -115,11 +121,20 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
     target = (source instanceof Array ? [] : {}) as T;
   }
 
-  // Check if target's store should be target instead
-  const instance = target instanceof _EnTTRoot ? _getInstanceMetadata(target).store : target;
+  // Get target to write into
+  let writingDirectlyToEnTTStore = false;
+  let deserialized: any = target;
+  // For EnTT instances, write directly into the store to bypass setters and speed up import
+  if (target instanceof _EnTTRoot) {
+    writingDirectlyToEnTTStore = true;
+    deserialized = _getInstanceMetadata(target).store;
+  }
 
   // Deserialize if value matches target shape
-  if (!_isNativeClassInstance(source) && ((source instanceof Array && instance instanceof Array) || (source instanceof Object && instance instanceof Object))) {
+  if (
+    !_isNativeClassInstance(source) &&
+    ((source instanceof Array && deserialized instanceof Array) || (source instanceof Object && deserialized instanceof Object))
+  ) {
     // Disable validation
     _validationDisable();
 
@@ -147,6 +162,9 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
             // If custom deserialization function, map value using the function
             if (!_directDeserialize && metadata.deserialize instanceof Function) {
               deserialized[alias] = metadata.deserialize(source[key], source);
+              if (writingDirectlyToEnTTStore) {
+                _updateChildrenOnPropertyValueChange(key, deserialized, _getInstanceMetadata(target).children);
+              }
               return deserialized;
             }
 
@@ -159,6 +177,9 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
               deserialized[alias] = source[key].map(value => {
                 return _deserialize(value, 'object', { target: new castTarget[0](), validate });
               });
+              if (writingDirectlyToEnTTStore) {
+                _updateChildrenOnPropertyValueChange(key, deserialized, _getInstanceMetadata(target).children);
+              }
             }
             // Deserialize and cast hashmap
             else if (
@@ -172,14 +193,23 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
                 deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(castTarget)[0] as any)(), validate });
                 return deserialized;
               }, {});
+              if (writingDirectlyToEnTTStore) {
+                _updateChildrenOnPropertyValueChange(key, deserialized, _getInstanceMetadata(target).children);
+              }
             }
             // Deserialize and cast
             else if (castTarget && typeof castTarget === 'function') {
               deserialized[alias] = _deserialize(source[key], 'object', { target: new castTarget(), validate });
+              if (writingDirectlyToEnTTStore) {
+                _updateChildrenOnPropertyValueChange(key, deserialized, _getInstanceMetadata(target).children);
+              }
             }
             // Deserialize without casting
             else {
               deserialized[alias] = _deserialize(source[key], 'object', { validate });
+              if (writingDirectlyToEnTTStore) {
+                _updateChildrenOnPropertyValueChange(key, deserialized, _getInstanceMetadata(target).children);
+              }
             }
           }
         }
@@ -187,7 +217,7 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
 
       // Return deserialized
       return deserialized;
-    }, instance);
+    }, deserialized);
 
     // (Re)enable validation
     _validationEnable();

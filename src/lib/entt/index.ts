@@ -3,7 +3,14 @@
 
 // Import and (re)export internals
 import { _undefined, TNew } from './internals';
-import { _EnTTRoot, _getClassMetadata, _getInstanceMetadata, _getDecoratorMetadata, _symbolEnTTInstance } from './internals';
+import {
+  _EnTTRoot,
+  _getClassMetadata,
+  _getInstanceMetadata,
+  _getDecoratorMetadata,
+  _updateChildrenOnPropertyValueChange,
+  _symbolEnTTInstance,
+} from './internals';
 
 // Import dependencies
 import { _readPropertyMetadata, _readPropertyDescriptor, _findTaggedProperties } from '../decorators/property/internals';
@@ -271,14 +278,8 @@ function _replacePropertiesWithGetterSetters({ store = undefined as object, rest
               restore[key] = store[key];
             }
 
-            // Remove previously found children of this property
-            for (let i = children.length - 1; i >= 0; i--) {
-              if ((children[i] as any).path[0] === key) {
-                children.splice(i, 1);
-              }
-            }
-            // Search newly added children of this property
-            children.push(..._findChildEnTTs([key], store[key]));
+            // Update children definitions
+            _updateChildrenOnPropertyValueChange(key, store, children);
           };
         }
 
@@ -299,28 +300,4 @@ function _replacePropertiesWithGetterSetters({ store = undefined as object, rest
       }
     }
   }
-}
-
-/**
- * Finds all EnTT instances nested within the given child
- * @param value Value being searched for EnTTs
- * @returns Array of found EnTT children
- */
-function _findChildEnTTs(path: string[], value: any): { path: string[]; child: EnTT }[] {
-  // Find child EnTTs
-  const children: { path: string[]; child: EnTT }[] = [];
-  // Register direct child
-  if (value instanceof EnTT) {
-    children.push({
-      path,
-      child: value,
-    });
-  }
-  // Register children contained within array or hashmap
-  else if (value instanceof Array || value instanceof Object) {
-    for (const key of Object.keys(value)) {
-      children.push(..._findChildEnTTs([...path, key], value[key]));
-    }
-  }
-  return children;
 }
