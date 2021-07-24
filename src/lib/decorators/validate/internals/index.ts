@@ -217,7 +217,8 @@ export function _isValid<T>(target: T): boolean {
 
   // Return if any of children invalid
   for (const c of _getInstanceMetadata(target).children) {
-    if (!c.child.valid) {
+    _validateObject(c.child);
+    if (!_isValid(c.child)) {
       return false;
     }
   }
@@ -252,7 +253,8 @@ export function _getValidationErrors<T>(target: T): Record<string, EnttValidatio
   // Read children
   for (const c of _getInstanceMetadata(target).children) {
     // Add child errors per each property
-    const childErrors = c.child.errors;
+    _validateObject(c.child);
+    const childErrors = _getValidationErrors(c.child);
     Object.keys(childErrors).forEach(childKey => {
       if (childErrors[childKey].length) {
         const compositeKey = `${c.path.join('.')}.${childKey}`;

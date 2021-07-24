@@ -163,7 +163,7 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
             if (!_directDeserialize && metadata.deserialize instanceof Function) {
               deserialized[alias] = metadata.deserialize(source[key], source);
               if (writingDirectlyToEnTTStore) {
-                _updateChildrenOnPropertyValueChange(key, deserialized, _getInstanceMetadata(target).children);
+                _updateChildrenOnPropertyValueChange(alias, deserialized, _getInstanceMetadata(target).children);
               }
               return deserialized;
             }
@@ -178,7 +178,7 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
                 return _deserialize(value, 'object', { target: new castTarget[0](), validate });
               });
               if (writingDirectlyToEnTTStore) {
-                _updateChildrenOnPropertyValueChange(key, deserialized, _getInstanceMetadata(target).children);
+                _updateChildrenOnPropertyValueChange(alias, deserialized, _getInstanceMetadata(target).children);
               }
             }
             // Deserialize and cast hashmap
@@ -194,21 +194,21 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
                 return deserialized;
               }, {});
               if (writingDirectlyToEnTTStore) {
-                _updateChildrenOnPropertyValueChange(key, deserialized, _getInstanceMetadata(target).children);
+                _updateChildrenOnPropertyValueChange(alias, deserialized, _getInstanceMetadata(target).children);
               }
             }
             // Deserialize and cast
             else if (castTarget && typeof castTarget === 'function') {
               deserialized[alias] = _deserialize(source[key], 'object', { target: new castTarget(), validate });
               if (writingDirectlyToEnTTStore) {
-                _updateChildrenOnPropertyValueChange(key, deserialized, _getInstanceMetadata(target).children);
+                _updateChildrenOnPropertyValueChange(alias, deserialized, _getInstanceMetadata(target).children);
               }
             }
             // Deserialize without casting
             else {
               deserialized[alias] = _deserialize(source[key], 'object', { validate });
               if (writingDirectlyToEnTTStore) {
-                _updateChildrenOnPropertyValueChange(key, deserialized, _getInstanceMetadata(target).children);
+                _updateChildrenOnPropertyValueChange(alias, deserialized, _getInstanceMetadata(target).children);
               }
             }
           }
