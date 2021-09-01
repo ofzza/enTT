@@ -1,3 +1,7 @@
+### Version 3.2.5
+
+- Fixed issue with cloning nested EnTT instances where properties marked with `serialize: false` or `deserialize: false` were not being cloned directly
+
 ### Version 3.2.4
 
 - Further fix for issues with keeping track of nested EnTT instances when setting values of aliased properties by deserializing. This was causing validation errors and status not to propagate properly after deserializing a property configured with an alias.

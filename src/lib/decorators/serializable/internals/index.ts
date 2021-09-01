@@ -81,7 +81,7 @@ export function _serialize<T>(source: T, type = 'object' as _rawDataType, { _dir
                 return serialized;
               }
               // Serializable value (EnTT instance or raw value)
-              serialized[metadata.alias || key] = _serialize(instance[key], 'object');
+              serialized[metadata.alias || key] = _serialize(instance[key], 'object', { _directSerialize });
             }
           }
         }
@@ -175,7 +175,7 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
             if (castTarget && castTarget instanceof Array && castTarget.length === 1 && typeof castTarget[0] === 'function') {
               // tslint:disable-next-line: no-shadowed-variable
               deserialized[alias] = source[key].map(value => {
-                return _deserialize(value, 'object', { target: new castTarget[0](), validate });
+                return _deserialize(value, 'object', { target: new castTarget[0](), validate, _directDeserialize });
               });
               if (writingDirectlyToEnTTStore) {
                 _updateChildrenOnPropertyValueChange(alias, deserialized, _getInstanceMetadata(target).children);
@@ -190,7 +190,7 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
             ) {
               // tslint:disable-next-line: no-shadowed-variable
               deserialized[alias] = Object.keys(source[key]).reduce((deserialized, k) => {
-                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(castTarget)[0] as any)(), validate });
+                deserialized[k] = _deserialize(source[key][k], 'object', { target: new (Object.values(castTarget)[0] as any)(), validate, _directDeserialize });
                 return deserialized;
               }, {});
               if (writingDirectlyToEnTTStore) {
@@ -199,14 +199,14 @@ export function _deserialize<T>(value: any, type = 'object' as _rawDataType, { t
             }
             // Deserialize and cast
             else if (castTarget && typeof castTarget === 'function') {
-              deserialized[alias] = _deserialize(source[key], 'object', { target: new castTarget(), validate });
+              deserialized[alias] = _deserialize(source[key], 'object', { target: new castTarget(), validate, _directDeserialize });
               if (writingDirectlyToEnTTStore) {
                 _updateChildrenOnPropertyValueChange(alias, deserialized, _getInstanceMetadata(target).children);
               }
             }
             // Deserialize without casting
             else {
-              deserialized[alias] = _deserialize(source[key], 'object', { validate });
+              deserialized[alias] = _deserialize(source[key], 'object', { validate, _directDeserialize });
               if (writingDirectlyToEnTTStore) {
                 _updateChildrenOnPropertyValueChange(alias, deserialized, _getInstanceMetadata(target).children);
               }
