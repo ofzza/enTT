@@ -53,11 +53,11 @@ By doing this any properties defined in the class will now be managed and will b
 >
 > public invalid2: string;  // Won't get picked up by EnTT and won't be eligible to accept functionality via decorators
 >
-> public valid1 = undefined as string;  // Valid EnTT property
+> public valid1?: string = undefined; // Valid EnTT property
 >
-> public valid2 = 'abcd' as string;     // Valid EnTT property
+> public valid2:string = 'abcd';      // Valid EnTT property
 >
-> public valid3 = 'abcd';               // Valid EnTT property
+> public valid3 = 'abcd';             // Valid EnTT property
 > ```
 >
 > </details>
@@ -161,13 +161,13 @@ class MyPersonClass extends EnTT {
   }
 
   @Property({ set: (value, obj) => toTitleCase(value) })
-  public firstName = undefined as string;
+  public firstName?: string = undefined;
 
   @Property({ set: (value, obj) => toTitleCase(value) })
-  public lastName = undefined as string;
+  public lastName?: string = undefined;
 
   @Property({ get: (value, obj) => `${obj.firstName} ${obj.lastName}` })
-  public fullName = undefined as string;
+  public fullName?: string = undefined;
 }
 
 const instance = new MyPersonClass();
@@ -186,7 +186,7 @@ Properties can be tagged with a single or multiple string tags. Later, propertie
 
 ```ts
 @Property({ tag: 'PK' })
-public id1 = undefined as string;
+public id1?: string = undefined;
 
 ...
 
@@ -195,7 +195,7 @@ const keys1 = MyEntityClass.findTaggedProperties('PK');
 ...
 
 @Property({ tag: ['PK', 'guid'] })
-public id2 = undefined as string;
+public id2?: string = undefined;
 
 ...
 
@@ -215,7 +215,7 @@ class MyPersonClass extends EnTT {
   }
 
   @Property({ tag: 'callsign' })
-  public name = undefined as string;
+  public name?: string = undefined;
 }
 
 class MyCarClass extends EnTT {
@@ -225,7 +225,7 @@ class MyCarClass extends EnTT {
   }
 
   @Property({ tag: 'callsign' })
-  public make = undefined as string;
+  public make?: string = undefined;
 }
 
 function promptCallsign(instance: EnTT, from: new () => EnTT) {
@@ -278,8 +278,8 @@ class MyPersonClass extends EnTT {
     super.entt();
   }
 
-  public firstName = undefined as string;
-  public lastName = undefined as string;
+  public firstName?: string = undefined;
+  public lastName?: string = undefined;
 }
 
 const instance = new MyPersonClass();
@@ -343,10 +343,10 @@ class MyPersonClass extends EnTT {
   }
 
   @Serializable({ alias: 'first_name' })
-  public firstName = undefined as string;
+  public firstName?: string = undefined;
 
   @Serializable({ alias: 'last_name' })
-  public lastName = undefined as string;
+  public lastName?: string = undefined;
 }
 
 const instance = new MyPersonClass();
@@ -400,10 +400,10 @@ class MyAuthenticationClass extends EnTT {
   }
 
   @Serializable()
-  public password = undefined as string;
+  public password?: string = undefined;
 
   @Serializable({ serialize: false, deserialize: false })
-  public repeatPassword = undefined as string;
+  public repeatPassword?: string = undefined;
 }
 
 const instance = new MyAuthenticationClass();
@@ -439,7 +439,7 @@ class MyTimestampedClass extends EnTT {
     deserialize: (value, obj) => new Date(value),
     serialize: (value, obj) => value.getTime(),
   })
-  public timestamp = undefined as Date;
+  public timestamp?: Date = undefined;
 }
 
 const now = Date.now(),
@@ -493,10 +493,10 @@ class MyPersonClass extends EnTT {
     this.name = name;
   }
 
-  public name = undefined as string;
+  public name?: string = undefined;
 
   @Serializable({ cast: MyPersonClass })
-  public spouse = undefined as MyPersonClass;
+  public spouse?: MyPersonClass = undefined;
 
   @Serializable({ cast: [MyPersonClass] })
   public siblings = [] as MyPersonClass[];
@@ -692,7 +692,7 @@ class MyDatesClass extends EnTT {
 
   // Validate year is within a predefined scope
   @Validate({ provider: (value, obj) => value > 1900 && value < 2100 })
-  public born = undefined as number;
+  public born?: number = undefined;
 
   // Validate year is within dynamic scope and throw custom validation errors
   @Validate({
@@ -719,7 +719,7 @@ class MyDatesClass extends EnTT {
       return errs;
     },
   })
-  public graduated = undefined as number;
+  public graduated?: number = undefined;
 }
 
 const instance = new MyDatesClass();
@@ -785,13 +785,13 @@ class MyDatesClass extends EnTT {
   @Validate({
     provider: Joi.number().strict().integer().min(1900).max(2100).required(),
   })
-  public born = undefined as number;
+  public born?: number = undefined;
 
   // Validate year is within dynamic scope and throw custom validation errors
   @Validate({
     provider: Joi.number().strict().integer().min(Joi.ref('$.born')).max(2100).required(),
   })
-  public graduated = undefined as number;
+  public graduated?: number = undefined;
 }
 
 const instance = new MyDatesClass();
@@ -871,7 +871,7 @@ class MyDatesClass extends EnTT {
   @Validate({
     provider: Yup.number().strict().integer().min(1900).max(2100).required(),
   })
-  public born = undefined as number;
+  public born?: number = undefined;
 
   // Validate year is within dynamic scope and throw custom validation errors
   @Validate({
@@ -882,7 +882,7 @@ class MyDatesClass extends EnTT {
       .max(2100)
       .required(),
   })
-  public graduated = undefined as number;
+  public graduated?: number = undefined;
 }
 
 const instance = new MyDatesClass();
@@ -975,7 +975,7 @@ class MyDatesClass extends EnTT {
       Yup.number().strict().integer().min(1900).max(2100).required(),
     ],
   })
-  public born = undefined as number;
+  public born?: number = undefined;
 }
 
 const instance = new MyDatesClass();
@@ -1035,7 +1035,7 @@ class MyNestedClass extends EnTT {
   }
 
   @Validate({ provider: Yup.number().strict().required() })
-  public aNumber = undefined as number;
+  public aNumber?: number = undefined;
 }
 
 class MyParentClass extends EnTT {
@@ -1045,7 +1045,7 @@ class MyParentClass extends EnTT {
   }
 
   @Validate({ provider: Yup.boolean().strict().required() })
-  public aBoolean = undefined as boolean;
+  public aBoolean?: boolean = undefined;
 
   public nested = new MyNestedClass();
 }

@@ -73,13 +73,13 @@ describe('README examples', () => {
           }
 
           @Property({ set: (value, obj) => toTitleCase(value) })
-          public firstName = undefined as string;
+          public firstName?: string = undefined;
 
           @Property({ set: (value, obj) => toTitleCase(value) })
-          public lastName = undefined as string;
+          public lastName?: string = undefined;
 
           @Property({ get: (value, obj) => `${obj.firstName} ${obj.lastName}` })
-          public fullName = undefined as string;
+          public fullName?: string = undefined;
         }
 
         const instance = new MyEntityClass();
@@ -100,7 +100,7 @@ describe('README examples', () => {
           }
 
           @Property({ tag: 'callsign' })
-          public name = undefined as string;
+          public name?: string = undefined;
         }
 
         class MyCarClass extends EnTT {
@@ -110,7 +110,7 @@ describe('README examples', () => {
           }
 
           @Property({ tag: 'callsign' })
-          public make = undefined as string;
+          public make?: string = undefined;
         }
 
         function promptCallsign(instance: EnTT, from: new () => EnTT) {
@@ -137,8 +137,8 @@ describe('README examples', () => {
             super.entt();
           }
 
-          public firstName = undefined as string;
-          public lastName = undefined as string;
+          public firstName?: string = undefined;
+          public lastName?: string = undefined;
         }
 
         const instance = new MyPersonClass();
@@ -186,10 +186,10 @@ describe('README examples', () => {
           }
 
           @Serializable({ alias: 'first_name' })
-          public firstName = undefined as string;
+          public firstName?: string = undefined;
 
           @Serializable({ alias: 'last_name' })
-          public lastName = undefined as string;
+          public lastName?: string = undefined;
         }
 
         const instance = new MyPersonClass();
@@ -220,10 +220,10 @@ describe('README examples', () => {
             }
 
             @Serializable()
-            public password = undefined as string;
+            public password?: string = undefined;
 
             @Serializable({ serialize: false, deserialize: false })
-            public repeatPassword = undefined as string;
+            public repeatPassword?: string = undefined;
           }
 
           const instance = new MyAuthenticationClass();
@@ -256,7 +256,7 @@ describe('README examples', () => {
               deserialize: (value, obj) => new Date(value),
               serialize: (value, obj) => value.getTime(),
             })
-            public timestamp = undefined as Date;
+            public timestamp?: Date = undefined;
           }
 
           const now = Date.now(),
@@ -285,10 +285,10 @@ describe('README examples', () => {
             this.name = name;
           }
 
-          public name = undefined as string;
+          public name?: string = undefined;
 
           @Serializable({ cast: MyPersonClass })
-          public spouse = undefined as MyPersonClass;
+          public spouse?: MyPersonClass = undefined;
 
           @Serializable({ cast: [MyPersonClass] })
           public siblings = [] as MyPersonClass[];
@@ -421,7 +421,7 @@ describe('README examples', () => {
 
             // Validate year is within a predefined scope
             @Validate({ provider: (value, obj) => value > 1900 && value < 2100 })
-            public born = undefined as number;
+            public born?: number = undefined;
 
             // Validate year is within dynamic scope and throw custom validation errors
             @Validate({
@@ -448,7 +448,7 @@ describe('README examples', () => {
                 return errs;
               },
             })
-            public graduated = undefined as number;
+            public graduated?: number = undefined;
           }
 
           const instance = new MyDatesClass();
@@ -478,11 +478,11 @@ describe('README examples', () => {
 
             // Validate year is within a predefined scope
             @Validate({ provider: Joi.number().strict().integer().min(1900).max(2100).required() })
-            public born = undefined as number;
+            public born?: number = undefined;
 
             // Validate year is within dynamic scope and throw custom validation errors
             @Validate({ provider: Joi.number().strict().integer().min(Joi.ref('$.born')).max(2100).required() })
-            public graduated = undefined as number;
+            public graduated?: number = undefined;
           }
 
           const instance = new MyDatesClass();
@@ -515,7 +515,7 @@ describe('README examples', () => {
 
             // Validate year is within a predefined scope
             @Validate({ provider: Yup.number().strict().integer().min(1900).max(2100).required() })
-            public born = undefined as number;
+            public born?: number = undefined;
 
             // Validate year is within dynamic scope and throw custom validation errors
             @Validate({
@@ -526,7 +526,7 @@ describe('README examples', () => {
                 .max(2100)
                 .required(),
             })
-            public graduated = undefined as number;
+            public graduated?: number = undefined;
           }
 
           const instance = new MyDatesClass();
@@ -566,7 +566,7 @@ describe('README examples', () => {
               Yup.number().strict().integer().min(1900).max(2100).required(),
             ],
           })
-          public born = undefined as number;
+          public born?: number = undefined;
         }
 
         const instance = new MyDatesClass();
@@ -590,7 +590,7 @@ describe('README examples', () => {
           }
 
           @Validate({ provider: Yup.number().strict().required() })
-          public aNumber = undefined as number;
+          public aNumber?: number = undefined;
         }
 
         class MyParentClass extends EnTT {
@@ -600,7 +600,7 @@ describe('README examples', () => {
           }
 
           @Validate({ provider: Yup.boolean().strict().required() })
-          public aBoolean = undefined as boolean;
+          public aBoolean?: boolean = undefined;
 
           public nested = new MyNestedClass();
         }

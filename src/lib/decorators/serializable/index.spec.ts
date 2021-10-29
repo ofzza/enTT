@@ -27,10 +27,10 @@ describe('@Serializable', () => {
   };
 
   class InnerNonEnTT {
-    public w = undefined as string;
-    public false = undefined as boolean;
-    public null = undefined as any;
-    public undefined = undefined as any;
+    public w?: string = undefined;
+    public false?: boolean = undefined;
+    public null?: any = undefined;
+    public undefined?: any = undefined;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
@@ -44,10 +44,10 @@ describe('@Serializable', () => {
   }
 
   class NonEnTT {
-    public z = undefined as string;
+    public z?: string = undefined;
 
     @Serializable({ cast: InnerNonEnTT })
-    public innernonentity = undefined as InnerNonEnTT;
+    public innernonentity?: InnerNonEnTT = undefined;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
@@ -64,10 +64,10 @@ describe('@Serializable', () => {
       super.entt();
     }
 
-    public y = undefined as string;
+    public y: string = undefined;
 
     @Serializable({ cast: NonEnTT })
-    public nonentity = undefined as NonEnTT;
+    public nonentity?: NonEnTT = undefined;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
@@ -84,10 +84,10 @@ describe('@Serializable', () => {
       super.entt();
     }
 
-    public x = undefined as string;
+    public x?: string = undefined;
 
     @Serializable({ cast: InnerMostTest })
-    public innermost = undefined as InnerMostTest;
+    public innermost?: InnerMostTest = undefined;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
@@ -113,40 +113,40 @@ describe('@Serializable', () => {
     public object = { a: 1, b: 2, c: 3 };
 
     @Serializable({ alias: 'aliased' })
-    public notaliased = undefined as string;
+    public notaliased?: string = undefined;
 
     @Serializable({ cast: InnerTest })
-    public enttsingle = undefined as InnerTest;
+    public enttsingle?: InnerTest = undefined;
 
     @Serializable({ cast: () => InnerTest })
-    public enttsinglefactory = undefined as InnerTest;
+    public enttsinglefactory?: InnerTest = undefined;
 
     @Serializable({ cast: [InnerTest] })
-    public enttarrayliteral = undefined as InnerTest[];
+    public enttarrayliteral?: InnerTest[] = undefined;
 
     @Serializable({ cast: () => [InnerTest] })
-    public enttarrayliteralfactory = undefined as InnerTest[];
+    public enttarrayliteralfactory?: InnerTest[] = undefined;
 
     @Serializable({ cast: { InnerTest } })
-    public enttobjectliteral = undefined as any;
+    public enttobjectliteral?: any = undefined;
 
     @Serializable({ cast: () => ({ InnerTest }) })
-    public enttobjectliteralfactory = undefined as any;
+    public enttobjectliteralfactory?: any = undefined;
 
     @Property({ enumerable: false })
-    public nonenumerable = undefined as string;
+    public nonenumerable?: string = undefined;
 
     @Property({ set: false })
-    public getteronly = 'getteronly' as string;
+    public getteronly = 'getteronly';
 
     @Property({ get: false })
-    public setteronly = undefined as string;
+    public setteronly: string = undefined;
 
     @Property({ get: (value, instance) => `${instance.nonenumerable}:${value && value.toUpperCase()}` })
-    public customgetter = undefined as string;
+    public customgetter: string = undefined;
 
     @Property({ set: (value, instance) => `${instance.nonenumerable}:${value && value.toUpperCase()}` })
-    public customsetter = undefined as string;
+    public customsetter: string = undefined;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
@@ -173,7 +173,7 @@ describe('@Serializable', () => {
     }
 
     @Serializable({ serialize: false })
-    public dontserialize = undefined as string;
+    public dontserialize: string = undefined;
 
     // Using post-constructor initialization of values to avoid values already being there on deserialization,
     // preventing a fair check of serialization/deserialization
@@ -373,7 +373,7 @@ describe('@Serializable', () => {
       public propA = true;
 
       @Serializable({ alias: 'propB1', cast: Inner })
-      public propB = undefined as any;
+      public propB: any = undefined;
     }
 
     class TestExtended extends TestBase {
@@ -386,7 +386,7 @@ describe('@Serializable', () => {
       public propA = true;
 
       @Serializable({ alias: 'propB2', cast: [Inner] })
-      public propB = undefined as any;
+      public propB: any = undefined;
     }
 
     const base = new TestBase();
@@ -412,13 +412,13 @@ describe('@Serializable', () => {
       }
 
       @Serializable({ serialize: false, deserialize: false })
-      public serializeNever = undefined as string;
+      public serializeNever: string = undefined;
       @Serializable({ serialize: true, deserialize: false })
-      public serializeSerOnly = undefined as string;
+      public serializeSerOnly: string = undefined;
       @Serializable({ serialize: false, deserialize: true })
-      public serializeDeSerOnly = undefined as string;
+      public serializeDeSerOnly: string = undefined;
       @Serializable({ serialize: true, deserialize: true })
-      public serializeAlways = undefined as string;
+      public serializeAlways: string = undefined;
 
       public initialize() {
         this.serializeNever = 'initialized';

@@ -108,7 +108,7 @@ describe('@Property', () => {
         set: false,
         get: false,
       })
-      public prop = undefined as any;
+      public prop?: any = undefined;
     }
 
     class Test extends TestBase {
@@ -122,7 +122,7 @@ describe('@Property', () => {
         set: (value, obj) => value && value.toUpperCase(),
         get: (value, obj) => `!${value && value.toUpperCase()}!`,
       })
-      public prop = undefined as any;
+      public prop?: any = undefined;
     }
 
     const base = new TestBase();
@@ -146,16 +146,16 @@ describe('@Property', () => {
       }
 
       @Property({ tag: 'A' })
-      public propA = undefined as any;
+      public propA?: any = undefined;
 
       @Property({ tag: 'B' })
-      public propB = undefined as any;
+      public propB?: any = undefined;
 
       @Property({ tag: ['C', 'X'] })
-      public propC = undefined as any;
+      public propC?: any = undefined;
 
       @Property({ tag: ['D', 'X'] })
-      public propD = undefined as any;
+      public propD?: any = undefined;
     }
 
     it('Finds properties tagged with a single tag', () => {

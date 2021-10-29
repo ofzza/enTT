@@ -1,3 +1,8 @@
+### Version 3.2.6
+
+- Updated documentation to update property definitions syntax from `public prop = undefined as any` to `public prop?: any = undefined;`
+- Updated tests to update property definitions syntax from `public prop = undefined as any` to `public prop?: any = undefined;`
+
 ### Version 3.2.5
 
 - Fixed issue with cloning nested EnTT instances where properties marked with `serialize: false` or `deserialize: false` were not being cloned directly
