@@ -88,9 +88,12 @@ export function _getDecoratorMetadata<T extends Function>(aClass: T, _symbolDeco
  * @param instance EnTT instance containing the metadata
  * @returns Stored EnTT instance metadata
  */
-export function _getInstanceMetadata<T>(
-  instance: T,
-): { store: any; restore: any; children: { path: string[]; child: _EnTTRoot }[]; custom: Record<string, any> } {
+export function _getInstanceMetadata<T>(instance: T): {
+  store: any;
+  restore: any;
+  children: { path: string[]; child: _EnTTRoot }[];
+  custom: Record<string, any>;
+} {
   // Return type must be any 'cos it can be modified by different "extensions" to the main structure
   // Initialize metadata on the instance (non-enumerable an hidden-ish)
   if (instance && !instance[_symbolEnTTInstance]) {

@@ -57,9 +57,7 @@ export class EnttValidationError extends Error {
  * @param target EnTT class instance containing the validity data
  * @returns Instance's validity store
  */
-export function _readValidityMetadata<T>(
-  target: T,
-): {
+export function _readValidityMetadata<T>(target: T): {
   valid: boolean;
   errors: Record<string, EnttValidationError[]>;
 } {

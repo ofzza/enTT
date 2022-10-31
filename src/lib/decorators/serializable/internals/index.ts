@@ -273,7 +273,7 @@ export function _cast<T>(
       // tslint:disable-next-line: no-shadowed-variable
       return value.map(value =>
         _deserialize<T>(value, type, {
-          target: (new ((into as unknown) as TNew<T>)[0]() as unknown) as T,
+          target: new (into as unknown as TNew<T>)[0]() as unknown as T,
           validate,
         }),
       );
@@ -292,7 +292,7 @@ export function _cast<T>(
     return (value: Record<any, T>, type = 'object' as _rawDataType, { validate = true } = {}): Record<any, T> => {
       return Object.keys(value).reduce((hashmap, key) => {
         hashmap[key] = _deserialize<T>(value[key], type, {
-          target: new (Object.values((into as unknown) as TNew<T>)[0])(),
+          target: new (Object.values(into as unknown as TNew<T>)[0])(),
           validate,
         });
         return hashmap;
@@ -311,7 +311,7 @@ export function _cast<T>(
      */
     return (value: T, type = 'object' as _rawDataType, { validate = true } = {}): T => {
       return _deserialize<T>(value, type, {
-        target: (new ((into as unknown) as TNew<T>)() as unknown) as T,
+        target: new (into as unknown as TNew<T>)() as unknown as T,
         validate,
       });
     };

@@ -1,3 +1,7 @@
+### Version 3.2.8
+
+...
+
 ### Version 3.2.6
 
 - Updated documentation to update property definitions syntax from `public prop = undefined as any` to `public prop?: any = undefined;`
