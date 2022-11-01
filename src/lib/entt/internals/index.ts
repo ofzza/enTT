@@ -1,156 +1,244 @@
-// enTT lib main, extensible class's internals
+// enTT lib main, base functionality
 // ----------------------------------------------------------------------------
 
-// Define a unique symbol for Property decorator
-export const _symbolEnTTClass = Symbol('EnTT Class Metadata');
-export const _symbolEnTTInstance = Symbol('EnTT Instance Metadata');
-
-// Define reusable undefined stand-in symbol
-export const _undefined = Symbol('undefined');
-
-// Helper types
-export type TNew<T> = new () => T;
+// #region Utility types
 
 /**
- * Root EnTT class, to be extended by EnTT base, used for internal instance detection avoiding circular dependencies
+ * A class which constructs instances of type T
  */
-// tslint:disable-next-line: class-name
-export class _EnTTRoot {
-  /**
-   * Returns validation status of the instance
-   * @returns If instance is validated
-   */
-  public get valid(): boolean {
-    throw new Error('Not implemented!');
+export type TNew<T> = new (...args: any[]) => T;
+
+// #endregion
+
+// #region EnTT types
+
+/**
+ * A transparent proxy to the underlying class instance with dynamic EnTT functionality attached
+ */
+type EnttInstance<T extends object> = T & {};
+
+/**
+ * Definition for an entity carrying properties decorated with EnTT functionality
+ */
+class EnttDefinition {
+  constructor(public readonly owner: TNew<object>) {}
+  public properties: Record<string | number | symbol, EnttPropertyDefinition> = {};
+}
+/**
+ * Definition for an entity property carrying properties decorated with EnTT functionality
+ */
+class EnttPropertyDefinition {
+  constructor(public readonly owner: TNew<object>, public readonly ownerPropertyKey: string | number | symbol) {}
+  public decorators: Record<symbol, EnttPropertyDecoratorDefinition> = {};
+}
+/**
+ * Definition for a single EnTT decorator an entity property has been decorated with
+ */
+class EnttPropertyDecoratorDefinition {
+  constructor(
+    public readonly owner: TNew<object>,
+    public readonly ownerPropertyKey: string | number | symbol,
+    public readonly ownerPropertyDecoratorSymbol: symbol,
+  ) {}
+  data: any;
+}
+
+// #endregion
+
+// #region EnTT decorator helpers: Manage definitions
+
+/**
+ * All class carrying properties decorated with EnTT functionality
+ */
+const decoratedClasses: WeakMap<TNew<Object>, EnttDefinition> = new WeakMap();
+
+/**
+ * Gets (and first registers if necesarry) definitions for a class carrying properties decorated with EnTT functionality
+ * @param target A class (or instance of a class) carrying properties decorated with EnTT functionality
+ * @returns Definition of associated EnTT functionality for the class
+ */
+export function getDecoratedClassDefinition<T extends object>(target: T): EnttDefinition;
+export function getDecoratedClassDefinition<T extends object>(target: TNew<T>): EnttDefinition;
+export function getDecoratedClassDefinition<T extends object>(target: TNew<T> | T): EnttDefinition {
+  // Check if using instance of class to get definition
+  if (typeof target !== 'function') {
+    return getDecoratedClassDefinition(target.constructor);
   }
 
-  /**
-   * Returns validation errors of all properties
-   * @returns A hashmap of arrays of errors per property
-   */
-  public get errors(): Record<string, any> {
-    throw new Error('Not implemented!');
+  // Check if already registered
+  const definitions = decoratedClasses.get(target);
+  if (definitions) {
+    return definitions;
   }
+  // ... and register if not
+  else {
+    const definitions = new EnttDefinition(target);
+    decoratedClasses.set(target, definitions);
+    return definitions;
+  }
+}
+/**
+ * Gets (and first registers if necesarry) definitions for a class property decorated with EnTT functionality
+ * @param target A class (or instance of a class) carrying properties decorated with EnTT functionality
+ * @param propertyKey Name of the property decorated with EnTT functionality
+ * @returns Definition of associated EnTT functionality for the class property
+ */
+export function getDecoratedClassPropertyDefinition<T extends object>(target: T, propertyKey: string | number | symbol): EnttPropertyDefinition;
+export function getDecoratedClassPropertyDefinition<T extends object>(target: TNew<T>, propertyKey: string | number | symbol): EnttPropertyDefinition;
+export function getDecoratedClassPropertyDefinition<T extends object>(target: TNew<T> | T, propertyKey: string | number | symbol): EnttPropertyDefinition {
+  // Check if using instance of class to get definition
+  if (typeof target !== 'function') {
+    return getDecoratedClassPropertyDefinition(target.constructor, propertyKey);
+  }
+
+  // Get definition for target class
+  const definition = getDecoratedClassDefinition(target);
+  // Return (first register if required) property definition
+  return definition.properties[propertyKey] || (definition.properties[propertyKey] = new EnttPropertyDefinition(target, propertyKey));
+}
+/**
+ * Gets (and first registers if necesarry) a definition for a single EnTT decorator a class property has been decorated with
+ * @param target A class (or instance of a class) carrying properties decorated with EnTT functionality
+ * @param propertyKey Name of the property decorated with EnTT functionality
+ * @param decoratorSymbol Unique symbol identifying EnTT decorator the property has been decorated with
+ * @returns Definition of associated EnTT functionality for the class property decorator
+ */
+export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
+  target: T,
+  propertyKey: string | number | symbol,
+  decoratorSymbol: symbol,
+): EnttPropertyDecoratorDefinition;
+export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
+  target: TNew<T>,
+  propertyKey: string | number | symbol,
+  decoratorSymbol: symbol,
+): EnttPropertyDecoratorDefinition;
+export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
+  target: TNew<T> | T,
+  propertyKey: string | number | symbol,
+  decoratorSymbol: symbol,
+): EnttPropertyDecoratorDefinition {
+  // Check if using instance of class to get definition
+  if (typeof target !== 'function') {
+    return getDecoratedClassPropertyDecoratorDefinition(target.constructor, propertyKey, decoratorSymbol);
+  }
+
+  // Get definition for target property
+  const definition = getDecoratedClassPropertyDefinition(target, propertyKey);
+  // Return (first register if required) property decorator definition
+  return (
+    definition.decorators[decoratorSymbol] ||
+    (definition.decorators[decoratorSymbol] = new EnttPropertyDecoratorDefinition(target, propertyKey, decoratorSymbol))
+  );
+}
+
+// #endregion
+
+// #region EnTT decorator helpers: Implement a custom decorator
+
+/**
+ * Helper function used to create a custom static decoorator. Usage:
+ * ```js
+ * function StaticPropertyDecorator(data: any) {
+ *   return createCustomStaticDecorator(decoratorSymbol, definition => {
+ *     definition.data = data; // Update decorator definition here
+ *   });
+ * }
+ * ```
+ * @param configuratorCallback Callback function, passed a definition instance, used to set what ever data the decorator needs to be held within the definition
+ * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
+ * @returns Static decorator
+ */
+export function createCustomStaticDecorator(configuratorCallback: (definition: EnttPropertyDecoratorDefinition) => void, decoratorSymbol: symbol = Symbol()) {
+  return (target: any, key: string | number | symbol) => {
+    // TODO: Need to update `target: any` to `target: TNew<T>`
+
+    // Get decorator definition for the property
+    const definition = getDecoratedClassPropertyDecoratorDefinition(target, key, decoratorSymbol);
+    // Update definition for the property
+    configuratorCallback(definition);
+  };
 }
 
 /**
- * Initializes and gets stored EnTT class metadata
- * @param aClass EnTT class containing the metadata
- * @returns Stored EnTT class metadata
+ * TODO: ...
+ * @param definition
+ * @param decoratorSymbol
  */
-// tslint:disable-next-line: ban-types
-export function _getClassMetadata<T extends Function>(aClass: T): any {
-  // Initialize metadata on the derived class
-  if (aClass && !aClass.hasOwnProperty(_symbolEnTTClass)) {
-    // Set metadata store
-    Object.defineProperty(aClass, _symbolEnTTClass, {
-      enumerable: false,
-      value: {
-        // Initialize a private decorators store
-        decorators: {},
-      },
-    });
-  }
-  // Return metadata reference
-  return aClass[_symbolEnTTClass];
-}
-
-/**
- * Initializes and gets stored EnTT class metadata for a requested decorator
- * @param aClass EnTT class containing the metadata
- * @param _symbolDecorator Unique symbol name-spacing the decorator in question
- * @returns Stored EnTT class metadata for requested decorator
- */
-// tslint:disable-next-line: ban-types
-export function _getDecoratorMetadata<T extends Function>(aClass: T, _symbolDecorator: string | symbol): any {
-  // Get class metadata
-  const decoratorsMetadata = _getClassMetadata(aClass).decorators;
-  // Check if decorator already initialized
-  if (!decoratorsMetadata[_symbolDecorator]) {
-    // Initialized decorator
-    decoratorsMetadata[_symbolDecorator] = {};
-    // Check for inherited metadata
-    const prototypeClass = Object.getPrototypeOf(aClass),
-      prototypeDecoratorMetadata = prototypeClass ? _getClassMetadata(prototypeClass).decorators : {};
-    // Inherit metadata
-    if (prototypeDecoratorMetadata[_symbolDecorator]) {
-      for (const key of Object.keys(prototypeDecoratorMetadata[_symbolDecorator])) {
-        decoratorsMetadata[_symbolDecorator][key] = prototypeDecoratorMetadata[_symbolDecorator][key];
+export function filterDefinition(definition: EnttDefinition, decoratorSymbol: symbol): EnttDefinition;
+export function filterDefinition(definition: EnttPropertyDefinition, decoratorSymbol: symbol): EnttPropertyDefinition;
+export function filterDefinition(
+  definition: EnttDefinition | EnttPropertyDefinition | EnttPropertyDecoratorDefinition,
+  decoratorSymbol: symbol,
+): EnttDefinition | EnttPropertyDefinition {
+  // Filter entity definition
+  if (definition instanceof EnttDefinition) {
+    const filteredDefinition = new EnttDefinition(definition.owner);
+    for (const propertyKey of Object.keys(definition.properties)) {
+      const propertyDefinition = definition.properties[propertyKey];
+      // If property has correct decorator definition, copy decorator definition and property definition onto filtered entity definition
+      if (propertyDefinition.decorators[decoratorSymbol]) {
+        filteredDefinition.properties[propertyKey] = new EnttPropertyDefinition(definition.owner, propertyKey); // TODO: Do recursive call instead of duplicating code
+        filteredDefinition.properties[propertyKey].decorators[decoratorSymbol] = new EnttPropertyDecoratorDefinition(
+          definition.owner,
+          propertyKey,
+          decoratorSymbol,
+        );
+        filteredDefinition.properties[propertyKey].decorators[decoratorSymbol].data = propertyDefinition.decorators[decoratorSymbol].data; // TODO: Consider doing  a deep copy of decorator definition data
       }
     }
+    return filteredDefinition;
   }
-  // Return decorator metadata
-  return decoratorsMetadata[_symbolDecorator];
-}
 
-/**
- * Initializes and gets stored EnTT instance metadata
- * @param instance EnTT instance containing the metadata
- * @returns Stored EnTT instance metadata
- */
-export function _getInstanceMetadata<T>(instance: T): {
-  store: any;
-  restore: any;
-  children: { path: string[]; child: _EnTTRoot }[];
-  custom: Record<string, any>;
-} {
-  // Return type must be any 'cos it can be modified by different "extensions" to the main structure
-  // Initialize metadata on the instance (non-enumerable an hidden-ish)
-  if (instance && !instance[_symbolEnTTInstance]) {
-    Object.defineProperty(instance, _symbolEnTTInstance, {
-      enumerable: false,
-      value: {
-        // Initialize a private property values' store
-        store: {} as any,
-        // Initialize a private property values' store of last valid values
-        restore: {} as any,
-        // Array of child EnTT instances
-        children: [] as { path: string[]; child: _EnTTRoot }[],
-        // Repository of custom data required by different "extensions"
-        custom: {} as Record<string, any>,
-      },
-    });
-  }
-  // Return metadata reference
-  return instance[_symbolEnTTInstance];
-}
-
-/**
- *
- * @param instance
- * @param key
- */
-export function _updateChildrenOnPropertyValueChange(key: string, store = undefined as object, children = undefined as object[]) {
-  // Remove previously found children of this property
-  for (let i = children.length - 1; i >= 0; i--) {
-    if ((children[i] as any).path[0] === key) {
-      children.splice(i, 1);
+  // Filter entity property definition
+  else if (definition instanceof EnttPropertyDefinition) {
+    const filteredPropertyDefinition = new EnttPropertyDefinition(definition.owner, definition.ownerPropertyKey);
+    if (definition.decorators[decoratorSymbol]) {
+      filteredPropertyDefinition.decorators[decoratorSymbol] = new EnttPropertyDecoratorDefinition(
+        definition.owner,
+        definition.ownerPropertyKey,
+        decoratorSymbol,
+      );
+      filteredPropertyDefinition.decorators[decoratorSymbol].data = definition.decorators[decoratorSymbol].data; // TODO: Consider doing  a deep copy of decorator definition data
     }
+    return filteredPropertyDefinition;
   }
-  // Search newly added children of this property
-  children.push(..._findChildEnTTs([key], store[key]));
+}
+
+// #endregion
+
+// #region EnTT dynamic functionality via EnTT proxy
+
+/**
+ * Wraps a class into a proxy which will hook into the constructor and replace the constructed instance with a proxy to
+ * the instance implementing the dynamic EnTT functionality
+ * @param _TargetClass The class being wrapped
+ * @returns A proxy to the class
+ */
+function enttify<T extends object>(_TargetClass: TNew<T>): TNew<EnttInstance<T>> {
+  // Wrap a class into a proxy which will hook into the constructor and replace the constructed instance with a proxy to
+  // the instance implementing the dynamic EnTT functionality
+  return new Proxy(_TargetClass, {
+    // Intercept constructng an instance
+    construct: (_TargetClass: TNew<T>, args: any[]): EnttInstance<T> => {
+      // Run original constructor and get original instance of the class
+      const target = new _TargetClass(...args);
+      // Return a proxy to the original instance, implementing dynamic EnTT functionality
+      return new Proxy(target, createProxyhandlerForEnttInstance(target)) as EnttInstance<T>;
+    },
+  }) as TNew<EnttInstance<T>>;
 }
 
 /**
- * Finds all EnTT instances nested within the given child
- * @param value Value being searched for EnTTs
- * @returns Array of found EnTT children
+ * Generates proxy handler to a newly constructed, original class instance implementing dynamic EnTT functionality
+ * @param target Newly constructed, original instance being wrapped by the proxy
+ * @returns Proxy handler definition
  */
-function _findChildEnTTs(path: string[], value: any): { path: string[]; child: _EnTTRoot }[] {
-  // Find child EnTTs
-  const children: { path: string[]; child: _EnTTRoot }[] = [];
-  // Register direct child
-  if (value instanceof _EnTTRoot) {
-    children.push({
-      path,
-      child: value,
-    });
-  }
-  // Register children contained within array or hashmap
-  else if (value instanceof Array || value instanceof Object) {
-    for (const key of Object.keys(value)) {
-      children.push(..._findChildEnTTs([...path, key], value[key]));
-    }
-  }
-  return children;
+function createProxyhandlerForEnttInstance<T extends object>(target: T): ProxyHandler<T> {
+  return {
+    get: (_: T, key: string) => target[key],
+    set: (_: T, key: string, value: any) => (target[key] = value),
+  };
 }
+
+// #endregion

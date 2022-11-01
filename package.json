@@ -1,13 +1,13 @@
 {
   "name": "@ofzza/entt",
-  "version": "3.2.8",
+  "version": "4.0.0",
   "description": "Modular TypeScript data-modeling solution, implementing nestable serialization/deserialization and flexible validation",
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "prettier --write . && tsc",
+    "build": "prettier --write . && tsc --build --clean && tsc",
     "dev": "tsc -w",
-    "test": "tsc && npx jasmine --config=./jasmine.json"
+    "test": "tsc --build --clean && tsc && npx jasmine --config=./jasmine.json"
   },
   "pre-commit": [
     "build",
