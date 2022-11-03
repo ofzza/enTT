@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import tests
-import { testsStaticPropertyDecorators } from './_tests';
+import { testsStaticPropertyDecorators, testsDynamicPropertyDecorators } from './_tests';
 
 // Test ...
 describe('EnTT internals', () => {
@@ -11,8 +11,13 @@ describe('EnTT internals', () => {
     // #region Test static decorator implementation
 
     // Tests static custom property decorators cration and implementation
-    describe('Can implement a custom static property decorator', () => {
+    describe('Can implement a custom, static property decorator', () => {
       testsStaticPropertyDecorators();
+    });
+
+    // Tests dynamic custom property decorators cration and implementation
+    describe('Can implement a custom, dynamic property decorator', () => {
+      testsDynamicPropertyDecorators();
     });
 
     // #endregion

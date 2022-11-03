@@ -3,3 +3,4 @@
 
 // Import and (re)export tests
 export * from './StaticPropertyDecorator';
+export * from './DynamicPropertyDecorator';
