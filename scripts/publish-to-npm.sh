@@ -4,6 +4,10 @@ cd $DIR
 
 # Exit when any command fails
 set -e
+function cleanup {
+  set +e
+}
+trap cleanup EXIT
 
 # Build library version
 echo '';

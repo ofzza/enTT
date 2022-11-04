@@ -2,4 +2,4 @@
 // ----------------------------------------------------------------------------
 
 // Export enTT lib
-export * from './lib';
+export { enttify, verifyDecoratorUsage } from './lib';

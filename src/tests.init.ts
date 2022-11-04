@@ -4,11 +4,15 @@
 // Import dependencies
 import { SpecReporter } from 'jasmine-spec-reporter';
 
+// Override default logging
+// import { setLogging } from './lib';
+// setLogging(undefined);
+
 /**
  * ASserts truthfulness of an expression
  * @param expr Expression to assert
  */
-export function assert(expr) {
+export function assert(expr: any) {
   expect(expr).toBeTruthy();
 }
 

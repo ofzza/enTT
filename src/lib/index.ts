@@ -2,4 +2,4 @@
 // ----------------------------------------------------------------------------
 
 // Import and (re)export from base
-export { enttify } from './entt';
+export * from './entt';

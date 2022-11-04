@@ -2,15 +2,15 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { assert } from '../../../../tests.init';
-import { Class, createCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../../';
+import { assert } from '../../../tests.init';
+import { Class, PropertyName, createCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
 
 // Unique identifier symbol identifying the DefaultValue decorator
 const defaultValueDecoratorSymbol = Symbol('Default value property decorator');
 /**
  * Decorates a property with a default value
  * @param data Default value for a property
- * @returns Property decoration
+ * @returns Property decorator
  */
 function DefaultValue(data: any) {
   return createCustomDecorator(() => data, defaultValueDecoratorSymbol);
@@ -21,7 +21,7 @@ const labelDecoratorSymbol = Symbol('Label property decorator');
 /**
  * Decorates a property with a label
  * @param label Property label
- * @returns Property decoration
+ * @returns Property decorator
  */
 function Label(label: string) {
   return createCustomDecorator(() => label, labelDecoratorSymbol);
@@ -45,7 +45,7 @@ function initializeWithValues<T extends object>(target: Class<T>): T {
  * @param target The class instance to verify
  * @returns A record of property value verification
  */
-function checkDefaultValues<T extends object>(target: T): Record<string | number | symbol, boolean> {
+function checkDefaultValues<T extends object>(target: T): Record<PropertyName, boolean> {
   const definition = getDecoratedClassDefinition(target);
   return Object.keys(definition.properties).reduce((check, key) => {
     check[key] = target[key] === definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].data;
@@ -131,7 +131,7 @@ export function testsStaticPropertyDecorators() {
       // Filtered only to property decorator definition for the filtered decorator
       assert(!definition.properties.pub.decorators.bySymbol[defaultValueDecoratorSymbol]);
       assert(!!definition.properties.pub.decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.properties.pub.decorators.byOrderOfApplication.length === 1);
+      assert(definition.properties.pub.decorators.symbolsInOrderOfApplication.length === 1);
     });
   });
 
@@ -162,7 +162,7 @@ export function testsStaticPropertyDecorators() {
       // Filtered only to property decorator definition for the filtered decorator
       assert(!definition.decorators.bySymbol[defaultValueDecoratorSymbol]);
       assert(!!definition.decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.decorators.byOrderOfApplication.length === 1);
+      assert(definition.decorators.symbolsInOrderOfApplication.length === 1);
     });
   });
 
@@ -235,7 +235,7 @@ export function testsStaticPropertyDecorators() {
       // Filtered only to property decorator definition for the filtered decorator
       assert(!definition.properties.pub.decorators.bySymbol[defaultValueDecoratorSymbol]);
       assert(!!definition.properties.pub.decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.properties.pub.decorators.byOrderOfApplication.length === 1);
+      assert(definition.properties.pub.decorators.symbolsInOrderOfApplication.length === 1);
     });
   });
 
@@ -266,7 +266,7 @@ export function testsStaticPropertyDecorators() {
       // Filtered only to property decorator definition for the filtered decorator
       assert(!definition.decorators.bySymbol[defaultValueDecoratorSymbol]);
       assert(!!definition.decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.decorators.byOrderOfApplication.length === 1);
+      assert(definition.decorators.symbolsInOrderOfApplication.length === 1);
     });
   });
 

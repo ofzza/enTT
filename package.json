@@ -1,7 +1,8 @@
 {
   "name": "@ofzza/entt",
-  "version": "4.0.0",
+  "version": "4.0.0-alpha-1",
   "description": "Modular TypeScript data-modeling solution, implementing nestable serialization/deserialization and flexible validation",
+  "private": false,
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

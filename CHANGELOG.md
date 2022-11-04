@@ -1,6 +1,9 @@
-### Version 3.2.8
+### Version 4.0
 
-...
+- New, incompatible implementattion of the entire library with the following previously existing functionality reimplemented:
+  - TODO: ...
+
+---
 
 ### Version 3.2.6
 
