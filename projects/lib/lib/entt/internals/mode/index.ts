@@ -11,7 +11,7 @@ let _isProduction = false;
  * @param isProduction Production status
  */
 export function setProduction(isProduction: boolean = true) {
-  this._isProduction = isProduction;
+  _isProduction = isProduction;
 }
 
 /**

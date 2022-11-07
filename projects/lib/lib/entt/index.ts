@@ -60,14 +60,14 @@ export function getDecoratedClassDefinition<T extends object>(target: Class<T> |
   }
 
   // Check if already registered
-  const definitions = decoratedClasses.get(target);
+  const definitions = decoratedClasses.get(target as Class<T>);
   if (definitions) {
     return definitions;
   }
   // ... and register if not
   else {
-    const definitions = new EnttDefinition(target);
-    decoratedClasses.set(target, definitions);
+    const definitions = new EnttDefinition(target as Class<T>);
+    decoratedClasses.set(target as Class<T>, definitions);
     return definitions;
   }
 }
@@ -88,7 +88,7 @@ export function getDecoratedClassPropertyDefinition<T extends object>(target: Cl
   // Get definition for target class
   const definition = getDecoratedClassDefinition(target);
   // Return (first register if required) property definition
-  return definition.properties[propertyKey] || (definition.properties[propertyKey] = new EnttPropertyDefinition(target, propertyKey));
+  return definition.properties[propertyKey] || (definition.properties[propertyKey] = new EnttPropertyDefinition(target as Class<T>, propertyKey));
 }
 /**
  * Gets (and first registers if necesarry) a definition for a single EnTT decorator a class property has been decorated with
@@ -122,7 +122,7 @@ export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
 
   // If doesn't exist, create, register and return decorator definition
   if (!definition.decorators.bySymbol[decoratorSymbol]) {
-    const decorator = new EnttPropertyDecoratorDefinition(target, propertyKey, decoratorSymbol);
+    const decorator = new EnttPropertyDecoratorDefinition(target as Class<T>, propertyKey, decoratorSymbol);
     definition.decorators.bySymbol[decoratorSymbol] = decorator;
   }
   // Register decorator application order
@@ -328,6 +328,13 @@ export function filterDefinition(
     }
     return filteredPropertyDefinition;
   }
+
+  // In case wrong input passed
+  else {
+    throw new Error(
+      'Calling filterDefinition() not supported with provided definition argument! Only EnttDefinition | Record<PropertyName, EnttPropertyDefinition> | EnttPropertyDefinition are supported.',
+    );
+  }
 }
 
 /**
@@ -374,7 +381,7 @@ export function enttify<T extends object>(TargetClass: Class<T>): Class<EnttInst
   // the instance implementing the dynamic EnTT functionality
   const alreadyEnTTified = enttifiedClassesByUnderlyingClass.has(TargetClass);
   const ProxyClass = alreadyEnTTified
-    ? enttifiedClassesByUnderlyingClass.get(TargetClass)
+    ? (enttifiedClassesByUnderlyingClass.get(TargetClass) as Class<EnttInstance<T>>)
     : (new Proxy(TargetClass, {
         // Intercept constructng an instance
         construct: (_TargetClass: Class<T>, args: any[]): EnttInstance<T> => {
@@ -383,7 +390,7 @@ export function enttify<T extends object>(TargetClass: Class<T>): Class<EnttInst
           const handler = createProxyhandlerForEnttInstance(target);
           // Process all initially set property values
           for (const key of Object.keys(target)) {
-            target[key] = handler.set(target, key, target[key], undefined);
+            (target as any)[key] = handler.set?.(target, key, (target as any)[key], undefined);
           }
           // Compose a proxy to the original instance, implementing dynamic EnTT functionality
           const proxy = new Proxy(target, handler) as EnttInstance<T>;
@@ -427,7 +434,7 @@ function createProxyhandlerForEnttInstance<T extends object>(target: T): ProxyHa
       // Get property definition
       const definition = getDecoratedClassPropertyDefinition(target, key);
       // Process value through all registered getter hooks
-      let processed = target[key];
+      let processed = (target as any)[key];
       for (const propertyDecooratorSymbol of definition.decorators.symbolsInOrderOfApplication) {
         const decoratorDefinition = customDecorators[propertyDecooratorSymbol];
         if (decoratorDefinition.onPropertyGet) {
@@ -460,7 +467,7 @@ function createProxyhandlerForEnttInstance<T extends object>(target: T): ProxyHa
         }
       }
       // Set and return processed value
-      return (processedTarget[processedKey] = processedValue);
+      return ((processedTarget as any)[processedKey] = processedValue);
     },
   };
 }

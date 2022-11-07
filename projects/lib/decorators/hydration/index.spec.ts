@@ -20,17 +20,17 @@ describe('EnTT HYDRATION decorators and services', () => {
       @def
       @bind({})
       @cast({})
-      public pub: string;
+      public pub!: string;
       @def public pubUndefined?: string;
       @def public pubUndefinedExplicit?: string = undefined;
       @def public pubUndefinedValue?: string = 'public';
       // Protected properties
-      @def protected prot: string;
+      @def protected prot!: string;
       @def protected protUndefined?: string;
       @def protected protUndefinedExplicit?: string = undefined;
       @def protected protUndefinedValue?: string = 'protected';
       // Private properties
-      @def private priv: string;
+      @def private priv!: string;
       @def private privUndefined?: string;
       @def private privUndefinedExplicit?: string = undefined;
       @def private privUndefinedValue?: string = 'private';

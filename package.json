@@ -1,18 +1,22 @@
 {
-  "name": "@ofzza/entt",
-  "version": "4.0.0-alpha-1",
+  "name": "en-tt",
+  "version": "0.0.0",
   "description": "Modular TypeScript data-modeling solution, implementing nestable serialization/deserialization and flexible validation",
   "private": false,
-  "main": "./dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./docs/index.js",
+  "types": "./docs/index.d.ts",
   "scripts": {
-    "build": "prettier --write . && tsc --build --clean && tsc",
-    "dev": "tsc -w",
-    "test": "tsc --build --clean && tsc && npx jasmine --config=./jasmine.json"
+    "build-lib": "prettier --write . && tsc --build --clean && tsc --project tsconfig.lib.json",
+    "dev-lib": "tsc --watch --project tsconfig.lib.json",
+    "test-lib": "tsc --build --clean && tsc --project tsconfig.spec.json && npx jasmine --config=./jasmine.json",
+    "build-showcase": "ng build",
+    "dev-showcase": "ng serve",
+    "test-showcase": "ng test",
+    "build-docs": "./scripts/build-docs.sh"
   },
   "pre-commit": [
-    "build",
-    "test"
+    "test-lib",
+    "build-docs"
   ],
   "repository": {
     "type": "git",
@@ -34,18 +38,39 @@
     "url": "https://github.com/ofzza/enTT/issues"
   },
   "homepage": "https://github.com/ofzza/enTT#readme",
+  "dependencies": {
+    "@angular/animations": "^14.2.0",
+    "@angular/common": "^14.2.0",
+    "@angular/compiler": "^14.2.0",
+    "@angular/core": "^14.2.0",
+    "@angular/forms": "^14.2.0",
+    "@angular/platform-browser": "^14.2.0",
+    "@angular/platform-browser-dynamic": "^14.2.0",
+    "@angular/router": "^14.2.0",
+    "@ofzza/ngx-showcase": "^0.0.1-alpha-7",
+    "rxjs": "~7.5.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.11.4"
+  },
   "devDependencies": {
-    "@types/jasmine": "^4.3.0",
+    "@angular-devkit/build-angular": "^14.2.8",
+    "@angular/cli": "~14.2.7",
+    "@angular/compiler-cli": "^14.2.0",
+    "@types/jasmine": "~4.0.0",
     "@types/node": "^18.11.8",
-    "eslint": "^8.26.0",
-    "jasmine": "^4.5.0",
+    "jasmine": "~4.3.0",
+    "jasmine-core": "~4.3.0",
     "jasmine-spec-reporter": "^7.0.0",
     "joi": "^17.6.4",
     "joi-browser": "^13.4.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.1.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.0.0",
     "pre-commit": "^1.2.2",
     "prettier": "^2.7.1",
-    "tslib": "^2.4.0",
-    "typescript": "^4.8.4",
+    "typescript": "~4.7.2",
     "yup": "^0.32.11"
   }
 }

@@ -4,9 +4,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build",
+      "label": "build-lib",
       "type": "npm",
-      "script": "build",
+      "script": "build-lib",
       "group": {
         "kind": "build",
         "isDefault": true
