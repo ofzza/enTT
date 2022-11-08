@@ -23,7 +23,30 @@
             "polyfills": "projects/showcase/src/polyfills.ts",
             "tsConfig": "projects/showcase/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": ["projects/showcase/src/favicon.ico", "projects/showcase/src/assets"],
+            "assets": [
+              "projects/showcase/src/favicon.ico",
+              "projects/showcase/src/assets",
+              {
+                "glob": "package.json",
+                "input": ".",
+                "output": "/"
+              },
+              {
+                "glob": "LICENSE",
+                "input": ".",
+                "output": "/"
+              },
+              {
+                "glob": "README.md",
+                "input": ".",
+                "output": "/"
+              },
+              {
+                "glob": "**",
+                "input": "./readme",
+                "output": "/readme"
+              }
+            ],
             "styles": ["projects/showcase/src/styles.scss"],
             "scripts": []
           },

@@ -3,15 +3,16 @@
 
 // Import dependencies
 import { Component } from '@angular/core';
-import { MarkdownService, HighlightService } from '@ofzza/ngx-showcase';
+import { HighlightService } from '@ofzza/ngx-showcase';
 
 // Import pages
 import { routes } from './routes';
 
 // Import highlight.js languages
-// import xml from 'highlight.js/lib/languages/xml';
-// import javascript from 'highlight.js/lib/languages/javascript';
-// import css from 'highlight.js/lib/languages/css';
+import 'highlight.js';
+import xml from 'highlight.js/lib/languages/xml';
+import javascript from 'highlight.js/lib/languages/javascript';
+import css from 'highlight.js/lib/languages/css';
 
 /**
  * Showcase application main component
@@ -29,8 +30,8 @@ export class AppComponent {
 
   constructor(highlight: HighlightService) {
     // Register highlighting languages
-    // highlight.registerLanguage(['xml', 'html'], xml);
-    // highlight.registerLanguage(['js', 'javascript'], javascript);
-    // highlight.registerLanguage(['css'], css);
+    highlight.registerLanguage(['xml', 'html'], xml);
+    highlight.registerLanguage(['js', 'javascript'], javascript);
+    highlight.registerLanguage(['css'], css);
   }
 }

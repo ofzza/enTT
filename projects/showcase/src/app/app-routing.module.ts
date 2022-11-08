@@ -7,11 +7,14 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ShowcaseAppModule, ShowcaseBasedRouting } from '@ofzza/ngx-showcase';
 
-// Import pages
+// Import pages/routes
+import { FrontpageComponent } from './pages';
 import { routes as pageRoutes } from './routes';
 
 // Define routes
 const routes: Routes = [
+  // Frontpage
+  { path: '', component: FrontpageComponent },
   // Generated component pages' routes
   ...ShowcaseBasedRouting.generateRoutingModuleRoutes(pageRoutes),
   // Redirect to default
