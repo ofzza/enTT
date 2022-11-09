@@ -23,6 +23,7 @@
             "polyfills": "projects/showcase/src/polyfills.ts",
             "tsConfig": "projects/showcase/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "baseHref": "/enTT/",
             "assets": [
               "projects/showcase/src/favicon.ico",
               "projects/showcase/src/assets",
@@ -52,11 +53,16 @@
           },
           "configurations": {
             "production": {
+              "optimization": {
+                "fonts": true,
+                "styles": true,
+                "scripts": false
+              },
               "budgets": [
                 {
                   "type": "initial",
                   "maximumWarning": "2mb",
-                  "maximumError": "4mb"
+                  "maximumError": "10mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -91,6 +97,9 @@
             },
             "development": {
               "browserTarget": "showcase:build:development"
+            },
+            "options": {
+              "servePath": "/enTT/"
             }
           },
           "defaultConfiguration": "development"
