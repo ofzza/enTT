@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { isProduction, Class, PropertyName, createCustomDecorator } from '../../lib';
+import { isProduction, Class, PropertyName, createPropertyCustomDecorator } from '../../lib';
 
 // #region @Hydratable decorator
 
@@ -23,7 +23,7 @@ type HydratableDecoratorConfiguration = {
  * @returns Property decorator
  */
 export function Hydratable(config: HydratableDecoratorConfiguration) {
-  return createCustomDecorator(() => config, hydratableDecoratorSymbol);
+  return createPropertyCustomDecorator(() => config, hydratableDecoratorSymbol);
 }
 
 // #endregion

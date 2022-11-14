@@ -2,6 +2,6 @@
 // ----------------------------------------------------------------------------
 
 // (re)export
-export * from './logging';
-export * from './mode';
 export * from './types';
+export * from './mode';
+export * from './logging';

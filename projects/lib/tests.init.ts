@@ -5,8 +5,8 @@
 import { SpecReporter } from 'jasmine-spec-reporter';
 
 // Override default logging
-// import { setLogging } from './lib';
-// setLogging(undefined);
+import { setLogging } from './lib';
+setLogging(() => {});
 
 /**
  * ASserts truthfulness of an expression

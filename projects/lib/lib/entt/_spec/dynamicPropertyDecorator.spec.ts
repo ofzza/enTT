@@ -3,7 +3,7 @@
 
 // Import dependencies
 import { assert } from '../../../tests.init';
-import { Info, Warning, createCustomDecorator, enttify, getUnderlyingEnttifiedInstance, verifyDecoratorUsage } from '../';
+import { Info, Warning, createPropertyCustomDecorator, enttify, getUnderlyingEnttifiedInstance, verifyDecoratorUsage } from '../';
 
 // Holds warnings thrown by `verifyDecoratorUsage()` calls, out in public for test inspection purposes
 const warnings: (Info | Warning | Error)[] = [];
@@ -15,14 +15,10 @@ const numericDateValueDecoratorSymbol = Symbol('Numeric date value property deco
  * @returns Property decorator
  */
 function NumericDateValue() {
-  return createCustomDecorator(
+  return createPropertyCustomDecorator(
     {
       onPropertyGet: (value: number): Date => new Date(value),
-      onPropertySet: ({ target, key, value }) => ({
-        target,
-        key,
-        value: value.getTime(),
-      }),
+      onPropertySet: ({ target, key, value }) => value.getTime(),
     },
     numericDateValueDecoratorSymbol,
   );
@@ -35,14 +31,10 @@ const stringDateValueDecoratorSymbol = Symbol('Numeric date value property decor
  * @returns Property decorator
  */
 function StringDateValue() {
-  return createCustomDecorator(
+  return createPropertyCustomDecorator(
     {
       onPropertyGet: (value: string): Date => new Date(value),
-      onPropertySet: ({ target, key, value }) => ({
-        target,
-        key,
-        value: value.toISOString(),
-      }),
+      onPropertySet: ({ target, key, value }) => value.toISOString(),
     },
     stringDateValueDecoratorSymbol,
   );
@@ -55,18 +47,12 @@ const addOneDecoratorSymbol = Symbol('Add One property decorator');
  * @returns Property decorator
  */
 function AddOneValue() {
-  return createCustomDecorator(
+  return createPropertyCustomDecorator(
     {
       onPropertyGet: (value: number): number => {
         return value + 1;
       },
-      onPropertySet: ({ target, key, value }) => {
-        return {
-          target,
-          key,
-          value: value - 1,
-        };
-      },
+      onPropertySet: ({ target, key, value }) => value - 1,
     },
     addOneDecoratorSymbol,
   );
@@ -79,18 +65,12 @@ const timesTwoDecoratorSymbol = Symbol('Times Two property decorator');
  * @returns Property decorator
  */
 function TimesTwoValue() {
-  return createCustomDecorator(
+  return createPropertyCustomDecorator(
     {
       onPropertyGet: (value: number): number => {
         return value * 2;
       },
-      onPropertySet: ({ target, key, value }) => {
-        return {
-          target,
-          key,
-          value: value / 2,
-        };
-      },
+      onPropertySet: ({ target, key, value }) => value / 2,
     },
     timesTwoDecoratorSymbol,
   );

@@ -1,43 +1,37 @@
 // enTT lib main, base functionality
 // ----------------------------------------------------------------------------
 
-// Import and (re)export production mode functionality
-import { isProduction, setProduction } from './internals';
-export { isProduction, setProduction };
-// Import and (re)export logging functionality
-import { Logger, Warning, Info, log, setLogging } from './internals';
-export { Logger, Warning, Info, log, setLogging };
 // Import and (re)export types
 import {
   Class,
   PropertyName,
   EnttInstance,
   FullPathPropertyValue,
-  CustomDecoratorDefinition,
-  CustomStaticDecoratorConfiguration,
-  CustomDynamicDecoratorConfiguration,
+  CustomPropertyDecoratorDefinition,
+  CustomStaticPropertyDecoratorConfiguration,
+  CustomDynamicPropertyDecoratorConfiguration,
   EnttDefinition,
   EnttPropertyDefinition,
-  EnttPropertyDecoratorDefinition,
+  EnttDecoratorDefinition,
 } from './internals';
 export {
   Class,
   PropertyName,
   EnttInstance,
   FullPathPropertyValue,
-  CustomDecoratorDefinition,
-  CustomStaticDecoratorConfiguration,
-  CustomDynamicDecoratorConfiguration,
+  CustomPropertyDecoratorDefinition as CustomDecoratorDefinition,
+  CustomStaticPropertyDecoratorConfiguration as CustomStaticDecoratorConfiguration,
+  CustomDynamicPropertyDecoratorConfiguration as CustomDynamicDecoratorConfiguration,
   EnttDefinition,
   EnttPropertyDefinition,
-  EnttPropertyDecoratorDefinition,
+  EnttDecoratorDefinition as EnttPropertyDecoratorDefinition,
 };
-
-/**
- * Run verification after initial tick importing all dependencies and models:
- * - Verify all classes using decorators requiring EnTTification were EnTTified
- */
-setTimeout(() => !isProduction() && verifyDecoratorUsage());
+// Import and (re)export production mode functionality
+import { isProduction, setProduction } from './internals';
+export { isProduction, setProduction };
+// Import and (re)export logging functionality
+import { Logger, Warning, Info, log, setLogging } from './internals';
+export { Logger, Warning, Info, log, setLogging };
 
 // #region EnTT decorator helpers: Manage definitions
 
@@ -101,17 +95,17 @@ export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: T,
   propertyKey: PropertyName,
   decoratorSymbol: symbol,
-): EnttPropertyDecoratorDefinition;
+): EnttDecoratorDefinition;
 export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: Class<T>,
   propertyKey: PropertyName,
   decoratorSymbol: symbol,
-): EnttPropertyDecoratorDefinition;
+): EnttDecoratorDefinition;
 export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: Class<T> | T,
   propertyKey: PropertyName,
   decoratorSymbol: symbol,
-): EnttPropertyDecoratorDefinition {
+): EnttDecoratorDefinition {
   // Check if using instance of class to get definition
   if (typeof target !== 'function') {
     return getDecoratedClassPropertyDecoratorDefinition(target.constructor, propertyKey, decoratorSymbol);
@@ -122,7 +116,7 @@ export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
 
   // If doesn't exist, create, register and return decorator definition
   if (!definition.decorators.bySymbol[decoratorSymbol]) {
-    const decorator = new EnttPropertyDecoratorDefinition(target as Class<T>, propertyKey, decoratorSymbol);
+    const decorator = new EnttDecoratorDefinition(target as Class<T>, propertyKey, decoratorSymbol);
     definition.decorators.bySymbol[decoratorSymbol] = decorator;
   }
   // Register decorator application order
@@ -130,132 +124,6 @@ export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
 
   // Return definition
   return definition.decorators.bySymbol[decoratorSymbol];
-}
-
-// #endregion
-
-// #region EnTT decorator helpers: Implement a custom decorator
-
-/**
- * Definitions for all custom decorators
- */
-const customDecorators: Record<symbol, CustomDecoratorDefinition<any, any, any>> = {};
-
-/**
- * Array of classes requiring enttification, queued for verification if they were EnTTified
- */
-const validationQueueForClassesRequiringEnttification: { target: Class<object>; message: Info | Warning | Error }[] = [];
-
-/**
- * Helper function used to create a custom decoorator.
- *
- * Creating a decorator which will work even on classes that were not EnTTified:
- *
- * ```ts
- * function MyStaticPropertyDecorator(data: any) {
- *   return createCustomDecorator(
- *     undefined
- *     Symbol('My property decorator symbol')
- *   );
- * }
- * class MyClass {
- *   @MyStaticPropertyDecorator({ my: 'configuration' })
- *   public myProperty: any;
- * }
- * ```
- *
- * @param configuration Empty configuration
- * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
- * @returns Static decorator
- */
-export function createCustomDecorator(): (target: any, key: PropertyName) => void;
-export function createCustomDecorator(configuration: undefined, decoratorSymbol?: symbol): (target: any, key: PropertyName) => void;
-/**
- * Helper function used to create a custom decoorator.
- *
- * Creating a decorator which will work even on classes that were not EnTTified:
- *
- * ```ts
- * function MyStaticPropertyDecorator(data: any) {
- *   return createCustomDecorator(
- *     definition => data, // Returned data which will be stored in decorator definition once decorator is used to decorate a property
- *     Symbol('My property decorator symbol')
- *   );
- * }
- * class MyClass {
- *   @MyStaticPropertyDecorator({ my: 'configuration' })
- *   public myProperty: any;
- * }
- * ```
- *
- * @param configuration A Callback function expected to return data which will be stored within a property's decorator definition once decorator is used to decorate a property
- * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
- * @returns Static decorator
- */
-export function createCustomDecorator(configuration: CustomStaticDecoratorConfiguration, decoratorSymbol?: symbol): (target: any, key: PropertyName) => void;
-/**
- * Helper function used to create a custom decoorator.
- *
- * Creating a decorator with proxy hooks, which will work only on EnTTified classes:
- *
- * ```ts
- * function MyDynamicPropertyDecorator(data: any) {
- *   return createCustomDecorator(
- *     {
- *       onPropertyGet?: (target, prop) => target[prop],
- *       onPropertySet?: (target, prop, value) => (target[prop] = value),
- *       setDecoratorDefinitionData: definition => data, // Returned data which will be stored in decorator definition once decorator is used to decorate a property
- *     },
- *     Symbol('My property decorator symbol')
- *   );
- * }
- * class MyClass {
- *   @MyDynamicPropertyDecorator({ my: 'configuration' })
- *   public myProperty: any;
- * }
- * ```
- *
- * @param configuration Decorator configuration with a callback function returning data to be stored within the decorator definition
- * and optional proxy hooks to be called when underlying decorated object is being accessed.
- * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
- * @returns Dynamic decorator
- */
-export function createCustomDecorator<TInstance extends object, TValOuter, TValInner>(
-  configuration: CustomDynamicDecoratorConfiguration<TInstance, TValOuter, TValInner>,
-  decoratorSymbol?: symbol,
-): (target: any, key: PropertyName) => void;
-export function createCustomDecorator<TInstance extends object, TOuter, TInner>(
-  configuration?: CustomStaticDecoratorConfiguration | CustomDynamicDecoratorConfiguration<TInstance, TOuter, TInner>,
-  decoratorSymbol: symbol = Symbol(),
-): (target: Class<TInstance>, key: PropertyName, descriptor: PropertyDescriptor) => void {
-  // TODO: Need I update `target: any` to `target: TNew<T>`???
-  return (target: Class<TInstance>, key: PropertyName, descriptor: PropertyDescriptor) => {
-    // Get decorator definition for the property
-    const definition = getDecoratedClassPropertyDecoratorDefinition(target, key, decoratorSymbol);
-
-    // Process static decorator with only definition update provided and no EnTT proxy hooks
-    if (configuration && typeof configuration === 'function') {
-      // Update definition for the property
-      definition.data = configuration(definition);
-      // Register decorator definition
-      customDecorators[decoratorSymbol] = new CustomDecoratorDefinition();
-    }
-    // Process dynamic decorator with EnTT proxy hooks
-    else if (configuration && typeof configuration === 'object') {
-      // Update definition for the property
-      definition.data = configuration?.setDecoratorDefinitionData?.(definition);
-      // Register decorator definition
-      customDecorators[decoratorSymbol] = new CustomDecoratorDefinition(configuration?.onPropertyGet, configuration?.onPropertySet);
-      // If decorator requires a EnTTified model, queue up verification if the model was indeed EnTTified
-      if (configuration.onPropertyGet || configuration.onPropertySet) {
-        // Register class as requiring EnTTification
-        validationQueueForClassesRequiringEnttification.push({
-          target,
-          message: new Warning(`An EnTT decorator, applied to ${target.constructor.name}.${key.toString()}, requires the class to be EnTTified before usage!`),
-        });
-      }
-    }
-  };
 }
 
 /**
@@ -319,7 +187,7 @@ export function filterDefinition(
     );
     // Copy decorators.bySymbol
     if (definition.decorators.bySymbol[decoratorSymbol]) {
-      filteredPropertyDefinition.decorators.bySymbol[decoratorSymbol] = new EnttPropertyDecoratorDefinition(
+      filteredPropertyDefinition.decorators.bySymbol[decoratorSymbol] = new EnttDecoratorDefinition(
         definition.owner,
         definition.ownerPropertyKey,
         decoratorSymbol,
@@ -337,6 +205,15 @@ export function filterDefinition(
   }
 }
 
+// #endregion
+
+// #region EnTT decorator helpers: Verify classes EnTT-ified
+
+/**
+ * Array of classes requiring enttification, queued for verification if they were EnTTified
+ */
+const validationQueueForClassesRequiringEnttification: { target: Class<object>; message: Info | Warning | Error }[] = [];
+
 /**
  * Verification:
  * - Verify all classes using decorators requiring EnTTification were EnTTified
@@ -351,11 +228,157 @@ export function verifyDecoratorUsage(logger?: Logger) {
   });
 }
 
+/**
+ * Run verification after initial tick importing all dependencies and models:
+ * - Verify all classes using decorators requiring EnTTification were EnTTified
+ */
+setTimeout(() => !isProduction() && verifyDecoratorUsage());
+
 // #endregion
 
-// #region Base decorators
+// #region EnTT decorator helpers: Implement a custom class decorator
 
-export const def = createCustomDecorator(undefined);
+/**
+ * Definitions for all custom class decorators
+ */
+const customClassDecorators: Record<symbol, CustomPropertyDecoratorDefinition<any, any, any>> = {};
+
+/**
+ * TODO: ...
+ * @param configuration
+ * @param decoratorSymbol
+ * @returns
+ */
+export function createClassCustomDecorator(
+  configuration: CustomStaticPropertyDecoratorConfiguration,
+  decoratorSymbol?: symbol,
+): (target: any, key: PropertyName) => void {
+  return () => ({});
+}
+
+// #endregion
+
+// #region EnTT decorator helpers: Implement a custom property decorator
+
+/**
+ * Definitions for all custom property decorators
+ */
+const customPropertyDecorators: Record<symbol, CustomPropertyDecoratorDefinition<any, any, any>> = {};
+
+/**
+ * Helper function used to create a custom decoorator.
+ *
+ * Creating a property decorator which will work even on classes that were not EnTTified:
+ *
+ * ```ts
+ * function MyStaticPropertyDecorator(data: any) {
+ *   return createCustomDecorator(
+ *     undefined
+ *     Symbol('My property decorator symbol')
+ *   );
+ * }
+ * class MyClass {
+ *   @MyStaticPropertyDecorator({ my: 'configuration' })
+ *   public myProperty: any;
+ * }
+ * ```
+ *
+ * @param configuration Empty configuration
+ * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
+ * @returns Static decorator
+ */
+export function createPropertyCustomDecorator(): (target: any, key: PropertyName) => void;
+export function createPropertyCustomDecorator(configuration: undefined, decoratorSymbol?: symbol): (target: any, key: PropertyName) => void;
+/**
+ * Helper function used to create a custom decoorator.
+ *
+ * Creating a property decorator which will work even on classes that were not EnTTified:
+ *
+ * ```ts
+ * function MyStaticPropertyDecorator(data: any) {
+ *   return createCustomDecorator(
+ *     definition => data, // Returned data which will be stored in decorator definition once decorator is used to decorate a property
+ *     Symbol('My property decorator symbol')
+ *   );
+ * }
+ * class MyClass {
+ *   @MyStaticPropertyDecorator({ my: 'configuration' })
+ *   public myProperty: any;
+ * }
+ * ```
+ *
+ * @param configuration A Callback function expected to return data which will be stored within a property's decorator definition once decorator is used to decorate a property
+ * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
+ * @returns Static decorator
+ */
+export function createPropertyCustomDecorator(
+  configuration: CustomStaticPropertyDecoratorConfiguration,
+  decoratorSymbol?: symbol,
+): (target: any, key: PropertyName) => void;
+/**
+ * Helper function used to create a custom decoorator.
+ *
+ * Creating a property decorator with proxy hooks, which will work only on EnTTified classes:
+ *
+ * ```ts
+ * function MyDynamicPropertyDecorator(data: any) {
+ *   return createCustomDecorator(
+ *     {
+ *       onPropertyGet?: (target, prop) => target[prop],
+ *       onPropertySet?: (target, prop, value) => (target[prop] = value),
+ *       setDecoratorDefinitionData: definition => data, // Returned data which will be stored in decorator definition once decorator is used to decorate a property
+ *     },
+ *     Symbol('My property decorator symbol')
+ *   );
+ * }
+ * class MyClass {
+ *   @MyDynamicPropertyDecorator({ my: 'configuration' })
+ *   public myProperty: any;
+ * }
+ * ```
+ *
+ * @param configuration Decorator configuration with a callback function returning data to be stored within the decorator definition
+ * and optional proxy hooks to be called when underlying decorated object is being accessed.
+ * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
+ * @returns Dynamic decorator
+ */
+export function createPropertyCustomDecorator<TInstance extends object, TValOuter, TValInner>(
+  configuration: CustomDynamicPropertyDecoratorConfiguration<TInstance, TValOuter, TValInner>,
+  decoratorSymbol?: symbol,
+): (target: any, key: PropertyName) => void;
+export function createPropertyCustomDecorator<TInstance extends object, TOuter, TInner>(
+  configuration?: CustomStaticPropertyDecoratorConfiguration | CustomDynamicPropertyDecoratorConfiguration<TInstance, TOuter, TInner>,
+  decoratorSymbol: symbol = Symbol(),
+): (target: Class<TInstance>, key: PropertyName, descriptor: PropertyDescriptor) => void {
+  // TODO: Need I update `target: any` to `target: TNew<T>`???
+  return (target: Class<TInstance>, key: PropertyName, descriptor: PropertyDescriptor) => {
+    // Get decorator definition for the property
+    const definition = getDecoratedClassPropertyDecoratorDefinition(target, key, decoratorSymbol);
+
+    // Process static decorator with only definition update provided and no EnTT proxy hooks
+    if (configuration && typeof configuration === 'function') {
+      // Update definition for the property
+      definition.data = configuration(definition);
+      // Register decorator definition
+      customPropertyDecorators[decoratorSymbol] = new CustomPropertyDecoratorDefinition();
+    }
+    // Process dynamic decorator with EnTT proxy hooks
+    else if (configuration && typeof configuration === 'object') {
+      // Update definition for the property
+      definition.data = configuration?.setDecoratorDefinitionData?.(definition);
+      // Register decorator definition
+      customPropertyDecorators[decoratorSymbol] = new CustomPropertyDecoratorDefinition(configuration?.onPropertyGet, configuration?.onPropertySet);
+      // If decorator requires a EnTTified model, queue up verification if the model was indeed EnTTified
+      if (configuration.onPropertyGet || configuration.onPropertySet) {
+        // Register class as requiring EnTTification
+        validationQueueForClassesRequiringEnttification.push({
+          target,
+          message: new Warning(`An EnTT decorator, applied to ${target.constructor.name}.${key.toString()}, requires the class to be EnTTified before usage!`),
+        });
+      }
+    }
+  };
+}
 
 // #endregion
 
@@ -436,7 +459,7 @@ function createProxyhandlerForEnttInstance<T extends object>(target: T): ProxyHa
       // Process value through all registered getter hooks
       let processed = (target as any)[key];
       for (const propertyDecooratorSymbol of definition.decorators.symbolsInOrderOfApplication) {
-        const decoratorDefinition = customDecorators[propertyDecooratorSymbol];
+        const decoratorDefinition = customPropertyDecorators[propertyDecooratorSymbol];
         if (decoratorDefinition.onPropertyGet) {
           processed = decoratorDefinition.onPropertyGet(processed);
         }
@@ -454,20 +477,16 @@ function createProxyhandlerForEnttInstance<T extends object>(target: T): ProxyHa
       // Get property definition
       const definition = getDecoratedClassPropertyDefinition(target, key);
       // Process value through all registered setter hooks
-      let processedTarget = target;
-      let processedKey = key;
       let processedValue = value;
       for (const propertyDecooratorSymbol of [...definition.decorators.symbolsInOrderOfApplication].reverse()) {
-        const decoratorDefinition = customDecorators[propertyDecooratorSymbol];
+        const decoratorDefinition = customPropertyDecorators[propertyDecooratorSymbol];
         if (decoratorDefinition.onPropertySet) {
-          const v = decoratorDefinition.onPropertySet({ target: processedTarget, key: processedKey, value: processedValue });
-          processedTarget = v.target || processedTarget;
-          processedKey = v.key || processedKey;
-          processedValue = v.value;
+          const value = decoratorDefinition.onPropertySet({ target, key, value: processedValue });
+          processedValue = value;
         }
       }
       // Set and return processed value
-      return ((processedTarget as any)[processedKey] = processedValue);
+      return ((target as any)[key] = processedValue);
     },
   };
 }

@@ -7,13 +7,19 @@
   - [ ] Track last property read
 - [ ] Provide a service for tracking if changes since last checked
 
-# Property decorators
+# Custom Class decorators
 
-## @Def base decorator
+- [ ] Add support for custom class decorators
+  - [ ] Static class decorators
+  - [ ] Dynamic class decorators
 
-- [ ] Implement and enforce usage (to the extent possible) of `@def` decorator on all properties
+# Implement core decorators
 
-## @Hydration decorators
+## @Def core property decorator
+
+- [x] Implement and enforce usage (to the extent possible) of `@def` decorator on all properties
+
+## @Hydration core decorators and companion services
 
 - [ ] Bind properties for (re)hydrate/dehydrate calls
 - [ ] Cast property values on (re)hydrate call as single/array/hashmap of:
@@ -21,7 +27,7 @@
   - [ ] Other classes (ex: Date, Map, Set, ...)
 - [ ] Consider handling circular references
 
-## @Validation decorator
+## @Validation core decorators and companion services
 
 - [ ] Define valudation expressions using:
   - [ ] Direct function

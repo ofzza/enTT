@@ -3,7 +3,7 @@
 
 // Import dependencies
 import { assert } from '../../../tests.init';
-import { Class, PropertyName, createCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
+import { Class, PropertyName, createPropertyCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
 
 // Unique identifier symbol identifying the DefaultValue decorator
 const defaultValueDecoratorSymbol = Symbol('Default value property decorator');
@@ -13,7 +13,7 @@ const defaultValueDecoratorSymbol = Symbol('Default value property decorator');
  * @returns Property decorator
  */
 function DefaultValue(data: any) {
-  return createCustomDecorator(() => data, defaultValueDecoratorSymbol);
+  return createPropertyCustomDecorator(() => data, defaultValueDecoratorSymbol);
 }
 
 // Unique identifier symbol identifying the Label decorator
@@ -24,7 +24,7 @@ const labelDecoratorSymbol = Symbol('Label property decorator');
  * @returns Property decorator
  */
 function Label(label: string) {
-  return createCustomDecorator(() => label, labelDecoratorSymbol);
+  return createPropertyCustomDecorator(() => label, labelDecoratorSymbol);
 }
 
 /**
@@ -104,13 +104,13 @@ export function testsStaticPropertyDecorators() {
     const definition = filterDefinition(getDecoratedClassDefinition(Test), labelDecoratorSymbol);
 
     // Entity definition exists and fetched and has correct owner info set
-    it('Definitions are set correctly and can be reached via class', () => {
+    it('Filtered definitions are set correctly and can be reached via class', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
 
     // Entity properties' definitions exists and fetched, have correct owner info set and have decorator information correctly set
-    it(`Definitions are set correctly and can be reached via class for properties`, () => {
+    it(`Filtered definitions are set correctly and can be reached via class for properties`, () => {
       assert(!!definition.properties['pub']);
       assert(definition.properties['pub'].owner === Test);
       assert(definition.properties['pub'].ownerPropertyKey === 'pub');
@@ -141,13 +141,13 @@ export function testsStaticPropertyDecorators() {
     const definition = filterDefinition(getDecoratedClassDefinition(Test).properties['pub'], labelDecoratorSymbol);
 
     // Entity definition exists and fetched and has correct owner info set
-    it('Definitions are set correctly and can be reached via class', () => {
+    it('Filtered definitions are set correctly and can be reached via class', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
 
     // Entity properties' definitions exists and fetched, have correct owner info set and have decorator information correctly set
-    it(`Definitions are set correctly and can be reached via class for properties`, () => {
+    it(`Filtered definitions are set correctly and can be reached via class for properties`, () => {
       assert(!!definition.decorators.bySymbol[labelDecoratorSymbol]);
       assert(definition.decorators.bySymbol[labelDecoratorSymbol].owner === Test);
       assert(definition.decorators.bySymbol[labelDecoratorSymbol].ownerPropertyKey === 'pub');
@@ -177,7 +177,7 @@ export function testsStaticPropertyDecorators() {
   });
 
   // Check if, given a class instance, properties can be found as having been decorated
-  describe('Definitions are set and can be reached via class instance', () => {
+  describe('Definitions are set correctly and can be reached via class instance', () => {
     // Get definitions via class instance
     const definition = getDecoratedClassDefinition(new Test());
 
@@ -208,13 +208,13 @@ export function testsStaticPropertyDecorators() {
     const definition = filterDefinition(getDecoratedClassDefinition(Test), labelDecoratorSymbol);
 
     // Entity definition exists and fetched and has correct owner info set
-    it('Definitions are set and can be reached via class instance', () => {
+    it('Filtered definitions are set and can be reached via class instance', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
 
     // Entity properties' definitions exists and fetched, have correct owner info set and have decorator information correctly set
-    it(`Definitions are set correctly and can be reached via class for properties`, () => {
+    it(`Filtered definitions are set correctly and can be reached via class for properties`, () => {
       assert(!!definition.properties['pub']);
       assert(definition.properties['pub'].owner === Test);
       assert(definition.properties['pub'].ownerPropertyKey === 'pub');
@@ -245,13 +245,13 @@ export function testsStaticPropertyDecorators() {
     const definition = filterDefinition(getDecoratedClassDefinition(Test).properties['pub'], labelDecoratorSymbol);
 
     // Entity definition exists and fetched and has correct owner info set
-    it('Definitions are set and can be reached via class instance', () => {
+    it('Filtered definitions are set and can be reached via class instance', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
 
     // Entity properties' definitions exists and fetched, have correct owner info set and have decorator information correctly set
-    it(`Definitions are set correctly and can be reached via class for properties`, () => {
+    it(`Filtered definitions are set correctly and can be reached via class for properties`, () => {
       assert(!!definition.decorators.bySymbol[labelDecoratorSymbol]);
       assert(definition.decorators.bySymbol[labelDecoratorSymbol].owner === Test);
       assert(definition.decorators.bySymbol[labelDecoratorSymbol].ownerPropertyKey === 'pub');
