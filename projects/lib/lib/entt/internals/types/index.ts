@@ -7,6 +7,10 @@
  * A class which constructs instances of type T
  */
 export type Class<T> = new (...args: any[]) => T;
+/**
+ * An instance of type T of a class which constructs instances of type T
+ */
+export type ClassInstance<T> = InstanceType<Class<T>>;
 
 /**
  * Value can be used as property name
@@ -185,11 +189,11 @@ export class EnttPropertyDefinition {
 export class EnttDecoratorDefinition {
   /**
    * Constructor
+   * @param decoratorSymbol Unique symbol of the decorator this definition refers to
    * @param owner Stores the parent class this definition refers to
    * @param ownerPropertyKey Name of the property this definition refers to
-   * @param ownerPropertyDecoratorSymbol Unique symbol of the decorator this definition refers to
    */
-  constructor(public readonly owner: Class<object>, public readonly ownerPropertyKey: PropertyName, public readonly ownerPropertyDecoratorSymbol: symbol) {}
+  constructor(public readonly decoratorSymbol: symbol, public readonly owner: Class<object>, public readonly ownerPropertyKey?: PropertyName) {}
   /**
    * Holds data the decorator was configured with for the property it is decorating
    */
