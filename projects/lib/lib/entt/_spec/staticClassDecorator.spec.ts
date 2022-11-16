@@ -29,7 +29,7 @@ function AsString(data: (target: Record<PropertyName, string>) => string) {
 
 function createInstanceFromText<T extends object>(target: Class<T>, text: string) {
   const definition = getDecoratedClassDefinition(target);
-  const valuesFromStringFn = definition.decorators.bySymbol[fromStringDecoratorSymbol].data as (serialized: string) => Record<PropertyName, string>;
+  const valuesFromStringFn = definition.decorators.bySymbol[fromStringDecoratorSymbol][0].data as (serialized: string) => Record<PropertyName, string>;
   const valuesFromString = valuesFromStringFn(text) as T;
   const instance = new target();
   for (const key of Object.keys(valuesFromString)) {
@@ -45,7 +45,7 @@ function createInstanceFromText<T extends object>(target: Class<T>, text: string
  */
 function convertInstanceToText<T extends object>(target: ClassInstance<T>) {
   const definition = getDecoratedClassDefinition(target);
-  const instanceToStringFn = definition.decorators.bySymbol[asStringDecoratorSymbol].data as (target: Record<PropertyName, string>) => string;
+  const instanceToStringFn = definition.decorators.bySymbol[asStringDecoratorSymbol][0].data as (target: Record<PropertyName, string>) => string;
   return instanceToStringFn(target as Record<PropertyName, string>);
 }
 
@@ -78,12 +78,14 @@ export function testsStaticClassDecorators() {
     it('Definitions are set correctly, can be reached via class and contain decorator definitions and data', () => {
       // FromString decorator has stored data into its definitions
       assert(!!definition.decorators.bySymbol[fromStringDecoratorSymbol]);
-      assert(definition.decorators.bySymbol[fromStringDecoratorSymbol].owner === Test);
-      assert(!!definition.decorators.bySymbol[fromStringDecoratorSymbol].data);
+      assert(definition.decorators.bySymbol[fromStringDecoratorSymbol].length === 1);
+      assert(definition.decorators.bySymbol[fromStringDecoratorSymbol][0].owner === Test);
+      assert(!!definition.decorators.bySymbol[fromStringDecoratorSymbol][0].data);
       // AsString decorator has stored data into its definitions
       assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol]);
-      assert(definition.decorators.bySymbol[asStringDecoratorSymbol].owner === Test);
-      assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol].data);
+      assert(definition.decorators.bySymbol[asStringDecoratorSymbol].length === 1);
+      assert(definition.decorators.bySymbol[asStringDecoratorSymbol][0].owner === Test);
+      assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol][0].data);
     });
   });
 
@@ -103,8 +105,9 @@ export function testsStaticClassDecorators() {
       assert(!definition.decorators.bySymbol[fromStringDecoratorSymbol]);
       // AsString decorator has been filtered and has stored data into its definitions
       assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol]);
-      assert(definition.decorators.bySymbol[asStringDecoratorSymbol].owner === Test);
-      assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol].data);
+      assert(definition.decorators.bySymbol[asStringDecoratorSymbol].length === 1);
+      assert(definition.decorators.bySymbol[asStringDecoratorSymbol][0].owner === Test);
+      assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol][0].data);
     });
   });
 
@@ -132,12 +135,14 @@ export function testsStaticClassDecorators() {
     it('Definitions are set correctly, can be reached via class and contain decorator definitions and data', () => {
       // FromString decorator has stored data into its definitions
       assert(!!definition.decorators.bySymbol[fromStringDecoratorSymbol]);
-      assert(definition.decorators.bySymbol[fromStringDecoratorSymbol].owner === Test);
-      assert(!!definition.decorators.bySymbol[fromStringDecoratorSymbol].data);
+      assert(definition.decorators.bySymbol[fromStringDecoratorSymbol].length === 1);
+      assert(definition.decorators.bySymbol[fromStringDecoratorSymbol][0].owner === Test);
+      assert(!!definition.decorators.bySymbol[fromStringDecoratorSymbol][0].data);
       // AsString decorator has stored data into its definitions
       assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol]);
-      assert(definition.decorators.bySymbol[asStringDecoratorSymbol].owner === Test);
-      assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol].data);
+      assert(definition.decorators.bySymbol[asStringDecoratorSymbol].length === 1);
+      assert(definition.decorators.bySymbol[asStringDecoratorSymbol][0].owner === Test);
+      assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol][0].data);
     });
   });
 
@@ -157,8 +162,9 @@ export function testsStaticClassDecorators() {
       assert(!definition.decorators.bySymbol[fromStringDecoratorSymbol]);
       // AsString decorator has been filtered and has stored data into its definitions
       assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol]);
-      assert(definition.decorators.bySymbol[asStringDecoratorSymbol].owner === Test);
-      assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol].data);
+      assert(definition.decorators.bySymbol[asStringDecoratorSymbol].length === 1);
+      assert(definition.decorators.bySymbol[asStringDecoratorSymbol][0].owner === Test);
+      assert(!!definition.decorators.bySymbol[asStringDecoratorSymbol][0].data);
     });
   });
 

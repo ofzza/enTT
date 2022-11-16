@@ -13,6 +13,7 @@ import {
   getUnderlyingEnttifiedInstance,
   verifyDecoratorUsage,
 } from '../';
+import { def } from '../../../decorators';
 
 // Holds warnings thrown by `verifyDecoratorUsage()` calls, out in public for test inspection purposes
 const warnings: (Info | Warning | Error)[] = [];
@@ -45,14 +46,39 @@ function StringTitleCase() {
     stringTitleCaseDecoratorSymbol,
   );
 }
+// Unique identifier symbol identifying the SimonSays decorator
+const simonSaysDecoratorSymbol = Symbol('Simon says class decorator');
+/**
+ * Makes sure all string properties are stored as lower case string and are presented as title cased
+ * @returns Class decorator
+ */
+function SimonSays(name: string) {
+  return createClassCustomDecorator(
+    {
+      setDecoratorDefinitionData: () => name,
+      onPropertyGet: (v: FullPathPropertyValue<object, any>): any => (typeof v.value === 'string' ? `${name} says: ${v.value}` : v.value),
+      onPropertySet: (v: FullPathPropertyValue<object, any>): any =>
+        typeof v.value === 'string' && v.value.startsWith(`${name} says: `) ? v.value.substr(`${name} says: `.length) : v.value,
+    },
+    simonSaysDecoratorSymbol,
+  );
+}
 
 // Export tests
 export function testsDynamicClassDecorators() {
   @StringTitleCase()
   class _Family {
-    public father!: string;
-    public mother!: string;
-    public child!: string;
+    @def public father: string = 'homer j simpson';
+    @def public mother: string = 'marge simpson';
+    @def public child: string = 'bart el barto simpson';
+  }
+
+  @SimonSays('Apu')
+  @SimonSays('Homer')
+  @SimonSays('Moe')
+  @SimonSays('Mr. Burns')
+  class _Quotes {
+    @def public quote = `Everything's coming up Milhouse.`;
   }
 
   describe('EnTTification', () => {
@@ -64,8 +90,7 @@ export function testsDynamicClassDecorators() {
       warnings.splice(0, warnings.length);
       verifyDecoratorUsage((msg: any) => warnings.push(msg));
       familyWarnings = warnings.filter(w => w.message.includes('_Family'));
-      assert(familyWarnings.length === 2);
-      assert(familyWarnings[0] !== familyWarnings[1]);
+      assert(familyWarnings.length === 1);
 
       // EnTTify parent class
       const Family = enttify(_Family);
@@ -82,19 +107,66 @@ export function testsDynamicClassDecorators() {
       // Check if decorator definitions set properly for @StringTitleCase()
       const definition = getDecoratedClassDecoratorDefinition(_Family, stringTitleCaseDecoratorSymbol);
       assert(!!definition);
-      assert(definition.owner === _Family);
-      assert(definition.decoratorSymbol === stringTitleCaseDecoratorSymbol);
-      assert(definition.data === true);
+      assert(definition.length === 1);
+      assert(definition[0].owner === _Family);
+      assert(definition[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
+      assert(definition[0].data === true);
     });
 
     // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property setters/getters
     it('Dynamic decorators correctly hooking into property setters/getters', () => {
-      assert(false);
+      // EnTTify parent class
+      const Family = enttify(_Family);
+
+      // Initialize EnTTified class instance
+      const family = new Family();
+      // Fetch underlying object instance
+      const underlying = getUnderlyingEnttifiedInstance(family);
+
+      // Verify dynamic decorator intercepts property getters/setters during instance construction
+      assert(family.father === 'Homer J Simpson');
+      assert(family.mother === 'Marge Simpson');
+      assert(family.child === 'Bart El Barto Simpson');
+      assert(underlying.father === 'homer j simpson');
+      assert(underlying.mother === 'marge simpson');
+      assert(underlying.child === 'bart el barto simpson');
+
+      // Verify dynamic decorator intercepts property getters/setters during property value assignment
+      family.father = 'Abraham Jebediah Simpson';
+      family.mother = 'Mona Penelope Simpson';
+      family.child = 'Homer J Simpson';
+      assert(family.father === 'Abraham Jebediah Simpson');
+      assert(family.mother === 'Mona Penelope Simpson');
+      assert(family.child === 'Homer J Simpson');
+      assert(underlying.father === 'abraham jebediah simpson');
+      assert(underlying.mother === 'mona penelope simpson');
+      assert(underlying.child === 'homer j simpson');
     });
 
     // Check dynamic decorators can be stacked and will intercept getters/setters in order they were added to the property in
     it('Dynamic decorators can be stacked and preserve definition order', () => {
-      assert(false);
+      // EnTTify parent class
+      const Quotes = enttify(_Quotes);
+
+      // Initialize EnTTified class instance
+      const quotes = new Quotes();
+      // Fetch underlying object instance
+      const underlying = getUnderlyingEnttifiedInstance(quotes);
+
+      // Verify dynamic decorator intercepts property getters/setters during instance construction
+      assert(quotes.quote === `Mr. Burns says: Moe says: Homer says: Apu says: Everything's coming up Milhouse.`);
+      assert(quotes.quote === `Mr. Burns says: Moe says: Homer says: Apu says: Everything's coming up Milhouse.`);
+      assert(underlying.quote === `Everything's coming up Milhouse.`);
+
+      // Verify dynamic decorator intercepts property getters/setters during property value assignment
+      quotes.quote = `Mr. Burns says: Moe says: Homer says: Apu says: You tried your best and you failed miserably. The lesson is: Never try.`;
+      assert(quotes.quote === `Mr. Burns says: Moe says: Homer says: Apu says: You tried your best and you failed miserably. The lesson is: Never try.`);
+      assert(underlying.quote === `You tried your best and you failed miserably. The lesson is: Never try.`);
+
+      // Verify dynamic decorator intercepts property getters/setters after underlying instance property value assignment
+      underlying.quote = `I can't promise I'll try, but I'll try to try.`;
+      assert(quotes.quote === `Mr. Burns says: Moe says: Homer says: Apu says: I can't promise I'll try, but I'll try to try.`);
+      assert(underlying.quote === `I can't promise I'll try, but I'll try to try.`);
     });
   });
 }

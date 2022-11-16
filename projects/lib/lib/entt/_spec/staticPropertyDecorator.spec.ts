@@ -35,7 +35,7 @@ function Label(label: string) {
 function initializeWithDefaultValues<T extends object>(target: Class<T>): T {
   const definition = getDecoratedClassDefinition(target);
   return Object.keys(definition.properties).reduce((instance, key) => {
-    (instance as any)[key] = definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].data;
+    (instance as any)[key] = definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0]?.data;
     return instance;
   }, new target());
 }
@@ -48,7 +48,7 @@ function initializeWithDefaultValues<T extends object>(target: Class<T>): T {
 function checkDefaultValues<T extends object>(target: T): Record<PropertyName, boolean> {
   const definition = getDecoratedClassDefinition(target);
   return Object.keys(definition.properties).reduce((check, key) => {
-    (check as any)[key] = (target as any)[key] === definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].data;
+    (check as any)[key] = (target as any)[key] === definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0]?.data;
     return check;
   }, {});
 }
@@ -90,10 +90,11 @@ export function testsStaticPropertyDecorators() {
         assert(definition.properties[key].owner === Test);
         assert(definition.properties[key].ownerPropertyKey === key);
         assert(!!definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol]);
-        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].owner === Test);
-        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].ownerPropertyKey === key);
-        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].decoratorSymbol === defaultValueDecoratorSymbol);
-        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].data === defaults[key as keyof typeof defaults]);
+        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].length === 1);
+        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0].owner === Test);
+        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0].ownerPropertyKey === key);
+        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0].decoratorSymbol === defaultValueDecoratorSymbol);
+        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0].data === defaults[key as keyof typeof defaults]);
       });
     }
   });
@@ -115,10 +116,11 @@ export function testsStaticPropertyDecorators() {
       assert(definition.properties['pub'].owner === Test);
       assert(definition.properties['pub'].ownerPropertyKey === 'pub');
       assert(!!definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].owner === Test);
-      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].ownerPropertyKey === 'pub');
-      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].decoratorSymbol === labelDecoratorSymbol);
-      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].data === publicPropertyLabel);
+      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].length === 1);
+      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].owner === Test);
+      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].ownerPropertyKey === 'pub');
+      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].decoratorSymbol === labelDecoratorSymbol);
+      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].data === publicPropertyLabel);
     });
 
     // Check if filtering works
@@ -131,7 +133,7 @@ export function testsStaticPropertyDecorators() {
       // Filtered only to property decorator definition for the filtered decorator
       assert(!definition.properties['pub'].decorators.bySymbol[defaultValueDecoratorSymbol]);
       assert(!!definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.properties['pub'].decorators.symbolsInOrderOfApplication.length === 1);
+      assert(definition.properties['pub'].decorators.all.length === 1);
     });
   });
 
@@ -149,10 +151,11 @@ export function testsStaticPropertyDecorators() {
     // Entity properties' definitions exists and fetched, have correct owner info set and have decorator information correctly set
     it(`Filtered definitions are set correctly and can be reached via class for properties`, () => {
       assert(!!definition.decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.decorators.bySymbol[labelDecoratorSymbol].owner === Test);
-      assert(definition.decorators.bySymbol[labelDecoratorSymbol].ownerPropertyKey === 'pub');
-      assert(definition.decorators.bySymbol[labelDecoratorSymbol].decoratorSymbol === labelDecoratorSymbol);
-      assert(definition.decorators.bySymbol[labelDecoratorSymbol].data === publicPropertyLabel);
+      assert(definition.decorators.bySymbol[labelDecoratorSymbol].length === 1);
+      assert(definition.decorators.bySymbol[labelDecoratorSymbol][0].owner === Test);
+      assert(definition.decorators.bySymbol[labelDecoratorSymbol][0].ownerPropertyKey === 'pub');
+      assert(definition.decorators.bySymbol[labelDecoratorSymbol][0].decoratorSymbol === labelDecoratorSymbol);
+      assert(definition.decorators.bySymbol[labelDecoratorSymbol][0].data === publicPropertyLabel);
     });
 
     // Check if filtering works
@@ -162,7 +165,7 @@ export function testsStaticPropertyDecorators() {
       // Filtered only to property decorator definition for the filtered decorator
       assert(!definition.decorators.bySymbol[defaultValueDecoratorSymbol]);
       assert(!!definition.decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.decorators.symbolsInOrderOfApplication.length === 1);
+      assert(definition.decorators.all.length === 1);
     });
   });
 
@@ -194,10 +197,11 @@ export function testsStaticPropertyDecorators() {
         assert(definition.properties[key].owner === Test);
         assert(definition.properties[key].ownerPropertyKey === key);
         assert(!!definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol]);
-        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].owner === Test);
-        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].ownerPropertyKey === key);
-        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].decoratorSymbol === defaultValueDecoratorSymbol);
-        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].data === defaults[key as keyof typeof defaults]);
+        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].length);
+        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0].owner === Test);
+        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0].ownerPropertyKey === key);
+        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0].decoratorSymbol === defaultValueDecoratorSymbol);
+        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0].data === defaults[key as keyof typeof defaults]);
       });
     }
   });
@@ -219,10 +223,11 @@ export function testsStaticPropertyDecorators() {
       assert(definition.properties['pub'].owner === Test);
       assert(definition.properties['pub'].ownerPropertyKey === 'pub');
       assert(!!definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].owner === Test);
-      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].ownerPropertyKey === 'pub');
-      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].decoratorSymbol === labelDecoratorSymbol);
-      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].data === publicPropertyLabel);
+      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].length);
+      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].owner === Test);
+      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].ownerPropertyKey === 'pub');
+      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].decoratorSymbol === labelDecoratorSymbol);
+      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].data === publicPropertyLabel);
     });
 
     // Check if filtering works
@@ -235,7 +240,7 @@ export function testsStaticPropertyDecorators() {
       // Filtered only to property decorator definition for the filtered decorator
       assert(!definition.properties['pub'].decorators.bySymbol[defaultValueDecoratorSymbol]);
       assert(!!definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.properties['pub'].decorators.symbolsInOrderOfApplication.length === 1);
+      assert(definition.properties['pub'].decorators.all.length === 1);
     });
   });
 
@@ -253,10 +258,11 @@ export function testsStaticPropertyDecorators() {
     // Entity properties' definitions exists and fetched, have correct owner info set and have decorator information correctly set
     it(`Filtered definitions are set correctly and can be reached via class for properties`, () => {
       assert(!!definition.decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.decorators.bySymbol[labelDecoratorSymbol].owner === Test);
-      assert(definition.decorators.bySymbol[labelDecoratorSymbol].ownerPropertyKey === 'pub');
-      assert(definition.decorators.bySymbol[labelDecoratorSymbol].decoratorSymbol === labelDecoratorSymbol);
-      assert(definition.decorators.bySymbol[labelDecoratorSymbol].data === publicPropertyLabel);
+      assert(definition.decorators.bySymbol[labelDecoratorSymbol].length === 1);
+      assert(definition.decorators.bySymbol[labelDecoratorSymbol][0].owner === Test);
+      assert(definition.decorators.bySymbol[labelDecoratorSymbol][0].ownerPropertyKey === 'pub');
+      assert(definition.decorators.bySymbol[labelDecoratorSymbol][0].decoratorSymbol === labelDecoratorSymbol);
+      assert(definition.decorators.bySymbol[labelDecoratorSymbol][0].data === publicPropertyLabel);
     });
 
     // Check if filtering works
@@ -266,7 +272,7 @@ export function testsStaticPropertyDecorators() {
       // Filtered only to property decorator definition for the filtered decorator
       assert(!definition.decorators.bySymbol[defaultValueDecoratorSymbol]);
       assert(!!definition.decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.decorators.symbolsInOrderOfApplication.length === 1);
+      assert(definition.decorators.all.length === 1);
     });
   });
 

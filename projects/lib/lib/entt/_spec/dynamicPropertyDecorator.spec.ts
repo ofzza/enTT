@@ -50,39 +50,41 @@ function StringDateValue() {
   );
 }
 
-// Unique identifier symbol identifying the AddOneValue decorator
-const addOneDecoratorSymbol = Symbol('Add One property decorator');
+// Unique identifier symbol identifying the AddToValue decorator
+const addToValueDecoratorSymbol = Symbol('Add to value property decorator');
 /**
  * Makes sure a numberic property is represented as a date
+ * @param addend Diff to increate the value by
  * @returns Property decorator
  */
-function AddOneValue() {
+function AddToValue(addend: number = 1) {
   return createPropertyCustomDecorator(
     {
       onPropertyGet: (value: number): number => {
-        return value + 1;
+        return value + addend;
       },
-      onPropertySet: ({ target, key, value }) => value - 1,
+      onPropertySet: ({ target, key, value }) => value - addend,
     },
-    addOneDecoratorSymbol,
+    addToValueDecoratorSymbol,
   );
 }
 
-// Unique identifier symbol identifying the TimesTwoValue decorator
-const timesTwoDecoratorSymbol = Symbol('Times Two property decorator');
+// Unique identifier symbol identifying the MultiplyValue decorator
+const multiplyValueDecoratorSymbol = Symbol('Multiply value property decorator');
 /**
  * Makes sure a numberic property is represented as a date
+ * @param factor Factor to multiply the value by
  * @returns Property decorator
  */
-function TimesTwoValue() {
+function MultiplyValue(factor: number = 2) {
   return createPropertyCustomDecorator(
     {
       onPropertyGet: (value: number): number => {
-        return value * 2;
+        return value * factor;
       },
-      onPropertySet: ({ target, key, value }) => value / 2,
+      onPropertySet: ({ target, key, value }) => value / factor,
     },
-    timesTwoDecoratorSymbol,
+    multiplyValueDecoratorSymbol,
   );
 }
 
@@ -100,23 +102,23 @@ export function testsDynamicPropertyDecorators() {
 
   // Define a class for testing decorator stacking
   class _Numerics {
-    @AddOneValue()
-    @AddOneValue()
-    @TimesTwoValue()
-    @TimesTwoValue()
-    public eight = 8;
+    @AddToValue(1)
+    @AddToValue(2)
+    @MultiplyValue(3)
+    @MultiplyValue(4)
+    public first = 36;
 
-    @AddOneValue()
-    @TimesTwoValue()
-    @AddOneValue()
-    @TimesTwoValue()
-    public six = 6;
+    @AddToValue(1)
+    @MultiplyValue(2)
+    @AddToValue(3)
+    @MultiplyValue(4)
+    public second = 20;
 
-    @TimesTwoValue()
-    @AddOneValue()
-    @TimesTwoValue()
-    @AddOneValue()
-    public three = 3;
+    @MultiplyValue(1)
+    @AddToValue(2)
+    @MultiplyValue(3)
+    @AddToValue(4)
+    public third = 10;
   }
 
   describe('EnTTification', () => {
@@ -146,17 +148,19 @@ export function testsDynamicPropertyDecorators() {
       // Check if decorator definitions set properly for @StringDateValue()
       const strDefinition = getDecoratedClassPropertyDecoratorDefinition(_Timestamped, 'created', stringDateValueDecoratorSymbol);
       assert(!!strDefinition);
-      assert(strDefinition.owner === _Timestamped);
-      assert(strDefinition.ownerPropertyKey === 'created');
-      assert(strDefinition.decoratorSymbol === stringDateValueDecoratorSymbol);
-      assert(strDefinition.data === true);
+      assert(strDefinition.length === 1);
+      assert(strDefinition[0].owner === _Timestamped);
+      assert(strDefinition[0].ownerPropertyKey === 'created');
+      assert(strDefinition[0].decoratorSymbol === stringDateValueDecoratorSymbol);
+      assert(strDefinition[0].data === true);
       // Check if decorator definitions set properly for @NumericDateValue()
       const numDefinition = getDecoratedClassPropertyDecoratorDefinition(_Timestamped, 'modified', numericDateValueDecoratorSymbol);
       assert(!!numDefinition);
-      assert(numDefinition.owner === _Timestamped);
-      assert(numDefinition.ownerPropertyKey === 'modified');
-      assert(numDefinition.decoratorSymbol === numericDateValueDecoratorSymbol);
-      assert(numDefinition.data === true);
+      assert(numDefinition.length === 1);
+      assert(numDefinition[0].owner === _Timestamped);
+      assert(numDefinition[0].ownerPropertyKey === 'modified');
+      assert(numDefinition[0].decoratorSymbol === numericDateValueDecoratorSymbol);
+      assert(numDefinition[0].data === true);
     });
 
     // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property setters/getters
@@ -165,21 +169,29 @@ export function testsDynamicPropertyDecorators() {
       const Timestamped = enttify(_Timestamped);
 
       // Initialize EnTTified class instance
-      const notification = new Timestamped();
+      const timestamped = new Timestamped();
       // Fetch underlying object instance
-      const underlying = getUnderlyingEnttifiedInstance(notification);
+      const underlying = getUnderlyingEnttifiedInstance(timestamped);
 
       // Verify dynamic decorator intercepts property getters/setters during instance construction
-      assert(notification.created instanceof Date);
-      assert(notification.modified instanceof Date);
+      assert(timestamped.created instanceof Date);
+      assert(timestamped.modified instanceof Date);
       assert(typeof underlying.created === 'string');
       assert(typeof underlying.modified === 'number');
 
       // Verify dynamic decorator intercepts property getters/setters during property value assignment
-      notification.created = new Date();
-      notification.modified = new Date();
-      assert(notification.created instanceof Date);
-      assert(notification.modified instanceof Date);
+      timestamped.created = new Date();
+      timestamped.modified = new Date();
+      assert(timestamped.created instanceof Date);
+      assert(timestamped.modified instanceof Date);
+      assert(typeof underlying.created === 'string');
+      assert(typeof underlying.modified === 'number');
+
+      // Verify dynamic decorator intercepts property getters/setters after underlying instance property value assignment
+      underlying.created = new Date().toISOString() as unknown as Date;
+      underlying.modified = new Date().getTime() as unknown as Date;
+      assert(timestamped.created instanceof Date);
+      assert(timestamped.modified instanceof Date);
       assert(typeof underlying.created === 'string');
       assert(typeof underlying.modified === 'number');
     });
@@ -195,34 +207,34 @@ export function testsDynamicPropertyDecorators() {
       const underlying = getUnderlyingEnttifiedInstance(numerics);
 
       // Verify dynamic decorator intercepts property getters/setters during instance construction
-      assert(numerics.eight === 8);
-      assert(underlying.eight === 0);
-      assert(numerics.six === 6);
-      assert(underlying.six === 0);
-      assert(numerics.three === 3);
-      assert(underlying.three === 0);
+      assert(numerics.first === 36);
+      assert(underlying.first === 0);
+      assert(numerics.second === 20);
+      assert(underlying.second === 0);
+      assert(numerics.third === 10);
+      assert(underlying.third === 0);
 
       // Verify dynamic decorator intercepts property getters/setters during property value assignment
-      numerics.eight = 12;
-      assert(numerics.eight === 12);
-      assert(underlying.eight === 1);
-      numerics.six = 14;
-      assert(numerics.six === 14);
-      assert(underlying.six === 2);
-      numerics.three = 11;
-      assert(numerics.three === 11);
-      assert(underlying.three === 2);
+      numerics.first = 48;
+      assert(numerics.first === 48);
+      assert(underlying.first === 1);
+      numerics.second = 28;
+      assert(numerics.second === 28);
+      assert(underlying.second === 1);
+      numerics.third = 13;
+      assert(numerics.third === 13);
+      assert(underlying.third === 1);
 
       // Verify dynamic decorator intercepts property getters/setters after underlying instance property value assignment
-      underlying.eight = 5;
-      assert(numerics.eight === 28);
-      assert(underlying.eight === 5);
-      underlying.six = 5;
-      assert(numerics.six === 26);
-      assert(underlying.six === 5);
-      underlying.three = 5;
-      assert(numerics.three === 23);
-      assert(underlying.three === 5);
+      underlying.first = 2;
+      assert(numerics.first === 60);
+      assert(underlying.first === 2);
+      underlying.second = 2;
+      assert(numerics.second === 36);
+      assert(underlying.second === 2);
+      underlying.third = 2;
+      assert(numerics.third === 16);
+      assert(underlying.third === 2);
     });
   });
 }

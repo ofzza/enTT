@@ -6,9 +6,7 @@
 
 - [Get enTT](#get-entt)
 - [Using enTT](#using-entt)
-  - [@Property decorator](#property-decorator)
-  - [@Serializable decorator](#serializable-decorator)
-  - [@Validate decorator](#validate-decorator)
+  - TODO: ...
 - [Contributing](#contributing)
   - [Reporting Issues](#reporting-issues)
   - [Contributing Code](#contributing-code)
@@ -31,11 +29,11 @@ Alternatively, get an extended implementation:
 
 TODO: Static decorators ...
 
-### TODO: Decorator A
+### TODO: Property decorator A
 
-### TODO: Decorator B
+### TODO: Propperty decorator B
 
-### TODO: Decorator C
+### TODO: Class decorator C
 
 ## EnTT-ifying your classes
 
@@ -47,19 +45,21 @@ TODO: ... note about checking if decorated class was enTT-ified
 
 TODO: Dynamic decrators ...
 
-#### TODO: Decorator D
+#### TODO: Property decorator D
 
-#### TODO: Decorator E
+#### TODO: Property decorator E
 
-#### TODO: Decorator F
+#### TODO: Class decorator F
 
 # Customizing enTT
 
 ## Custom decorators and services
 
+### Custom class decorators
+
 TODO: ...
 
-### TODO: Custom decorator example
+### Custom property decorators
 
 TODO: ...
 

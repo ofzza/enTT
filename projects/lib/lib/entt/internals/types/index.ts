@@ -46,12 +46,30 @@ export type FullPathPropertyValue<T, V> = {
 
 // #endregion
 
+// #region EnTT types: Custom decorator types
+
+/**
+ * Interface for a decorator definition, holding all its proxy hooks implementation
+ */
+export interface ICustomDecoratorImplementation {
+  /**
+   * Implementation of the getter hook
+   */
+  onPropertyGet?: (v: any) => any;
+  /**
+   * Implementation of the setter hook
+   */
+  onPropertySet?: (v: any) => any;
+}
+
+// #endregion
+
 // #region EnTT types: Custom class decorator types
 
 /**
- * Definition for a class decorator, holding all its proxy hooks
+ * Definition for a class decorator, holding all its proxy hooks implementation
  */
-export class CustomClassDecoratorDefinition<TTarget> {
+export class CustomClassDecoratorImplementation<TTarget> implements ICustomDecoratorImplementation {
   /**
    * Constructor
    * @param onPropertyGet Proxy hook to be called when any property value is being requested
@@ -93,9 +111,9 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance> = {
 // #region EnTT types: Custom property decorator types
 
 /**
- * Definition for a property decorator, holding all its proxy hooks
+ * Definition for a property decorator, holding all its proxy hooks implementation
  */
-export class CustomPropertyDecoratorDefinition<TTarget, TValOuter, TValInner> {
+export class CustomPropertyDecoratorImplementation<TTarget, TValOuter, TValInner> implements ICustomDecoratorImplementation {
   /**
    * Constructor
    * @param onPropertyGet Proxy hook to be called when property value is being requested
@@ -146,9 +164,9 @@ export class EnttDefinition {
    * Holds class decorator definitions for decorators applied to this class
    */
   public decorators: {
-    symbolsInOrderOfApplication: symbol[];
-    bySymbol: Record<symbol, EnttDecoratorDefinition>;
-  } = { symbolsInOrderOfApplication: [], bySymbol: {} };
+    all: EnttDecoratorDefinition[];
+    bySymbol: Record<symbol, EnttDecoratorDefinition[]>;
+  } = { all: [], bySymbol: {} };
   /**
    * Holds property definitions for this entity
    */
@@ -168,9 +186,9 @@ export class EnttPropertyDefinition {
    * Holds property decorator definitions for decorators applied to this property
    */
   public decorators: {
-    symbolsInOrderOfApplication: symbol[];
-    bySymbol: Record<symbol, EnttDecoratorDefinition>;
-  } = { symbolsInOrderOfApplication: [], bySymbol: {} };
+    all: EnttDecoratorDefinition[];
+    bySymbol: Record<symbol, EnttDecoratorDefinition[]>;
+  } = { all: [], bySymbol: {} };
 }
 /**
  * Definition for a single EnTT decorator used on an EnTT class or one of its constituents
@@ -184,7 +202,11 @@ export class EnttDecoratorDefinition {
    */
   constructor(public readonly decoratorSymbol: symbol, public readonly owner: Class<object>, public readonly ownerPropertyKey?: PropertyName) {}
   /**
-   * Holds data the decorator was configured with for the property it is decorating
+   * Decorator hooks implementation (per decorator instance because a hook implementation can trap values from a decorator factory and thus be specific to the instance)
+   */
+  implementation?: ICustomDecoratorImplementation;
+  /**
+   * Holds data the decorator was configured with
    */
   data: any;
 }

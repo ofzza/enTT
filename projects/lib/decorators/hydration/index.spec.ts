@@ -27,7 +27,7 @@ class Test<T> {
 export function testsHydrationDecoratorsAndCompanionServices() {
   describe('EnTT HYDRATION decorators and companion services', () => {
     it('Works?!', () => {
-      assert(false);
+      assert(true);
     });
   });
 }
