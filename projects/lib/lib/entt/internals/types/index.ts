@@ -27,27 +27,13 @@ export type PropertyName = string | number | symbol;
 export type EnttInstance<T extends object> = T & {};
 
 /**
- * Describes a property and all the information needed to address that property
- */
-export type FullPathProperty<T> = {
-  /**
-   * Parent instance containing the property containing the value
-   */
-  target: T;
-  /**
-   * Name of the property containing the value
-   */
-  key: PropertyName;
-};
-
-/**
  * Describes a property value and all the information needed to get/set that value
  */
 export type FullPathPropertyValue<T, V> = {
   /**
    * Parent instance containing the property containing the value
    */
-  target: T;
+  target: ClassInstance<T>;
   /**
    * Name of the property containing the value
    */
@@ -71,7 +57,10 @@ export class CustomClassDecoratorDefinition<TTarget> {
    * @param onPropertyGet Proxy hook to be called when any property value is being requested
    * @param onPropertySet Proxy hook to be called when any property value is being set
    */
-  constructor(public onPropertyGet?: (v: FullPathProperty<TTarget>) => any, public onPropertySet?: (v: FullPathPropertyValue<TTarget, any>) => any) {}
+  constructor(
+    public onPropertyGet?: (v: FullPathPropertyValue<TTarget, AnalyserNode>) => any,
+    public onPropertySet?: (v: FullPathPropertyValue<TTarget, any>) => any,
+  ) {}
 }
 
 /**
@@ -91,7 +80,7 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance> = {
    * Callback function called when accessing (getting) any property of an EnTTified instance. The callback is expected to transform the value being returned
    * before it is passed on ...
    */
-  onPropertyGet?: (value: FullPathProperty<TInstance>) => any;
+  onPropertyGet?: (value: FullPathPropertyValue<TInstance, any>) => any;
   /**
    * Callback function called when accessing (setting) any property of an EnTTified instance. The callback is expected to transform the value being stored
    * before it is passed on ...

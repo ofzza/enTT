@@ -3,7 +3,15 @@
 
 // Import dependencies
 import { assert } from '../../../tests.init';
-import { Info, Warning, createPropertyCustomDecorator, enttify, getUnderlyingEnttifiedInstance, verifyDecoratorUsage } from '../';
+import {
+  Info,
+  Warning,
+  createPropertyCustomDecorator,
+  getDecoratedClassPropertyDecoratorDefinition,
+  enttify,
+  getUnderlyingEnttifiedInstance,
+  verifyDecoratorUsage,
+} from '../';
 
 // Holds warnings thrown by `verifyDecoratorUsage()` calls, out in public for test inspection purposes
 const warnings: (Info | Warning | Error)[] = [];
@@ -17,6 +25,7 @@ const numericDateValueDecoratorSymbol = Symbol('Numeric date value property deco
 function NumericDateValue() {
   return createPropertyCustomDecorator(
     {
+      setDecoratorDefinitionData: () => true,
       onPropertyGet: (value: number): Date => new Date(value),
       onPropertySet: ({ target, key, value }) => value.getTime(),
     },
@@ -25,7 +34,7 @@ function NumericDateValue() {
 }
 
 // Unique identifier symbol identifying the NumericDateValue decorator
-const stringDateValueDecoratorSymbol = Symbol('Numeric date value property decorator');
+const stringDateValueDecoratorSymbol = Symbol('String date value property decorator');
 /**
  * Makes sure a numberic property is represented as a date
  * @returns Property decorator
@@ -33,6 +42,7 @@ const stringDateValueDecoratorSymbol = Symbol('Numeric date value property decor
 function StringDateValue() {
   return createPropertyCustomDecorator(
     {
+      setDecoratorDefinitionData: () => true,
       onPropertyGet: (value: string): Date => new Date(value),
       onPropertySet: ({ target, key, value }) => value.toISOString(),
     },
@@ -112,11 +122,14 @@ export function testsDynamicPropertyDecorators() {
   describe('EnTTification', () => {
     // Check if dynamic decorators throwing warnings when parent class not EnTTified
     it('Dynamic decorators are registered as such and will report if parent class is not EnTTified', () => {
+      let timestampedWarnings: (Error | Warning | Info)[] = [];
+
       // Check dynamic decorators throwing warnings when parent class not EnTTified
       warnings.splice(0, warnings.length);
       verifyDecoratorUsage((msg: any) => warnings.push(msg));
-      assert(warnings.filter(w => w.message.includes('_Timestamped')).length === 2);
-      assert(warnings[0] !== warnings[1]);
+      timestampedWarnings = warnings.filter(w => w.message.includes('_Timestamped'));
+      assert(timestampedWarnings.length === 2);
+      assert(timestampedWarnings[0] !== timestampedWarnings[1]);
 
       // EnTTify parent class
       const Timestamped = enttify(_Timestamped);
@@ -124,7 +137,26 @@ export function testsDynamicPropertyDecorators() {
       // Check dynamic decorators no longer throwing warnings
       warnings.splice(0, warnings.length);
       verifyDecoratorUsage((msg: any) => warnings.push(msg));
-      assert(warnings.filter(w => w.message.includes('_Timestamped')).length === 0);
+      timestampedWarnings = warnings.filter(w => w.message.includes('_Timestamped'));
+      assert(timestampedWarnings.length === 0);
+    });
+
+    // Check if decorator definitions are set correctly
+    it('Definitions are set correctly', () => {
+      // Check if decorator definitions set properly for @StringDateValue()
+      const strDefinition = getDecoratedClassPropertyDecoratorDefinition(_Timestamped, 'created', stringDateValueDecoratorSymbol);
+      assert(!!strDefinition);
+      assert(strDefinition.owner === _Timestamped);
+      assert(strDefinition.ownerPropertyKey === 'created');
+      assert(strDefinition.decoratorSymbol === stringDateValueDecoratorSymbol);
+      assert(strDefinition.data === true);
+      // Check if decorator definitions set properly for @NumericDateValue()
+      const numDefinition = getDecoratedClassPropertyDecoratorDefinition(_Timestamped, 'modified', numericDateValueDecoratorSymbol);
+      assert(!!numDefinition);
+      assert(numDefinition.owner === _Timestamped);
+      assert(numDefinition.ownerPropertyKey === 'modified');
+      assert(numDefinition.decoratorSymbol === numericDateValueDecoratorSymbol);
+      assert(numDefinition.data === true);
     });
 
     // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property setters/getters

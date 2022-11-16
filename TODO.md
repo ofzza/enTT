@@ -1,6 +1,6 @@
 # Change detection
 
-- [ ] Track changes for all EnTT-ified instances:
+- [ ] Track changes for all EnTTified instances:
   - [ ] Track last constructed instance for each class
   - [ ] Track last property set
   - [ ] Track last property change

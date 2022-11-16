@@ -32,7 +32,7 @@ function Label(label: string) {
  * @param target The class to be initialized
  * @returns Instance with values set as configured
  */
-function initializeWithValues<T extends object>(target: Class<T>): T {
+function initializeWithDefaultValues<T extends object>(target: Class<T>): T {
   const definition = getDecoratedClassDefinition(target);
   return Object.keys(definition.properties).reduce((instance, key) => {
     (instance as any)[key] = definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].data;
@@ -169,7 +169,7 @@ export function testsStaticPropertyDecorators() {
   // Given a class, use decorated properties configuration
   it('Decorated properties can be used within real featured functionality via class', () => {
     // Instantiate Test with default values set by the decorator
-    const test = initializeWithValues(Test);
+    const test = initializeWithDefaultValues(Test);
     assert(!!test);
     assert(test['pub'] === defaults['pub']);
     assert((test as any)['prot'] === defaults['prot']); // Cheating to get access to protected property
@@ -205,7 +205,7 @@ export function testsStaticPropertyDecorators() {
   // Check if, given a class instance, entity definition can be filtered for only a particular decorator
   describe('Filtering of entity definition by decorator, given a class instance, works', () => {
     // Get definitions via class instance
-    const definition = filterDefinition(getDecoratedClassDefinition(Test), labelDecoratorSymbol);
+    const definition = filterDefinition(getDecoratedClassDefinition(new Test()), labelDecoratorSymbol);
 
     // Entity definition exists and fetched and has correct owner info set
     it('Filtered definitions are set and can be reached via class instance', () => {
