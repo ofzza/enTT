@@ -1,33 +1,21 @@
-// enTT HYDRATION decorators and services tests
+// EnTT lib base functionality tests
 // ----------------------------------------------------------------------------
 
-// Import dependencies
-import { assert } from '../../tests.init';
-import { createPropertyCustomDecorator, getDecoratedClassDefinition } from '../../lib';
-import { def } from '../def';
-import { Hydratable, HydrationStrategy, dehydrate, rehydrate } from './';
-
-// Define required decorators
-const bind = (...args: any[]) => createPropertyCustomDecorator();
-const cast = (...args: any[]) => createPropertyCustomDecorator();
-
-/**
- * Class decorated with @Hydration decorators
- */
-class Test<T> {
-  constructor() {}
-  // Public properties
-  @def
-  @bind({})
-  @cast({})
-  public pub!: string;
-}
+// Import tests
+import { testsHydrationBindDecoratorAndCompanionServices } from './_spec/bindDecorator.spec';
+import { testsHydrationCastDecoratorAndCompanionServices } from './_spec/castDecorator.spec';
 
 // Test ...
-export function testsHydrationDecoratorsAndCompanionServices() {
+export function testsHydrationDecoratorsAndServices() {
   describe('EnTT HYDRATION decorators and companion services', () => {
-    it('Works?!', () => {
-      assert(true);
+    // Test @bind decorator
+    describe('@bind', () => {
+      testsHydrationBindDecoratorAndCompanionServices();
+    });
+
+    // Test @cast decorator
+    describe('@cast', () => {
+      testsHydrationCastDecoratorAndCompanionServices();
     });
   });
 }

@@ -27,7 +27,7 @@ const stringTitleCaseDecoratorSymbol = Symbol('String title case class decorator
 function StringTitleCase() {
   return createClassCustomDecorator(
     {
-      setDecoratorDefinitionData: () => true,
+      composeDecoratorDefinitionData: () => true,
       onPropertyGet: (v: FullPathPropertyValue<object, any>): any =>
         typeof v.value === 'string'
           ? v.value
@@ -55,7 +55,8 @@ const simonSaysDecoratorSymbol = Symbol('Simon says class decorator');
 function SimonSays(name: string) {
   return createClassCustomDecorator(
     {
-      setDecoratorDefinitionData: () => name,
+      composeDecoratorDefinitionData: () => name,
+      composeDecoratorMultipleUsagePermission: () => true,
       onPropertyGet: (v: FullPathPropertyValue<object, any>): any => (typeof v.value === 'string' ? `${name} says: ${v.value}` : v.value),
       onPropertySet: (v: FullPathPropertyValue<object, any>): any =>
         typeof v.value === 'string' && v.value.startsWith(`${name} says: `) ? v.value.substr(`${name} says: `.length) : v.value,
@@ -111,6 +112,22 @@ export function testsDynamicClassDecorators() {
       assert(definition[0].owner === _Family);
       assert(definition[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
       assert(definition[0].data === true);
+    });
+
+    // Check if decorator definitions can be used multiple times only if explicitly permitted
+    it('Dynamic decorators can only be used multiple times on the same target when explicitly permitted', () => {
+      // Test if forbidden multiple usages of not permitted decorator on same class
+      expect(() => {
+        @StringTitleCase()
+        @StringTitleCase()
+        class Test {}
+      }).toThrow();
+      // Test if allowed multiple usages of permitted decorator on same class
+      expect(() => {
+        @SimonSays('A')
+        @SimonSays('B')
+        class Test {}
+      }).not.toThrow();
     });
 
     // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property setters/getters

@@ -19,14 +19,14 @@ const warnings: (Info | Warning | Error)[] = [];
 // Unique identifier symbol identifying the NumericDateValue decorator
 const numericDateValueDecoratorSymbol = Symbol('Numeric date value property decorator');
 /**
- * Makes sure a numberic property is represented as a date
+ * Makes sure a numeric property is represented as a date
  * @returns Property decorator
  */
 function NumericDateValue() {
-  return createPropertyCustomDecorator(
+  return createPropertyCustomDecorator<object, number, Date>(
     {
-      setDecoratorDefinitionData: () => true,
-      onPropertyGet: (value: number): Date => new Date(value),
+      composeDecoratorDefinitionData: () => true,
+      onPropertyGet: ({ value }): Date => new Date(value),
       onPropertySet: ({ target, key, value }) => value.getTime(),
     },
     numericDateValueDecoratorSymbol,
@@ -36,14 +36,14 @@ function NumericDateValue() {
 // Unique identifier symbol identifying the NumericDateValue decorator
 const stringDateValueDecoratorSymbol = Symbol('String date value property decorator');
 /**
- * Makes sure a numberic property is represented as a date
+ * Makes sure a numeric property is represented as a date
  * @returns Property decorator
  */
 function StringDateValue() {
-  return createPropertyCustomDecorator(
+  return createPropertyCustomDecorator<object, string, Date>(
     {
-      setDecoratorDefinitionData: () => true,
-      onPropertyGet: (value: string): Date => new Date(value),
+      composeDecoratorDefinitionData: () => true,
+      onPropertyGet: ({ value }): Date => new Date(value),
       onPropertySet: ({ target, key, value }) => value.toISOString(),
     },
     stringDateValueDecoratorSymbol,
@@ -53,16 +53,15 @@ function StringDateValue() {
 // Unique identifier symbol identifying the AddToValue decorator
 const addToValueDecoratorSymbol = Symbol('Add to value property decorator');
 /**
- * Makes sure a numberic property is represented as a date
+ * Makes sure a numeric property is represented as a date
  * @param addend Diff to increate the value by
  * @returns Property decorator
  */
 function AddToValue(addend: number = 1) {
-  return createPropertyCustomDecorator(
+  return createPropertyCustomDecorator<object, number, number>(
     {
-      onPropertyGet: (value: number): number => {
-        return value + addend;
-      },
+      composeDecoratorMultipleUsagePermission: () => true,
+      onPropertyGet: ({ value }): number => value + addend,
       onPropertySet: ({ target, key, value }) => value - addend,
     },
     addToValueDecoratorSymbol,
@@ -72,16 +71,15 @@ function AddToValue(addend: number = 1) {
 // Unique identifier symbol identifying the MultiplyValue decorator
 const multiplyValueDecoratorSymbol = Symbol('Multiply value property decorator');
 /**
- * Makes sure a numberic property is represented as a date
+ * Makes sure a numeric property is represented as a date
  * @param factor Factor to multiply the value by
  * @returns Property decorator
  */
 function MultiplyValue(factor: number = 2) {
-  return createPropertyCustomDecorator(
+  return createPropertyCustomDecorator<object, number, number>(
     {
-      onPropertyGet: (value: number): number => {
-        return value * factor;
-      },
+      composeDecoratorMultipleUsagePermission: () => true,
+      onPropertyGet: ({ value }): number => value * factor,
       onPropertySet: ({ target, key, value }) => value / factor,
     },
     multiplyValueDecoratorSymbol,
@@ -161,6 +159,26 @@ export function testsDynamicPropertyDecorators() {
       assert(numDefinition[0].ownerPropertyKey === 'modified');
       assert(numDefinition[0].decoratorSymbol === numericDateValueDecoratorSymbol);
       assert(numDefinition[0].data === true);
+    });
+
+    // Check if decorator definitions can be used multiple times only if explicitly permitted
+    it('Dynamic decorators can only be used multiple times on the same target when explicitly permitted', () => {
+      // Test if forbidden multiple usages of not permitted decorator on same property
+      expect(() => {
+        class Test {
+          @StringDateValue()
+          @StringDateValue()
+          public property!: any;
+        }
+      }).toThrow();
+      // Test if allowed multiple usages of permitted decorator on same property
+      expect(() => {
+        class Test {
+          @MultiplyValue(1)
+          @MultiplyValue(1)
+          public property!: any;
+        }
+      }).not.toThrow();
     });
 
     // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property setters/getters

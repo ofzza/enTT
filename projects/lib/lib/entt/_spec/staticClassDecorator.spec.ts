@@ -27,6 +27,12 @@ function AsString(data: (target: Record<PropertyName, string>) => string) {
   return createClassCustomDecorator(() => data, asStringDecoratorSymbol);
 }
 
+/**
+ * Creates an instance of a class decorated with the @AsString decorator from a string
+ * @param target Decorated class instance
+ * @param text String representation
+ * @returns Created instance of the decorated class
+ */
 function createInstanceFromText<T extends object>(target: Class<T>, text: string) {
   const definition = getDecoratedClassDefinition(target);
   const valuesFromStringFn = definition.decorators.bySymbol[fromStringDecoratorSymbol][0].data as (serialized: string) => Record<PropertyName, string>;
@@ -37,7 +43,6 @@ function createInstanceFromText<T extends object>(target: Class<T>, text: string
   }
   return instance;
 }
-
 /**
  * Composes a string representation of a class instance based on the @AsString decorator
  * @param target Decorated class instance

@@ -84,7 +84,7 @@ export class CustomClassDecoratorImplementation<TTarget> implements ICustomDecor
 /**
  * Callback function expected to return data which will be stored within a class's decorator definition once decorator is used to decorate a class
  */
-export type CustomStaticClassDecoratorConfiguration = (definition: EnttDecoratorDefinition) => any;
+export type CustomStaticClassDecoratorConfiguration = () => any;
 
 /**
  * Definition for custom dynamic decorator configuration
@@ -93,17 +93,22 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance> = {
   /**
    * Callback function expected to return data which will be stored within a class's decorator definition once decorator is used to decorate a class
    */
-  setDecoratorDefinitionData?: (definition: EnttDecoratorDefinition) => any;
+  composeDecoratorDefinitionData?: () => any;
+  /**
+   * Callback function expected to return a boolean value signifying if the decorator is allowed to be used multiple times on the same target
+   * @returns
+   */
+  composeDecoratorMultipleUsagePermission?: () => boolean;
   /**
    * Callback function called when accessing (getting) any property of an EnTTified instance. The callback is expected to transform the value being returned
    * before it is passed on ...
    */
-  onPropertyGet?: (value: FullPathPropertyValue<TInstance, any>) => any;
+  onPropertyGet?: (v: FullPathPropertyValue<TInstance, any>) => any;
   /**
    * Callback function called when accessing (setting) any property of an EnTTified instance. The callback is expected to transform the value being stored
    * before it is passed on ...
    */
-  onPropertySet?: (value: FullPathPropertyValue<TInstance, any>) => any;
+  onPropertySet?: (v: FullPathPropertyValue<TInstance, any>) => any;
 };
 
 // #endregion
@@ -119,13 +124,16 @@ export class CustomPropertyDecoratorImplementation<TTarget, TValOuter, TValInner
    * @param onPropertyGet Proxy hook to be called when property value is being requested
    * @param onPropertySet Proxy hook to be called when property value is being set
    */
-  constructor(public onPropertyGet?: (v: TValInner) => TValOuter, public onPropertySet?: (v: FullPathPropertyValue<TTarget, TValOuter>) => TValInner) {}
+  constructor(
+    public onPropertyGet?: (v: FullPathPropertyValue<TTarget, TValInner>) => TValOuter,
+    public onPropertySet?: (v: FullPathPropertyValue<TTarget, TValOuter>) => TValInner,
+  ) {}
 }
 
 /**
  * Callback function expected to return data which will be stored within a property's decorator definition once decorator is used to decorate a property
  */
-export type CustomStaticPropertyDecoratorConfiguration = (definition: EnttDecoratorDefinition) => any;
+export type CustomStaticPropertyDecoratorConfiguration = () => any;
 
 /**
  * Definition for custom dynamic decorator configuration
@@ -134,17 +142,22 @@ export type CustomDynamicPropertyDecoratorConfiguration<TInstance, TValInner, TV
   /**
    * Callback function expected to return data which will be stored within a property's decorator definition once decorator is used to decorate a property
    */
-  setDecoratorDefinitionData?: (definition: EnttDecoratorDefinition) => any;
+  composeDecoratorDefinitionData?: () => any;
+  /**
+   * Callback function expected to return a boolean value signifying if the decorator is allowed to be used multiple times on the same target
+   * @returns
+   */
+  composeDecoratorMultipleUsagePermission?: () => boolean;
   /**
    * Callback function called when accessing (getting) a property of an EnTTified instance. The callback is expected to transform the value being returned
    * before it is passed on ...
    */
-  onPropertyGet?: (value: TValInner) => TValOuter;
+  onPropertyGet?: (v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter;
   /**
    * Callback function called when accessing (setting) a property of an EnTTified instance. The callback is expected to transform the value being stored
    * before it is passed on ...
    */
-  onPropertySet?: (value: FullPathPropertyValue<TInstance, TValOuter>) => TValInner;
+  onPropertySet?: (v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner;
 };
 
 // #endregion

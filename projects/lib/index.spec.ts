@@ -16,7 +16,7 @@ import {
   getUnderlyingEnttifiedInstance,
 } from './lib';
 // Import decorators
-import { def } from './decorators';
+import { def, bind, dehydrate, rehydrate } from './decorators';
 
 // Check library composition
 describe('Library composition makes sense', () => {
@@ -37,7 +37,12 @@ describe('Library composition makes sense', () => {
   });
 
   // Decorators can be imported
-  it('Decorators can be imported from "./decorators"', () => {
+  it('Decorators and related services can be imported from "./decorators"', () => {
+    // Property decorators
     assert(!!def);
+    // Hydration decorators and related services
+    assert(!!bind);
+    assert(!!dehydrate);
+    assert(!!rehydrate);
   });
 });

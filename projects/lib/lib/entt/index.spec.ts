@@ -6,6 +6,7 @@ import { testsStaticClassDecorators } from './_spec/staticClassDecorator.spec';
 import { testsDynamicClassDecorators } from './_spec/dynamicClassDecorator.spec';
 import { testsStaticPropertyDecorators } from './_spec/staticPropertyDecorator.spec';
 import { testsDynamicPropertyDecorators } from './_spec/dynamicPropertyDecorator.spec';
+import { testsInheritabilityOfDecorators } from './_spec/inheritabilityOfDecorators.spec';
 
 // Test ...
 describe('EnTT library internals', () => {
@@ -27,5 +28,10 @@ describe('EnTT library internals', () => {
   // Tests dynamic custom property decorators cration and implementation
   describe('Can implement a custom, dynamic property decorator', () => {
     testsDynamicPropertyDecorators();
+  });
+
+  // Tests inheritability of class and property decorators
+  describe('Class and Property decorators can be inherited by inheriting classes', () => {
+    testsInheritabilityOfDecorators();
   });
 });
