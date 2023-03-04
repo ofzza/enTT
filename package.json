@@ -6,15 +6,17 @@
   "main": "./docs/index.js",
   "types": "./docs/index.d.ts",
   "scripts": {
-    "build-lib": "prettier --write . && tsc --build --clean && tsc --project tsconfig.lib.json",
+    "build-lib": "tsc --build --clean && tsc --project tsconfig.lib.json",
     "dev-lib": "tsc --watch --project tsconfig.lib.json",
     "test-lib": "tsc --build --clean && tsc --project tsconfig.spec.json && npx jasmine --config=./jasmine.json",
     "build-showcase": "ng build",
     "dev-showcase": "ng serve",
     "test-showcase": "ng test",
+    "prettier": "prettier --write .",
     "build-docs": "./scripts/build-docs.sh"
   },
   "pre-commit": [
+    "prettier",
     "test-lib",
     "build-docs"
   ],

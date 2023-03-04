@@ -15,6 +15,11 @@ import {
 } from '../';
 import { def } from '../../../decorators';
 
+// Set minimal expected number of instantiations performed per second
+const INSTANTIATIONS_PER_SECOND = 10000;
+// Set how many times slowed instantiation of an EnTTified class is allowed to be compared to plain class
+const ENTTITIFICATION_SLOWDOWN_FACTOR = 1000;
+
 // Holds warnings thrown by `verifyDecoratorUsage()` calls, out in public for test inspection purposes
 const warnings: (Info | Warning | Error)[] = [];
 
@@ -101,6 +106,35 @@ export function testsDynamicClassDecorators() {
       verifyDecoratorUsage((msg: any) => warnings.push(msg));
       familyWarnings = warnings.filter(w => w.message.includes('_Family'));
       assert(familyWarnings.length === 0);
+    });
+
+    // Check if using EnTTified classes is performant
+    it('Enttitified class with dynamic decorators is performant', () => {
+      // Perform as many instantiations as possible in 100ms
+      let countPlain = 0;
+      const startEnttified = Date.now();
+      while (!(countPlain % 1000 === 0 && Date.now() - startEnttified >= 100)) {
+        const family = new _Family();
+        countPlain++;
+      }
+      const plainInstantiationsPerSecond = (1000 * countPlain) / (Date.now() - startEnttified);
+
+      // EnTTify parent class
+      const Family = enttify(_Family);
+
+      // Perform as many instantiations as possible in 100ms
+      let countEnttified = 0;
+      const startPlain = Date.now();
+      while (!(countEnttified % 1000 === 0 && Date.now() - startPlain >= 100)) {
+        const family = new Family();
+        countEnttified++;
+      }
+      const enttifiedInstantiationsPerSecond = (1000 * countEnttified) / (Date.now() - startPlain);
+
+      // Check number of instantiations per second
+      assert(plainInstantiationsPerSecond > INSTANTIATIONS_PER_SECOND);
+      assert(enttifiedInstantiationsPerSecond > INSTANTIATIONS_PER_SECOND);
+      assert(plainInstantiationsPerSecond / enttifiedInstantiationsPerSecond < ENTTITIFICATION_SLOWDOWN_FACTOR);
     });
 
     // Check if decorator definitions are set correctly

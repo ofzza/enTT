@@ -6,6 +6,9 @@ import { assert } from '../../../tests.init';
 import { def } from '../../def';
 import { bind, dehydrate, rehydrate, HydrationStrategy } from '../';
 
+// Set minimal expected number of hydrations performed per second
+const HYDRATIONS_PER_SECOND = 10000;
+
 /**
  * Class decorated with Hydration decorators, used primarily to test the @bind decorator
  */
@@ -117,6 +120,21 @@ export function testsHydrationBindDecoratorAndCompanionServices() {
     assert(dehydratedInstanceWithOnlyBoundClassProperties['propF'] === 12345);
   });
 
+  // Check dehydration service is performant
+  it('Dehydrating a class instance respects the selected hydration strategy', () => {
+    // Perform as many dehydrations as possible in 100ms
+    let count = 0;
+    const start = Date.now();
+    while (!(count % 1000 === 0 && Date.now() - start >= 100)) {
+      dehydrate(instance, HydrationStrategy.AllClassProperties);
+      count++;
+    }
+    const dehydrationsPerSecond = (1000 * count) / (Date.now() - start);
+
+    // Check number of dehydrations per second
+    assert(dehydrationsPerSecond > HYDRATIONS_PER_SECOND);
+  });
+
   // Check class isntance can (re)hydrate all its properties correctly
   it('A class instance with properties using the @bind decorator can (re)hydrate', () => {
     // Rehydrate the a testing instance, making sure to rehydrate all properties
@@ -182,5 +200,20 @@ export function testsHydrationBindDecoratorAndCompanionServices() {
     assert(rehydratedInstanceWithOnlyBoundClassProperties.propertyD === 'UPDATED Property D value');
     assert(rehydratedInstanceWithOnlyBoundClassProperties.propertyE === 'UPDATED Property E value');
     assert(rehydratedInstanceWithOnlyBoundClassProperties.propertyF === '67890');
+  });
+
+  // Check rehydration service is performant
+  it('(Re)Hydrating a class instance respects the selected hydration strategy', () => {
+    // Perform as many dehydrations as possible in 100ms
+    let count = 0;
+    const start = Date.now();
+    while (!(count % 1000 === 0 && Date.now() - start >= 100)) {
+      rehydrate(dehydratedTestBindingExampleObj, TestBinding, HydrationStrategy.AllClassProperties);
+      count++;
+    }
+    const rehydrationsPerSecond = (1000 * count) / (Date.now() - start);
+
+    // Check number of dehydrations per second
+    assert(rehydrationsPerSecond > HYDRATIONS_PER_SECOND);
   });
 }
