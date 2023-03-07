@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { Class, ClassInstance, PropertyName, EnttPropertyDefinition } from '../../lib';
+import { Class, ClassInstance, EnttPropertyDefinition } from '../../lib';
 import { deepCloneObject } from '../../utils';
 import { createPropertyCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../../lib';
 
@@ -11,7 +11,7 @@ import { createPropertyCustomDecorator, getDecoratedClassDefinition, filterDefin
 /**
  * A raw object containing the same properties as class instance of type T
  */
-export type DehydratedInstance<T> = Record<PropertyName, any>;
+export type DehydratedInstance<T> = Record<PropertyKey, any>;
 
 // #endregion
 
@@ -51,14 +51,14 @@ const hydrationBindingDecoratorSymbol = Symbol('Hydration binding property decor
  * dehydrated/(re)hydrated from/to a propertyx of the same name without any value conversion.
  * @returns Property decorator
  */
-export function bind<TInstance extends object, TValInner, TValOuter>(): (target: ClassInstance<TInstance>, key: PropertyName) => void;
+export function bind<TInstance extends object, TValInner, TValOuter>(): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
 /**
  * When dehydrating/rehydrating a class instance, this property decorator configures the target name of the dehydraeted property
  * this property needs to be dehydrated/(re)hydrated to/from without any value conversion.
  * @param config Name of the dehydrated property this property needs to be dehydrated/(re)hydrated to/from.
  * @returns Property decorator
  */
-export function bind<TInstance extends object, TValInner, TValOuter>(config: string): (target: ClassInstance<TInstance>, key: PropertyName) => void;
+export function bind<TInstance extends object, TValInner, TValOuter>(config: string): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
 /**
  * When dehydrating/rehydrating a class instance, this property decorator configures the target name of the dehydraeted property
  * this property needs to be dehydrated/(re)hydrated to/from and defines callback functions handling data conversion in either direction.
@@ -68,10 +68,10 @@ export function bind<TInstance extends object, TValInner, TValOuter>(config: str
  */
 export function bind<TInstance extends object, TValInner, TValOuter>(
   config: HydrationBindingConfiguration<TValInner, TValOuter>,
-): (target: ClassInstance<TInstance>, key: PropertyName) => void;
+): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
 export function bind<TInstance extends object, TValInner, TValOuter>(
   config?: string | HydrationBindingConfiguration<TValInner, TValOuter>,
-): (target: ClassInstance<TInstance>, key: PropertyName) => void {
+): (target: ClassInstance<TInstance>, key: PropertyKey) => void {
   // Conpose full configuration object
   let composedConfig: HydrationBindingConfiguration<TValInner, TValOuter>;
   // If full configuration provided, use as is
@@ -98,15 +98,15 @@ export function bind<TInstance extends object, TValInner, TValOuter>(
 /**
  * Cast data as a single instance of a class
  */
-const CAST_AS_SINGLE_INSTANCE = Symbol('CAST_AS_SINGLE_INSTANCE');
+export const CAST_AS_SINGLE_INSTANCE = Symbol('CAST_AS_SINGLE_INSTANCE');
 /**
  * Cast data as an array of instances of a class
  */
-const CAST_AS_ARRAY_OF_INSTANCES = Symbol('CAST_AS_ARRAY_OF_INSTANCES');
+export const CAST_AS_ARRAY_OF_INSTANCES = Symbol('CAST_AS_ARRAY_OF_INSTANCES');
 /**
  * Cast data as a hashmap of instances of a class
  */
-const CAST_AS_HASHMAP_OF_INSTANCES = Symbol('CAST_AS_HASHMAP_OF_INSTANCES');
+export const CAST_AS_HASHMAP_OF_INSTANCES = Symbol('CAST_AS_HASHMAP_OF_INSTANCES');
 /**
  * Casting structure (single instance | array of instances | hashmap of instances)
  */
@@ -131,7 +131,7 @@ const hydrationCastingDecoratorSymbol = Symbol('Hydration casting property decor
 export function cast<TInstance extends object>(
   targetEnttType: Class<TInstance>,
   targetStructure: TargetStructure = CAST_AS_SINGLE_INSTANCE,
-): (target: ClassInstance<TInstance>, key: PropertyName) => void {
+): (target: ClassInstance<TInstance>, key: PropertyKey) => void {
   // Create and return decorator
   return createPropertyCustomDecorator<TInstance, HydrationCastingConfiguration<TInstance>>(
     () => ({ targetEnttType, targetStructure }),
@@ -273,14 +273,14 @@ function collectHydratingPropertyDecoratorDefinitions<TInstance extends object>(
   instance: ClassInstance<TInstance>,
   obj: DehydratedInstance<TInstance>,
   strategy: HydrationStrategy,
-): Record<PropertyName, false | EnttPropertyDefinition> {
+): Record<PropertyKey, false | EnttPropertyDefinition> {
   // Get instance's class's decorator definitions
   const allDecoratedPropertiesDefinitions = getDecoratedClassDefinition(instance);
   const onlyBoundPropertiesDefinitions = filterDefinition(allDecoratedPropertiesDefinitions, hydrationBindingDecoratorSymbol);
   const allPropertiesKeys = Object.keys(instance);
 
   // Collect property definitions depending on the selected strategy
-  const properties: Record<PropertyName, false | EnttPropertyDefinition> = {};
+  const properties: Record<PropertyKey, false | EnttPropertyDefinition> = {};
   if (strategy === HydrationStrategy.AllClassProperties) {
     for (const key of allPropertiesKeys) {
       properties[key] = allDecoratedPropertiesDefinitions.properties[key] || false;

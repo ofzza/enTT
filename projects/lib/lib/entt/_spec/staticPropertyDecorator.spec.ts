@@ -3,7 +3,7 @@
 
 // Import dependencies
 import { assert } from '../../../tests.init';
-import { Class, PropertyName, createPropertyCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
+import { Class, createPropertyCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
 
 // Unique identifier symbol identifying the DefaultValue decorator
 const defaultValueDecoratorSymbol = Symbol('Default value property decorator');
@@ -45,7 +45,7 @@ function initializeWithDefaultValues<T extends object>(target: Class<T>): T {
  * @param target The class instance to verify
  * @returns A record of property value verification
  */
-function checkDefaultValues<T extends object>(target: T): Record<PropertyName, boolean> {
+function checkDefaultValues<T extends object>(target: T): Record<PropertyKey, boolean> {
   const definition = getDecoratedClassDefinition(target);
   return Object.keys(definition.properties).reduce((check, key) => {
     (check as any)[key] = (target as any)[key] === definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0]?.data;

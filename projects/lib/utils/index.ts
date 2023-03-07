@@ -1,9 +1,6 @@
 // enTT shared utility functionality
 // ----------------------------------------------------------------------------
 
-// Import and (re)export types
-import { PropertyName } from '../lib';
-
 // Import and (re)export logging functionality
 import { log } from '../lib';
 
@@ -26,7 +23,7 @@ export function deepCloneObject<T extends any>(source: T): T {
     return Object.keys(source).reduce((obj, key) => {
       obj[key] = deepCloneObject((source as any)[key]); // TODO: Clean this "as any" mess up!
       return obj;
-    }, {} as Record<PropertyName, any>) as T;
+    }, {} as Record<PropertyKey, any>) as T;
   }
   // This should never happen - impossible clone execution path!
   else {

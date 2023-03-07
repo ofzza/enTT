@@ -5,7 +5,6 @@
 import {
   Class,
   ClassInstance,
-  PropertyName,
   EnttInstance,
   FullPathPropertyValue,
   CustomClassDecoratorImplementation,
@@ -21,7 +20,6 @@ import {
 export {
   Class,
   ClassInstance,
-  PropertyName,
   EnttInstance,
   FullPathPropertyValue,
   CustomClassDecoratorImplementation,
@@ -209,9 +207,9 @@ function registerDecoratedClassDecoratorDefinition<T extends object>(
  * @param propertyKey Name of the property decorated with EnTT functionality
  * @returns Definition of associated EnTT functionality for the class property
  */
-export function getDecoratedClassPropertyDefinition<T extends object>(target: ClassInstance<T>, propertyKey: PropertyName): EnttPropertyDefinition;
-export function getDecoratedClassPropertyDefinition<T extends object>(target: Class<T>, propertyKey: PropertyName): EnttPropertyDefinition;
-export function getDecoratedClassPropertyDefinition<T extends object>(target: Class<T> | ClassInstance<T>, propertyKey: PropertyName): EnttPropertyDefinition {
+export function getDecoratedClassPropertyDefinition<T extends object>(target: ClassInstance<T>, propertyKey: PropertyKey): EnttPropertyDefinition;
+export function getDecoratedClassPropertyDefinition<T extends object>(target: Class<T>, propertyKey: PropertyKey): EnttPropertyDefinition;
+export function getDecoratedClassPropertyDefinition<T extends object>(target: Class<T> | ClassInstance<T>, propertyKey: PropertyKey): EnttPropertyDefinition {
   // Check if using instance of class to get definition
   if (typeof target !== 'function') {
     return getDecoratedClassPropertyDefinition(target.constructor, propertyKey);
@@ -251,17 +249,17 @@ export function getDecoratedClassPropertyDefinition<T extends object>(target: Cl
  */
 function registerDecoratedClassPropertyDefinition<T extends object>(
   target: ClassInstance<T>,
-  propertyKey: PropertyName,
+  propertyKey: PropertyKey,
   isCalledFromDecoratorRegistration?: boolean,
 ): EnttPropertyDefinition;
 function registerDecoratedClassPropertyDefinition<T extends object>(
   target: Class<T>,
-  propertyKey: PropertyName,
+  propertyKey: PropertyKey,
   isCalledFromDecoratorRegistration?: boolean,
 ): EnttPropertyDefinition;
 function registerDecoratedClassPropertyDefinition<T extends object>(
   target: Class<T> | ClassInstance<T>,
-  propertyKey: PropertyName,
+  propertyKey: PropertyKey,
   isCalledFromDecoratorRegistration: boolean = true,
 ): EnttPropertyDefinition {
   // Check if using instance of class to get definition
@@ -284,17 +282,17 @@ function registerDecoratedClassPropertyDefinition<T extends object>(
  */
 export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: ClassInstance<T>,
-  propertyKey: PropertyName,
+  propertyKey: PropertyKey,
   decoratorSymbol: symbol,
 ): EnttDecoratorDefinition[];
 export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: Class<T>,
-  propertyKey: PropertyName,
+  propertyKey: PropertyKey,
   decoratorSymbol: symbol,
 ): EnttDecoratorDefinition[];
 export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: Class<T> | ClassInstance<T>,
-  propertyKey: PropertyName,
+  propertyKey: PropertyKey,
   decoratorSymbol: symbol,
 ): EnttDecoratorDefinition[] {
   // Check if using instance of class to get definition
@@ -322,19 +320,19 @@ export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
  */
 function registerDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: ClassInstance<T>,
-  propertyKey: PropertyName,
+  propertyKey: PropertyKey,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration?: boolean,
 ): EnttDecoratorDefinition[];
 function registerDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: Class<T>,
-  propertyKey: PropertyName,
+  propertyKey: PropertyKey,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration?: boolean,
 ): EnttDecoratorDefinition[];
 function registerDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: Class<T> | ClassInstance<T>,
-  propertyKey: PropertyName,
+  propertyKey: PropertyKey,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration: boolean = true,
 ): EnttDecoratorDefinition[] {
@@ -376,10 +374,7 @@ export function filterDefinition(definition: EnttDefinition, decoratorSymbol: sy
  * @returns Filtered EnttPropertyDefinition hashmap. Returned EnttPropertyDefinition hashmap will only be left containin properties to which the filtering decorator
  * was applied and each EnttPropertyDefinition in the hashmap will only contain decorator definitions for the filtering decorator.
  */
-export function filterDefinition(
-  definition: Record<PropertyName, EnttPropertyDefinition>,
-  decoratorSymbol: symbol,
-): Record<PropertyName, EnttPropertyDefinition>;
+export function filterDefinition(definition: Record<PropertyKey, EnttPropertyDefinition>, decoratorSymbol: symbol): Record<PropertyKey, EnttPropertyDefinition>;
 /**
  * Filters a definition to only contain info on the filtering decorator
  * @param definition EnttPropertyDefinition to be filtered.
@@ -388,9 +383,9 @@ export function filterDefinition(
  */
 export function filterDefinition(definition: EnttPropertyDefinition, decoratorSymbol: symbol): EnttPropertyDefinition;
 export function filterDefinition(
-  definition: EnttDefinition | Record<PropertyName, EnttPropertyDefinition> | EnttPropertyDefinition,
+  definition: EnttDefinition | Record<PropertyKey, EnttPropertyDefinition> | EnttPropertyDefinition,
   decoratorSymbol: symbol,
-): EnttDefinition | Record<PropertyName, EnttPropertyDefinition> | EnttPropertyDefinition {
+): EnttDefinition | Record<PropertyKey, EnttPropertyDefinition> | EnttPropertyDefinition {
   // Filter entity definition
   if (definition && definition instanceof EnttDefinition) {
     const filteredDefinition = new EnttDefinition(definition.owner);
@@ -415,9 +410,9 @@ export function filterDefinition(
     definition instanceof Object &&
     Object.values(definition).reduce((valid, def) => valid && def instanceof EnttPropertyDefinition, true)
   ) {
-    const castDefinition = definition as Record<PropertyName, EnttPropertyDefinition>;
-    const propertyDefinitions: Record<PropertyName, EnttPropertyDefinition> = Object.keys(definition).reduce(
-      (filteredPropertyDefinitions: Record<PropertyName, EnttPropertyDefinition>, key) => {
+    const castDefinition = definition as Record<PropertyKey, EnttPropertyDefinition>;
+    const propertyDefinitions: Record<PropertyKey, EnttPropertyDefinition> = Object.keys(definition).reduce(
+      (filteredPropertyDefinitions: Record<PropertyKey, EnttPropertyDefinition>, key) => {
         const filteredPropertyDefinition = filterDefinition(castDefinition[key], decoratorSymbol);
         if (filteredPropertyDefinition.decorators.all.length) {
           filteredPropertyDefinitions[key] = filteredPropertyDefinition;
@@ -475,7 +470,7 @@ function registerDecoratedClassForVerification<TInstance extends object, TValOut
     | CustomStaticPropertyDecoratorConfiguration<TPayload>
     | CustomDynamicPropertyDecoratorConfiguration<TInstance, TValOuter, TValInner, TPayload>,
   target: Class<TInstance>,
-  key?: PropertyName,
+  key?: PropertyKey,
 ) {
   // If decorator requires a EnTTified model, queue up verification if the model was indeed EnTTified
   if (configuration && typeof configuration === 'object' && (configuration.onPropertyGet || configuration.onPropertySet)) {
@@ -669,7 +664,7 @@ export function createClassCustomDecorator<TInstance extends object, TPayload>(
  *
  * @returns Static decorator
  */
-export function createPropertyCustomDecorator<TInstance extends object>(): (target: ClassInstance<TInstance>, key: PropertyName) => void;
+export function createPropertyCustomDecorator<TInstance extends object>(): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
 /**
  * Helper function used to create a custom decoorator.
  *
@@ -694,7 +689,7 @@ export function createPropertyCustomDecorator<TInstance extends object>(): (targ
 export function createPropertyCustomDecorator<TInstance extends object>(
   configuration: undefined,
   decoratorSymbol?: symbol,
-): (target: ClassInstance<TInstance>, key: PropertyName) => void;
+): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
 /**
  * Helper function used to create a custom decoorator.
  *
@@ -720,7 +715,7 @@ export function createPropertyCustomDecorator<TInstance extends object>(
 export function createPropertyCustomDecorator<TInstance extends object, TPayload>(
   configuration: CustomStaticPropertyDecoratorConfiguration<TPayload>,
   decoratorSymbol?: symbol,
-): (target: ClassInstance<TInstance>, key: PropertyName) => void;
+): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
 /**
  * Helper function used to create a custom decoorator.
  *
@@ -751,12 +746,12 @@ export function createPropertyCustomDecorator<TInstance extends object, TPayload
 export function createPropertyCustomDecorator<TInstance extends object, TPayload, TValInner = any, TValOuter = any>(
   configuration: CustomDynamicPropertyDecoratorConfiguration<TInstance, TPayload, TValInner, TValOuter>,
   decoratorSymbol?: symbol,
-): (target: ClassInstance<TInstance>, key: PropertyName) => void;
+): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
 export function createPropertyCustomDecorator<TInstance extends object, TPayload, TValInner = any, TValOuter = any>(
   configuration?: CustomStaticPropertyDecoratorConfiguration<TPayload> | CustomDynamicPropertyDecoratorConfiguration<TInstance, TPayload, TValInner, TValOuter>,
   decoratorSymbol: symbol = Symbol(),
-): (target: ClassInstance<TInstance>, key: PropertyName, descriptor: PropertyDescriptor) => void {
-  return <TInstanceInternal extends TInstance>(target: ClassInstance<TInstanceInternal>, key: PropertyName, descriptor: PropertyDescriptor) => {
+): (target: ClassInstance<TInstance>, key: PropertyKey, descriptor: PropertyDescriptor) => void {
+  return <TInstanceInternal extends TInstance>(target: ClassInstance<TInstanceInternal>, key: PropertyKey, descriptor: PropertyDescriptor) => {
     // Check if multiple usages of the same decorator and if permitted
     if (configuration && configuration instanceof Object) {
       const propertyDefinitions = getDecoratedClassPropertyDecoratorDefinition(target, key, decoratorSymbol);
@@ -872,7 +867,7 @@ function createProxyhandlerForEnttInstance<T extends object>(target: T): ProxyHa
      * @param key Key of the property being accessed
      * @returns Value to be returned from the getter, having been intercepted
      */
-    get: (target: ClassInstance<T>, key: PropertyName) => {
+    get: (target: ClassInstance<T>, key: PropertyKey) => {
       // Initialize getting value
       let processed = (target as any)[key];
       // Get class definition
@@ -906,7 +901,7 @@ function createProxyhandlerForEnttInstance<T extends object>(target: T): ProxyHa
      * @param key Key of the property being accessed
      * @returns Value that was set, having intercepted it and set it to the underlying proxied object
      */
-    set: (target: ClassInstance<T>, key: PropertyName, value: any) => {
+    set: (target: ClassInstance<T>, key: PropertyKey, value: any) => {
       // Initialize setting value
       let processed = value;
       // Get property definition

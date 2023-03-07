@@ -12,11 +12,6 @@ export type Class<T> = new (...args: any[]) => T;
  */
 export type ClassInstance<T> = InstanceType<Class<T>>;
 
-/**
- * Value can be used as property name
- */
-export type PropertyName = string | number | symbol;
-
 // #endregion
 
 // #region EnTT types: Helper types
@@ -37,7 +32,7 @@ export type FullPathPropertyValue<T, V> = {
   /**
    * Name of the property containing the value
    */
-  key: PropertyName;
+  key: PropertyKey;
   /**
    * Value being get/set
    */
@@ -183,7 +178,7 @@ export class EnttDefinition {
   /**
    * Holds property definitions for this entity
    */
-  public properties: Record<PropertyName, EnttPropertyDefinition> = {};
+  public properties: Record<PropertyKey, EnttPropertyDefinition> = {};
 }
 /**
  * Definition for an entity property carrying properties decorated with EnTT functionality
@@ -194,7 +189,7 @@ export class EnttPropertyDefinition {
    * @param owner Stores the parent class this definition refers to
    * @param ownerPropertyKey Name of the property this definition refers to
    */
-  constructor(public readonly owner: Class<object>, public readonly ownerPropertyKey: PropertyName) {}
+  constructor(public readonly owner: Class<object>, public readonly ownerPropertyKey: PropertyKey) {}
   /**
    * Holds property decorator definitions for decorators applied to this property
    */
@@ -213,7 +208,7 @@ export class EnttDecoratorDefinition {
    * @param owner Stores the parent class this definition refers to
    * @param ownerPropertyKey Name of the property this definition refers to
    */
-  constructor(public readonly decoratorSymbol: symbol, public readonly owner: Class<object>, public readonly ownerPropertyKey?: PropertyName) {}
+  constructor(public readonly decoratorSymbol: symbol, public readonly owner: Class<object>, public readonly ownerPropertyKey?: PropertyKey) {}
   /**
    * Decorator hooks implementation (per decorator instance because a hook implementation can trap values from a decorator factory and thus be specific to the instance)
    */

@@ -3,7 +3,7 @@
 
 // Import dependencies
 import { assert } from '../../../tests.init';
-import { Class, ClassInstance, PropertyName, createClassCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
+import { Class, ClassInstance, createClassCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
 
 // Unique identifier symbol identifying the FromString decorator
 const fromStringDecoratorSymbol = Symbol('From string class decorator');
@@ -12,7 +12,7 @@ const fromStringDecoratorSymbol = Symbol('From string class decorator');
  * @param data Mapping function converting instance of the class into a string
  * @returns Class decorator
  */
-function FromString(data: (serialized: string) => Record<PropertyName, string>) {
+function FromString(data: (serialized: string) => Record<PropertyKey, string>) {
   return createClassCustomDecorator(() => data, fromStringDecoratorSymbol);
 }
 
@@ -23,7 +23,7 @@ const asStringDecoratorSymbol = Symbol('As string class decorator');
  * @param data Mapping function converting instance of the class into a string
  * @returns Class decorator
  */
-function AsString(data: (target: Record<PropertyName, string>) => string) {
+function AsString(data: (target: Record<PropertyKey, string>) => string) {
   return createClassCustomDecorator(() => data, asStringDecoratorSymbol);
 }
 
@@ -35,7 +35,7 @@ function AsString(data: (target: Record<PropertyName, string>) => string) {
  */
 function createInstanceFromText<T extends object>(target: Class<T>, text: string) {
   const definition = getDecoratedClassDefinition(target);
-  const valuesFromStringFn = definition.decorators.bySymbol[fromStringDecoratorSymbol][0].data as (serialized: string) => Record<PropertyName, string>;
+  const valuesFromStringFn = definition.decorators.bySymbol[fromStringDecoratorSymbol][0].data as (serialized: string) => Record<PropertyKey, string>;
   const valuesFromString = valuesFromStringFn(text) as T;
   const instance = new target();
   for (const key of Object.keys(valuesFromString)) {
@@ -50,8 +50,8 @@ function createInstanceFromText<T extends object>(target: Class<T>, text: string
  */
 function convertInstanceToText<T extends object>(target: ClassInstance<T>) {
   const definition = getDecoratedClassDefinition(target);
-  const instanceToStringFn = definition.decorators.bySymbol[asStringDecoratorSymbol][0].data as (target: Record<PropertyName, string>) => string;
-  return instanceToStringFn(target as Record<PropertyName, string>);
+  const instanceToStringFn = definition.decorators.bySymbol[asStringDecoratorSymbol][0].data as (target: Record<PropertyKey, string>) => string;
+  return instanceToStringFn(target as Record<PropertyKey, string>);
 }
 
 // Export tests
