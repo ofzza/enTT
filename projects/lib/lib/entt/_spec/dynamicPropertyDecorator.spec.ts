@@ -28,9 +28,9 @@ const numericDateValueDecoratorSymbol = Symbol('Numeric date value property deco
  * @returns Property decorator
  */
 function NumericDateValue() {
-  return createPropertyCustomDecorator<object, number, Date>(
+  return createPropertyCustomDecorator<object, boolean, number, Date>(
     {
-      composeDecoratorDefinitionData: () => true,
+      composeDecoratorDefinitionPayload: () => true,
       onPropertyGet: ({ value }): Date => new Date(value),
       onPropertySet: ({ target, key, value }) => value.getTime(),
     },
@@ -45,9 +45,9 @@ const stringDateValueDecoratorSymbol = Symbol('String date value property decora
  * @returns Property decorator
  */
 function StringDateValue() {
-  return createPropertyCustomDecorator<object, string, Date>(
+  return createPropertyCustomDecorator<object, boolean, string, Date>(
     {
-      composeDecoratorDefinitionData: () => true,
+      composeDecoratorDefinitionPayload: () => true,
       onPropertyGet: ({ value }): Date => new Date(value),
       onPropertySet: ({ target, key, value }) => value.toISOString(),
     },
@@ -63,7 +63,7 @@ const addToValueDecoratorSymbol = Symbol('Add to value property decorator');
  * @returns Property decorator
  */
 function AddToValue(addend: number = 1) {
-  return createPropertyCustomDecorator<object, number, number>(
+  return createPropertyCustomDecorator<object, boolean, number, number>(
     {
       composeDecoratorMultipleUsagePermission: () => true,
       onPropertyGet: ({ value }): number => value + addend,
@@ -81,7 +81,7 @@ const multiplyValueDecoratorSymbol = Symbol('Multiply value property decorator')
  * @returns Property decorator
  */
 function MultiplyValue(factor: number = 2) {
-  return createPropertyCustomDecorator<object, number, number>(
+  return createPropertyCustomDecorator<object, boolean, number, number>(
     {
       composeDecoratorMultipleUsagePermission: () => true,
       onPropertyGet: ({ value }): number => value * factor,

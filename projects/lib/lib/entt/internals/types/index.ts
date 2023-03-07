@@ -69,31 +69,31 @@ export interface ICustomDecoratorImplementation {
 /**
  * Definition for a class decorator, holding all its proxy hooks implementation
  */
-export class CustomClassDecoratorImplementation<TTarget> implements ICustomDecoratorImplementation {
+export class CustomClassDecoratorImplementation<TInstance> implements ICustomDecoratorImplementation {
   /**
    * Constructor
    * @param onPropertyGet Proxy hook to be called when any property value is being requested
    * @param onPropertySet Proxy hook to be called when any property value is being set
    */
   constructor(
-    public onPropertyGet?: (v: FullPathPropertyValue<TTarget, AnalyserNode>) => any,
-    public onPropertySet?: (v: FullPathPropertyValue<TTarget, any>) => any,
+    public onPropertyGet?: (v: FullPathPropertyValue<TInstance, AnalyserNode>) => any,
+    public onPropertySet?: (v: FullPathPropertyValue<TInstance, any>) => any,
   ) {}
 }
 
 /**
  * Callback function expected to return data which will be stored within a class's decorator definition once decorator is used to decorate a class
  */
-export type CustomStaticClassDecoratorConfiguration = () => any;
+export type CustomStaticClassDecoratorConfiguration<TPayload> = () => TPayload;
 
 /**
  * Definition for custom dynamic decorator configuration
  */
-export type CustomDynamicClassDecoratorConfiguration<TInstance> = {
+export type CustomDynamicClassDecoratorConfiguration<TInstance extends object, TPayload> = {
   /**
    * Callback function expected to return data which will be stored within a class's decorator definition once decorator is used to decorate a class
    */
-  composeDecoratorDefinitionData?: () => any;
+  composeDecoratorDefinitionPayload?: () => TPayload;
   /**
    * Callback function expected to return a boolean value signifying if the decorator is allowed to be used multiple times on the same target
    * @returns
@@ -118,31 +118,31 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance> = {
 /**
  * Definition for a property decorator, holding all its proxy hooks implementation
  */
-export class CustomPropertyDecoratorImplementation<TTarget, TValOuter, TValInner> implements ICustomDecoratorImplementation {
+export class CustomPropertyDecoratorImplementation<TInstance, TValInner = any, TValOuter = any> implements ICustomDecoratorImplementation {
   /**
    * Constructor
    * @param onPropertyGet Proxy hook to be called when property value is being requested
    * @param onPropertySet Proxy hook to be called when property value is being set
    */
   constructor(
-    public onPropertyGet?: (v: FullPathPropertyValue<TTarget, TValInner>) => TValOuter,
-    public onPropertySet?: (v: FullPathPropertyValue<TTarget, TValOuter>) => TValInner,
+    public onPropertyGet?: (v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter,
+    public onPropertySet?: (v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner,
   ) {}
 }
 
 /**
  * Callback function expected to return data which will be stored within a property's decorator definition once decorator is used to decorate a property
  */
-export type CustomStaticPropertyDecoratorConfiguration = () => any;
+export type CustomStaticPropertyDecoratorConfiguration<TPayload> = () => TPayload;
 
 /**
  * Definition for custom dynamic decorator configuration
  */
-export type CustomDynamicPropertyDecoratorConfiguration<TInstance, TValInner, TValOuter> = {
+export type CustomDynamicPropertyDecoratorConfiguration<TInstance extends object, TPayload, TValInner = any, TValOuter = any> = {
   /**
    * Callback function expected to return data which will be stored within a property's decorator definition once decorator is used to decorate a property
    */
-  composeDecoratorDefinitionData?: () => any;
+  composeDecoratorDefinitionPayload?: () => TPayload;
   /**
    * Callback function expected to return a boolean value signifying if the decorator is allowed to be used multiple times on the same target
    * @returns

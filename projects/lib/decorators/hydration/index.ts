@@ -88,7 +88,7 @@ export function bind<TInstance extends object, TValInner, TValOuter>(
   }
 
   // Create and return decorator
-  return createPropertyCustomDecorator<TInstance>(() => composedConfig, hydrationBindingDecoratorSymbol);
+  return createPropertyCustomDecorator<TInstance, HydrationBindingConfiguration<TValInner, TValOuter>>(() => composedConfig, hydrationBindingDecoratorSymbol);
 }
 
 // #endregion
@@ -96,20 +96,47 @@ export function bind<TInstance extends object, TValInner, TValOuter>(
 // #region Hydration @cast decorator
 
 /**
+ * Cast data as a single instance of a class
+ */
+const CAST_AS_SINGLE_INSTANCE = Symbol('CAST_AS_SINGLE_INSTANCE');
+/**
+ * Cast data as an array of instances of a class
+ */
+const CAST_AS_ARRAY_OF_INSTANCES = Symbol('CAST_AS_ARRAY_OF_INSTANCES');
+/**
+ * Cast data as a hashmap of instances of a class
+ */
+const CAST_AS_HASHMAP_OF_INSTANCES = Symbol('CAST_AS_HASHMAP_OF_INSTANCES');
+/**
+ * Casting structure (single instance | array of instances | hashmap of instances)
+ */
+type TargetStructure = typeof CAST_AS_SINGLE_INSTANCE | typeof CAST_AS_ARRAY_OF_INSTANCES | typeof CAST_AS_HASHMAP_OF_INSTANCES;
+
+/**
  * Hydration casting decorator configuration definition
  */
-export type HydrationCastingConfiguration = any;
+export type HydrationCastingConfiguration<T> = {
+  targetEnttType: Class<T>;
+  targetStructure: TargetStructure;
+};
 
 // Unique identifier symbol identifying the Hydratable casting decorator
 const hydrationCastingDecoratorSymbol = Symbol('Hydration casting property decorator');
 /**
  * When rehydrating a class instance, this property decorator configures TODO: ...
- * @param config (Optional)  TODO: ...
+ * @param targetEnttType (Optional) Class to be cast into when hydrating
+ * @param targetStructure (Optional) Structure to the data should be interpreted as before casting (single instance | array of instances | hashmap of instances)
  * @returns Property decorator
  */
-export function cast<TInstance extends object>(config: HydrationCastingConfiguration): (target: ClassInstance<TInstance>, key: PropertyName) => void {
+export function cast<TInstance extends object>(
+  targetEnttType: Class<TInstance>,
+  targetStructure: TargetStructure = CAST_AS_SINGLE_INSTANCE,
+): (target: ClassInstance<TInstance>, key: PropertyName) => void {
   // Create and return decorator
-  return createPropertyCustomDecorator<TInstance>(() => config, hydrationCastingDecoratorSymbol);
+  return createPropertyCustomDecorator<TInstance, HydrationCastingConfiguration<TInstance>>(
+    () => ({ targetEnttType, targetStructure }),
+    hydrationCastingDecoratorSymbol,
+  );
 }
 
 // #endregion

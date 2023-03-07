@@ -21,7 +21,7 @@
 
 ## @Hydration core decorators and companion services
 
-- [ ] Bind properties for (re)hydrate/dehydrate calls
+- [x] Bind properties for (re)hydrate/dehydrate calls
 - [ ] Cast property values on (re)hydrate call as single/array/hashmap of:
   - [ ] Entities
   - [ ] Other classes (ex: Date, Map, Set, ...)

@@ -468,12 +468,12 @@ const validationQueueForClassesRequiringEnttification: { target: Class<object>; 
  * @param target Decorated class
  * @param key (Optional) Decorated property
  */
-function registerDecoratedClassForVerification<TInstance extends object, TValOuter, TValInner>(
+function registerDecoratedClassForVerification<TInstance extends object, TValOuter, TValInner, TPayload>(
   configuration:
-    | CustomStaticClassDecoratorConfiguration
-    | CustomDynamicClassDecoratorConfiguration<TInstance>
-    | CustomStaticPropertyDecoratorConfiguration
-    | CustomDynamicPropertyDecoratorConfiguration<TInstance, TValOuter, TValInner>,
+    | CustomStaticClassDecoratorConfiguration<TPayload>
+    | CustomDynamicClassDecoratorConfiguration<TInstance, TPayload>
+    | CustomStaticPropertyDecoratorConfiguration<TPayload>
+    | CustomDynamicPropertyDecoratorConfiguration<TInstance, TValOuter, TValInner, TPayload>,
   target: Class<TInstance>,
   key?: PropertyName,
 ) {
@@ -569,8 +569,8 @@ export function createClassCustomDecorator<TInstance extends object>(configurati
  * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
  * @returns Static decorator
  */
-export function createClassCustomDecorator<TInstance extends object>(
-  configuration: CustomStaticClassDecoratorConfiguration,
+export function createClassCustomDecorator<TInstance extends object, TPayload>(
+  configuration: CustomStaticClassDecoratorConfiguration<TPayload>,
   decoratorSymbol: symbol,
 ): (target: Class<TInstance>) => void;
 /**
@@ -584,7 +584,7 @@ export function createClassCustomDecorator<TInstance extends object>(
  *     {
  *       onPropertyGet?: (target, prop) => target[prop],
  *       onPropertySet?: (target, prop, value) => (target[prop] = value),
- *       composeDecoratorDefinitionData: () => data, // Returned data which will be stored in decorator definition once decorator is used to decorate a class
+ *       composeDecoratorDefinitionPayload: () => data, // Returned data which will be stored in decorator definition once decorator is used to decorate a class
  *     },
  *     Symbol('My class decorator symbol')
  *   );
@@ -598,8 +598,8 @@ export function createClassCustomDecorator<TInstance extends object>(
  * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
  * @returns Dynamic decorator
  */
-export function createClassCustomDecorator<TInstance extends object>(
-  configuration: CustomDynamicClassDecoratorConfiguration<TInstance>,
+export function createClassCustomDecorator<TInstance extends object, TPayload>(
+  configuration: CustomDynamicClassDecoratorConfiguration<TInstance, TPayload>,
   decoratorSymbol: symbol,
 ): (target: Class<TInstance>) => void;
 /**
@@ -608,15 +608,15 @@ export function createClassCustomDecorator<TInstance extends object>(
  * @param decoratorSymbol
  * @returns
  */
-export function createClassCustomDecorator<TInstance extends object>(
-  configuration?: CustomStaticClassDecoratorConfiguration | CustomDynamicClassDecoratorConfiguration<TInstance>,
+export function createClassCustomDecorator<TInstance extends object, TPayload>(
+  configuration?: CustomStaticClassDecoratorConfiguration<TPayload> | CustomDynamicClassDecoratorConfiguration<TInstance, TPayload>,
   decoratorSymbol: symbol = Symbol(),
 ): (target: Class<TInstance>) => void {
   return <TInstanceInternal extends TInstance>(target: Class<TInstanceInternal>) => {
     // Check if multiple usages of the same decorator and if permitted
     if (configuration && configuration instanceof Object) {
       const classDefinitions = getDecoratedClassDecoratorDefinition(target, decoratorSymbol);
-      const permissionCallback = (configuration as CustomDynamicClassDecoratorConfiguration<TInstance>).composeDecoratorMultipleUsagePermission;
+      const permissionCallback = (configuration as CustomDynamicClassDecoratorConfiguration<TInstance, TPayload>).composeDecoratorMultipleUsagePermission;
       if (classDefinitions.length && (!permissionCallback || !permissionCallback())) {
         throw new Error(`Multiple usage of "${decoratorSymbol.description}" decorator on the same ${target.name} class not allowed!!!`);
       }
@@ -634,14 +634,14 @@ export function createClassCustomDecorator<TInstance extends object>(
       // Update definition for the class
       definition.data = configuration();
       // Register decorator definition
-      definition.implementation = new CustomClassDecoratorImplementation();
+      definition.implementation = new CustomClassDecoratorImplementation<TInstance>();
     }
     // Process dynamic decorator with EnTT proxy hooks
     else if (configuration && typeof configuration === 'object') {
       // Update definition for the class
-      definition.data = configuration?.composeDecoratorDefinitionData?.();
+      definition.data = configuration?.composeDecoratorDefinitionPayload?.();
       // Register decorator definition
-      definition.implementation = new CustomClassDecoratorImplementation(configuration?.onPropertyGet, configuration?.onPropertySet);
+      definition.implementation = new CustomClassDecoratorImplementation<TInstance>(configuration?.onPropertyGet, configuration?.onPropertySet);
       // If decorator requires a EnTTified model, queue up verification if the model was indeed EnTTified
       registerDecoratedClassForVerification(configuration, target);
     }
@@ -717,8 +717,8 @@ export function createPropertyCustomDecorator<TInstance extends object>(
  * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
  * @returns Static decorator
  */
-export function createPropertyCustomDecorator<TInstance extends object>(
-  configuration: CustomStaticPropertyDecoratorConfiguration,
+export function createPropertyCustomDecorator<TInstance extends object, TPayload>(
+  configuration: CustomStaticPropertyDecoratorConfiguration<TPayload>,
   decoratorSymbol?: symbol,
 ): (target: ClassInstance<TInstance>, key: PropertyName) => void;
 /**
@@ -732,7 +732,7 @@ export function createPropertyCustomDecorator<TInstance extends object>(
  *     {
  *       onPropertyGet?: (target, prop) => target[prop],
  *       onPropertySet?: (target, prop, value) => (target[prop] = value),
- *       composeDecoratorDefinitionData: () => data, // Returned data which will be stored in decorator definition once decorator is used to decorate a property
+ *       composeDecoratorDefinitionPayload: () => data, // Returned data which will be stored in decorator definition once decorator is used to decorate a property
  *     },
  *     Symbol('My property decorator symbol')
  *   );
@@ -748,19 +748,19 @@ export function createPropertyCustomDecorator<TInstance extends object>(
  * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
  * @returns Dynamic decorator
  */
-export function createPropertyCustomDecorator<TInstance extends object, TValInner, TValOuter>(
-  configuration: CustomDynamicPropertyDecoratorConfiguration<TInstance, TValInner, TValOuter>,
+export function createPropertyCustomDecorator<TInstance extends object, TPayload, TValInner = any, TValOuter = any>(
+  configuration: CustomDynamicPropertyDecoratorConfiguration<TInstance, TPayload, TValInner, TValOuter>,
   decoratorSymbol?: symbol,
 ): (target: ClassInstance<TInstance>, key: PropertyName) => void;
-export function createPropertyCustomDecorator<TInstance extends object, TValInner, TValOuter>(
-  configuration?: CustomStaticPropertyDecoratorConfiguration | CustomDynamicPropertyDecoratorConfiguration<TInstance, TValInner, TValOuter>,
+export function createPropertyCustomDecorator<TInstance extends object, TPayload, TValInner = any, TValOuter = any>(
+  configuration?: CustomStaticPropertyDecoratorConfiguration<TPayload> | CustomDynamicPropertyDecoratorConfiguration<TInstance, TPayload, TValInner, TValOuter>,
   decoratorSymbol: symbol = Symbol(),
 ): (target: ClassInstance<TInstance>, key: PropertyName, descriptor: PropertyDescriptor) => void {
   return <TInstanceInternal extends TInstance>(target: ClassInstance<TInstanceInternal>, key: PropertyName, descriptor: PropertyDescriptor) => {
     // Check if multiple usages of the same decorator and if permitted
     if (configuration && configuration instanceof Object) {
       const propertyDefinitions = getDecoratedClassPropertyDecoratorDefinition(target, key, decoratorSymbol);
-      const permissionCallback = (configuration as CustomDynamicClassDecoratorConfiguration<TInstance>).composeDecoratorMultipleUsagePermission;
+      const permissionCallback = (configuration as CustomDynamicClassDecoratorConfiguration<TInstance, TPayload>).composeDecoratorMultipleUsagePermission;
       if (propertyDefinitions.length && (!permissionCallback || !permissionCallback())) {
         throw new Error(
           `Multiple usage of "${decoratorSymbol.description}" decorator on the same ${
@@ -782,14 +782,17 @@ export function createPropertyCustomDecorator<TInstance extends object, TValInne
       // Update definition for the property
       definition.data = configuration();
       // Register decorator definition
-      definition.implementation = new CustomPropertyDecoratorImplementation();
+      definition.implementation = new CustomPropertyDecoratorImplementation<TInstance, TValInner, TValOuter>();
     }
     // Process dynamic decorator with EnTT proxy hooks
     else if (configuration && typeof configuration === 'object') {
       // Update definition for the property
-      definition.data = configuration?.composeDecoratorDefinitionData?.();
+      definition.data = configuration?.composeDecoratorDefinitionPayload?.();
       // Register decorator definition
-      definition.implementation = new CustomPropertyDecoratorImplementation(configuration?.onPropertyGet, configuration?.onPropertySet);
+      definition.implementation = new CustomPropertyDecoratorImplementation<TInstance, TValInner, TValOuter>(
+        configuration?.onPropertyGet,
+        configuration?.onPropertySet,
+      );
       // If decorator requires a EnTTified model, queue up verification if the model was indeed EnTTified
       registerDecoratedClassForVerification(configuration, target.constructor as Class<TInstanceInternal>, key);
     }

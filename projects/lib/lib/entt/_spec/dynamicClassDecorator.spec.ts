@@ -32,7 +32,7 @@ const stringTitleCaseDecoratorSymbol = Symbol('String title case class decorator
 function StringTitleCase() {
   return createClassCustomDecorator(
     {
-      composeDecoratorDefinitionData: () => true,
+      composeDecoratorDefinitionPayload: () => true,
       onPropertyGet: (v: FullPathPropertyValue<object, any>): any =>
         typeof v.value === 'string'
           ? v.value
@@ -60,7 +60,7 @@ const simonSaysDecoratorSymbol = Symbol('Simon says class decorator');
 function SimonSays(name: string) {
   return createClassCustomDecorator(
     {
-      composeDecoratorDefinitionData: () => name,
+      composeDecoratorDefinitionPayload: () => name,
       composeDecoratorMultipleUsagePermission: () => true,
       onPropertyGet: (v: FullPathPropertyValue<object, any>): any => (typeof v.value === 'string' ? `${name} says: ${v.value}` : v.value),
       onPropertySet: (v: FullPathPropertyValue<object, any>): any =>
