@@ -19,7 +19,7 @@ const INSTANTIATIONS_PER_SECOND = 10000;
 const ENTTITIFICATION_SLOWDOWN_FACTOR = 100;
 
 // Holds warnings thrown by `verifyDecoratorUsage()` calls, out in public for test inspection purposes
-const warnings: (Info | Warning | Error)[] = [];
+const warnings: Array<Info | Warning | Error> = [];
 
 // Unique identifier symbol identifying the NumericDateValue decorator
 const numericDateValueDecoratorSymbol = Symbol('Numeric date value property decorator');
@@ -92,7 +92,7 @@ function MultiplyValue(factor: number = 2) {
 }
 
 // Export tests
-export function testsDynamicPropertyDecorators() {
+export function testDynamicPropertyDecorators() {
   // Define a class for testing property dynamic decorator
   class _Timestamped {
     // Property that is internally a string, but externally a Date
@@ -127,7 +127,7 @@ export function testsDynamicPropertyDecorators() {
   describe('EnTTification', () => {
     // Check if dynamic decorators throwing warnings when parent class not EnTTified
     it('Dynamic decorators are registered as such and will report if parent class is not EnTTified', () => {
-      let timestampedWarnings: (Error | Warning | Info)[] = [];
+      let timestampedWarnings: Array<Error | Warning | Info> = [];
 
       // Check dynamic decorators throwing warnings when parent class not EnTTified
       warnings.splice(0, warnings.length);

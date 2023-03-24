@@ -29,7 +29,7 @@ class Test<T> {
 }
 
 // Test ...
-export function testsDefDecorator() {
+export function testDefDecorator() {
   describe('@def decorator', () => {
     const definition = getDecoratedClassDefinition(Test);
 

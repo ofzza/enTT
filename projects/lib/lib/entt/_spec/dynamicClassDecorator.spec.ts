@@ -21,7 +21,7 @@ const INSTANTIATIONS_PER_SECOND = 10000;
 const ENTTITIFICATION_SLOWDOWN_FACTOR = 1000;
 
 // Holds warnings thrown by `verifyDecoratorUsage()` calls, out in public for test inspection purposes
-const warnings: (Info | Warning | Error)[] = [];
+const warnings: Array<Info | Warning | Error> = [];
 
 // Unique identifier symbol identifying the StringTitleCase decorator
 const stringTitleCaseDecoratorSymbol = Symbol('String title case class decorator');
@@ -71,7 +71,7 @@ function SimonSays(name: string) {
 }
 
 // Export tests
-export function testsDynamicClassDecorators() {
+export function testDynamicClassDecorators() {
   @StringTitleCase()
   class _Family {
     @def public father: string = 'homer j simpson';
@@ -90,7 +90,7 @@ export function testsDynamicClassDecorators() {
   describe('EnTTification', () => {
     // Check if dynamic decorators throwing warnings when parent class not EnTTified
     it('Dynamic decorators are registered as such and will report if parent class is not EnTTified', () => {
-      let familyWarnings: (Error | Warning | Info)[] = [];
+      let familyWarnings: Array<Error | Warning | Info> = [];
 
       // Check dynamic decorators throwing warnings when parent class not EnTTified
       warnings.splice(0, warnings.length);

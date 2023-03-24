@@ -1,21 +1,21 @@
-// EnTT lib base functionality tests
+// enTT HYDRATION decorators and services tests
 // ----------------------------------------------------------------------------
 
 // Import tests
-import { testsHydrationBindDecoratorAndCompanionServices } from './_spec/bindDecorator.spec';
-import { testsHydrationCastDecoratorAndCompanionServices } from './_spec/castDecorator.spec';
+import { testHydrationBindDecoratorAndCompanionServices } from './_spec/bind/index.spec';
+import { testHydrationCastDecoratorAndCompanionServices } from './_spec/cast/index.spec';
 
 // Test ...
-export function testsHydrationDecoratorsAndServices() {
+export function testHydrationDecoratorsAndServices() {
   describe('EnTT HYDRATION decorators and companion services', () => {
     // Test @bind decorator
     describe('@bind', () => {
-      testsHydrationBindDecoratorAndCompanionServices();
+      testHydrationBindDecoratorAndCompanionServices();
     });
 
     // Test @cast decorator
     describe('@cast', () => {
-      testsHydrationCastDecoratorAndCompanionServices();
+      testHydrationCastDecoratorAndCompanionServices();
     });
   });
 }

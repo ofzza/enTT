@@ -9,7 +9,7 @@ import { setLogging } from './lib';
 setLogging(() => {});
 
 /**
- * ASserts truthfulness of an expression
+ * Asserts truthfulness of an expression
  * @param expr Expression to assert
  */
 export function assert(expr: any) {

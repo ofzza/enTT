@@ -55,7 +55,7 @@ function convertInstanceToText<T extends object>(target: ClassInstance<T>) {
 }
 
 // Export tests
-export function testsStaticClassDecorators() {
+export function testStaticClassDecorators() {
   // Define a class for testing class decorators
   @AsString(target => `${target['who']} did a ${target['what']} in ${target['where']}`)
   @FromString(serialized => ({

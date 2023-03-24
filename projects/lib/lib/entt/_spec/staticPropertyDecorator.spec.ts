@@ -54,7 +54,7 @@ function checkDefaultValues<T extends object>(target: T): Record<PropertyKey, bo
 }
 
 // Export tests
-export function testsStaticPropertyDecorators() {
+export function testStaticPropertyDecorators() {
   // Set valid data to be used by the decorators
   const defaults = { pub: true, prot: 1, priv: 'abc' };
   const publicPropertyLabel = 'A public property';

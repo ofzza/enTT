@@ -14,7 +14,7 @@ rm -rf $DIR/../docs
 mkdir $DIR/../docs
 
 # Build library and showcase projects
-(cd $DIR/.. && prettier --write . && tsc --build --clean && tsc --project tsconfig.lib.json && ng build --project showcase --configuration production --output-path ./docs --base-href /enTT/)
+(cd $DIR/.. && tsc --build --clean && tsc --project tsconfig.lib.json && ng build --project showcase --configuration production --output-path ./docs --base-href /enTT/)
 
 # Rebuild docs
 cp $DIR/../docs/index.html $DIR/../docs/404.html

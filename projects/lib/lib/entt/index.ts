@@ -61,7 +61,7 @@ export function getDecoratedClassDefinition<T extends object>(target: Class<T> |
 
   // Initialize definitions
   const composedDefinition: EnttDefinition = new EnttDefinition(target as Class<T>);
-  const definitions: EnttDefinition[] = [];
+  const definitions: Array<EnttDefinition> = [];
 
   // Collect definitions for the class and all it's inherited classes
   let current = target;
@@ -134,19 +134,19 @@ function registerDecoratedClassDefinition<T extends object>(
  * @param decoratorSymbol Unique symbol identifying EnTT decorator the has been decorated with
  * @returns Definitions of associated EnTT functionality for the class
  */
-export function getDecoratedClassDecoratorDefinition<T extends object>(target: ClassInstance<T>, decoratorSymbol: symbol): EnttDecoratorDefinition[];
-export function getDecoratedClassDecoratorDefinition<T extends object>(target: Class<T>, decoratorSymbol: symbol): EnttDecoratorDefinition[];
+export function getDecoratedClassDecoratorDefinition<T extends object>(target: ClassInstance<T>, decoratorSymbol: symbol): Array<EnttDecoratorDefinition>;
+export function getDecoratedClassDecoratorDefinition<T extends object>(target: Class<T>, decoratorSymbol: symbol): Array<EnttDecoratorDefinition>;
 export function getDecoratedClassDecoratorDefinition<T extends object>(
   target: Class<T> | ClassInstance<T>,
   decoratorSymbol: symbol,
-): EnttDecoratorDefinition[] {
+): Array<EnttDecoratorDefinition> {
   // Check if using instance of class to get definition
   if (typeof target !== 'function') {
     return getDecoratedClassDecoratorDefinition(target.constructor, decoratorSymbol);
   }
 
   // Initialize definitions
-  const definitions: EnttDecoratorDefinition[] = [];
+  const definitions: Array<EnttDecoratorDefinition> = [];
   // Collect definitions for the class and all it's inherited classes
   let current = target;
   do {
@@ -166,17 +166,17 @@ function registerDecoratedClassDecoratorDefinition<T extends object>(
   target: ClassInstance<T>,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration?: boolean,
-): EnttDecoratorDefinition[];
+): Array<EnttDecoratorDefinition>;
 function registerDecoratedClassDecoratorDefinition<T extends object>(
   target: Class<T>,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration?: boolean,
-): EnttDecoratorDefinition[];
+): Array<EnttDecoratorDefinition>;
 function registerDecoratedClassDecoratorDefinition<T extends object>(
   target: Class<T> | ClassInstance<T>,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration: boolean = true,
-): EnttDecoratorDefinition[] {
+): Array<EnttDecoratorDefinition> {
   // Check if using instance of class to get definition
   if (typeof target !== 'function') {
     return registerDecoratedClassDecoratorDefinition(target.constructor, decoratorSymbol, isCalledFromDecoratorRegistration);
@@ -217,7 +217,7 @@ export function getDecoratedClassPropertyDefinition<T extends object>(target: Cl
 
   // Initialize definitions
   const composedDefinition: EnttPropertyDefinition = new EnttPropertyDefinition(target as Class<T>, propertyKey);
-  const definitions: EnttPropertyDefinition[] = [];
+  const definitions: Array<EnttPropertyDefinition> = [];
 
   // Collect definitions for the class and all it's inherited classes
   let current = target;
@@ -284,24 +284,24 @@ export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: ClassInstance<T>,
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
-): EnttDecoratorDefinition[];
+): Array<EnttDecoratorDefinition>;
 export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: Class<T>,
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
-): EnttDecoratorDefinition[];
+): Array<EnttDecoratorDefinition>;
 export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: Class<T> | ClassInstance<T>,
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
-): EnttDecoratorDefinition[] {
+): Array<EnttDecoratorDefinition> {
   // Check if using instance of class to get definition
   if (typeof target !== 'function') {
     return getDecoratedClassPropertyDecoratorDefinition(target.constructor, propertyKey, decoratorSymbol);
   }
 
   // Initialize definitions
-  const definitions: EnttDecoratorDefinition[] = [];
+  const definitions: Array<EnttDecoratorDefinition> = [];
   // Collect definitions for the class and all it's inherited classes
   let current = target;
   do {
@@ -323,19 +323,19 @@ function registerDecoratedClassPropertyDecoratorDefinition<T extends object>(
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration?: boolean,
-): EnttDecoratorDefinition[];
+): Array<EnttDecoratorDefinition>;
 function registerDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: Class<T>,
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration?: boolean,
-): EnttDecoratorDefinition[];
+): Array<EnttDecoratorDefinition>;
 function registerDecoratedClassPropertyDecoratorDefinition<T extends object>(
   target: Class<T> | ClassInstance<T>,
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration: boolean = true,
-): EnttDecoratorDefinition[] {
+): Array<EnttDecoratorDefinition> {
   // Check if using instance of class to get definition
   if (typeof target !== 'function') {
     return registerDecoratedClassPropertyDecoratorDefinition(target.constructor, propertyKey, decoratorSymbol, isCalledFromDecoratorRegistration);
@@ -455,7 +455,7 @@ export function filterDefinition(
 /**
  * Array of classes requiring enttification, queued for verification if they were EnTTified
  */
-const validationQueueForClassesRequiringEnttification: { target: Class<object>; message: Info | Warning | Error }[] = [];
+const validationQueueForClassesRequiringEnttification: Array<{ target: Class<object>; message: Info | Warning | Error }> = [];
 
 /**
  * Registers a target decorated (with class or property decorators) class for verification to make sure any class using EnTT-ification dependent decorators was EnTTified
@@ -821,7 +821,7 @@ export function enttify<T extends ClassInstance<object>>(TargetClass: Class<T>):
     ? (enttifiedClassesByUnderlyingClass.get(TargetClass) as Class<EnttInstance<T>>)
     : (new Proxy(TargetClass, {
         // Intercept constructng an instance
-        construct: (_TargetClass: Class<T>, args: any[]): EnttInstance<T> => {
+        construct: (_TargetClass: Class<T>, args: Array<any>): EnttInstance<T> => {
           // Run original constructor and get original instance of the class
           const target = new _TargetClass(...args);
           const handler = createProxyhandlerForEnttInstance(target);

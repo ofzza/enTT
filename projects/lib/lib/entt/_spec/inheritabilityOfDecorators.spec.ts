@@ -131,7 +131,7 @@ class PoloClass extends MarcoClass {
 }
 
 // Export tests
-export function testsInheritabilityOfDecorators() {
+export function testInheritabilityOfDecorators() {
   // Instantiate a base class
   const marco = new MarcoClass();
   // Instantiate the extending class

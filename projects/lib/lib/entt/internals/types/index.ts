@@ -6,7 +6,7 @@
 /**
  * A class which constructs instances of type T
  */
-export type Class<T> = new (...args: any[]) => T;
+export type Class<T> = new (...args: Array<any>) => T;
 /**
  * An instance of type T of a class which constructs instances of type T
  */
@@ -172,8 +172,8 @@ export class EnttDefinition {
    * Holds class decorator definitions for decorators applied to this class
    */
   public decorators: {
-    all: EnttDecoratorDefinition[];
-    bySymbol: Record<symbol, EnttDecoratorDefinition[]>;
+    all: Array<EnttDecoratorDefinition>;
+    bySymbol: Record<symbol, Array<EnttDecoratorDefinition>>;
   } = { all: [], bySymbol: {} };
   /**
    * Holds property definitions for this entity
@@ -194,8 +194,8 @@ export class EnttPropertyDefinition {
    * Holds property decorator definitions for decorators applied to this property
    */
   public decorators: {
-    all: EnttDecoratorDefinition[];
-    bySymbol: Record<symbol, EnttDecoratorDefinition[]>;
+    all: Array<EnttDecoratorDefinition>;
+    bySymbol: Record<symbol, Array<EnttDecoratorDefinition>>;
   } = { all: [], bySymbol: {} };
 }
 /**

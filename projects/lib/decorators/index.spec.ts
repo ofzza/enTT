@@ -2,13 +2,13 @@
 // ----------------------------------------------------------------------------
 
 // Import tests
-import { testsDefDecorator } from './def/index.spec';
-import { testsHydrationDecoratorsAndServices } from './hydration/index.spec';
+import { testDefDecorator } from './def/index.spec';
+import { testHydrationDecoratorsAndServices } from './hydration/index.spec';
 
 // Test ...
 describe('EnTT core decorators', () => {
   // Test @def core decorator
-  testsDefDecorator();
+  testDefDecorator();
   // Test @hydration decorators and companion services
-  testsHydrationDecoratorsAndServices();
+  testHydrationDecoratorsAndServices();
 });
