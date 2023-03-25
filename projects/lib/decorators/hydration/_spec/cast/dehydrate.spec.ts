@@ -44,11 +44,11 @@ export function testHydrationCastDecoratorDehydrate() {
     }
     // ... and respecting custom bindings
     assert(!!dehydratedInstance['propCustomArray']);
-    assert(dehydratedInstance['propCustomArray']?.data.length === 3);
-    for (const dehydratedArrayMemberInstance of dehydratedInstance['propCustomArray']?.data) {
-      assert(dehydratedArrayMemberInstance['propA'] === 'A');
-      assert(dehydratedArrayMemberInstance['propB'] === 'B');
-      assert(dehydratedArrayMemberInstance['propC'] === 'C');
+    assert(dehydratedInstance['propCustomArray'].length === 3);
+    for (const dehydratedArrayMemberInstance of dehydratedInstance['propCustomArray']) {
+      assert(dehydratedArrayMemberInstance?.data['propA'] === 'A');
+      assert(dehydratedArrayMemberInstance?.data['propB'] === 'B');
+      assert(dehydratedArrayMemberInstance?.data['propC'] === 'C');
     }
     // Check all dehydrated direct value properties exist on a cast embeddded hashmap of instances as expected with values as expected,
     // respecting bindings from the cast class
@@ -62,12 +62,12 @@ export function testHydrationCastDecoratorDehydrate() {
     }
     // ... and respecting custom bindings
     assert(!!dehydratedInstance['propCustomHashmap']);
-    assert(Object.keys(dehydratedInstance['propCustomHashmap']?.data).length === 3);
-    assert(Object.keys(dehydratedInstance['propCustomHashmap']?.data).filter(key => !['a', 'b', 'c'].includes(key)).length === 0);
-    for (const dehydratedHashmapMemberInstance of Object.values(dehydratedInstance['propCustomHashmap']?.data) as Array<any>) {
-      assert(dehydratedHashmapMemberInstance['propA'] === 'A');
-      assert(dehydratedHashmapMemberInstance['propB'] === 'B');
-      assert(dehydratedHashmapMemberInstance['propC'] === 'C');
+    assert(Object.keys(dehydratedInstance['propCustomHashmap']).length === 3);
+    assert(Object.keys(dehydratedInstance['propCustomHashmap']).filter(key => !['a', 'b', 'c'].includes(key)).length === 0);
+    for (const dehydratedHashmapMemberInstance of Object.values(dehydratedInstance['propCustomHashmap']) as Array<any>) {
+      assert(dehydratedHashmapMemberInstance?.data['propA'] === 'A');
+      assert(dehydratedHashmapMemberInstance?.data['propB'] === 'B');
+      assert(dehydratedHashmapMemberInstance?.data['propC'] === 'C');
     }
   });
 

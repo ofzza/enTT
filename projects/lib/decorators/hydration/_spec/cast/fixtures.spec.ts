@@ -27,58 +27,58 @@ export class TestCast {
   // Testing no cast
   @def
   @bind('propRaw')
-  public propertyRaw!: object;
+  public propertyRaw?: Record<PropertyKey, any>;
 
   // Testing casting to single instance
   @def
   @bind('propSingle')
   @cast(TestCast, CastAs.SingleInstance, false)
-  public propertySingle!: TestCast;
+  public propertySingle?: TestCast;
   // Testing casting to single instance
   @def
-  @bind<object, TestCast, { data: TestCast }>({
+  @bind<object, undefined | TestCast, undefined | { data: TestCast }>({
     propertyName: 'propCustomSingle',
     conversion: {
-      dehydrate: v => ({ data: v }),
-      rehydrate: v => v.data,
+      dehydrate: v => (v !== undefined ? { data: v } : undefined),
+      rehydrate: v => (v !== undefined ? v.data : undefined),
     },
   })
   @cast(TestCast, CastAs.SingleInstance, true)
-  public propertyCustomSingle!: TestCast;
+  public propertyCustomSingle?: TestCast;
 
   // Testing no cast to array
   @def
   @bind('propArray')
   @cast(TestCast, CastAs.ArrayOfInstances, false)
-  public propertyArray!: Array<TestCast>;
+  public propertyArray?: Array<TestCast>;
   // Testing no cast to array with a customized binding (strict mode)
   @def
-  @bind<object, Array<TestCast>, { data: Array<TestCast> }>({
+  @bind<object, undefined | Array<TestCast>, undefined | Array<{ data: TestCast }>>({
     propertyName: 'propCustomArray',
     conversion: {
-      dehydrate: v => ({ data: v }),
-      rehydrate: v => v.data,
+      dehydrate: v => (v !== undefined ? v.map(val => ({ data: val })) : undefined),
+      rehydrate: v => (v !== undefined ? v.map(val => val.data) : undefined),
     },
   })
   @cast(TestCast, CastAs.ArrayOfInstances, true)
-  public propertyCustomArray!: Array<TestCast>;
+  public propertyCustomArray?: Array<TestCast>;
 
   // Testing no cast to hashmap
   @def
   @bind('propHashmap')
   @cast(TestCast, CastAs.HashmapOfInstances, false)
-  public propertyHashmap!: Record<PropertyKey, TestCast>;
+  public propertyHashmap?: Record<PropertyKey, TestCast>;
   // Testing no cast to hashmap with a customized binding (strict mode)
   @def
-  @bind<object, Record<PropertyKey, TestCast>, { data: Record<PropertyKey, TestCast> }>({
+  @bind<object, undefined | Record<PropertyKey, TestCast>, undefined | Record<PropertyKey, { data: TestCast }>>({
     propertyName: 'propCustomHashmap',
     conversion: {
-      dehydrate: v => ({ data: v }),
-      rehydrate: v => v.data,
+      dehydrate: v => (v !== undefined ? Object.keys(v).reduce((val, key: PropertyKey) => ({ ...val, [key]: { data: v[key] } }), {}) : undefined),
+      rehydrate: v => (v !== undefined ? Object.keys(v).reduce((val, key: PropertyKey) => ({ ...val, [key]: v[key].data }), {}) : undefined),
     },
   })
   @cast(TestCast, CastAs.HashmapOfInstances, true)
-  public propertyCustomHashmap!: Record<PropertyKey, TestCast>;
+  public propertyCustomHashmap?: Record<PropertyKey, TestCast>;
 }
 
 /**

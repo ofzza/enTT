@@ -20,17 +20,17 @@ export function testHydrationBindDecoratorRehydrate() {
     // Check all rehydrated properties exist as expected with values as expected
     const rehydratedInstance = rehydratedInstanceViaClassParameter;
     assert(Object.keys(rehydratedInstance).includes('propertyA'));
-    assert(rehydratedInstance['propertyA'] === 'UPDATED Property A value');
+    assert(rehydratedInstance.propertyA === 'UPDATED Property A value');
     assert(Object.keys(rehydratedInstance).includes('propertyB'));
-    assert(rehydratedInstance['propertyB'] === 'UPDATED Property B value');
+    assert(rehydratedInstance.propertyB === 'UPDATED Property B value');
     assert(Object.keys(rehydratedInstance).includes('propertyC'));
-    assert(rehydratedInstance['propertyC'] === 'UPDATED Property C value');
+    assert(rehydratedInstance.propertyC === 'UPDATED Property C value');
     assert(Object.keys(rehydratedInstance).includes('propertyD'));
-    assert(rehydratedInstance['propertyD'] === 'UPDATED Property D value');
+    assert(rehydratedInstance.propertyD === 'UPDATED Property D value');
     assert(Object.keys(rehydratedInstance).includes('propertyE'));
-    assert(rehydratedInstance['propertyE'] === 'UPDATED Property E value');
+    assert(rehydratedInstance.propertyE === 'UPDATED Property E value');
     assert(Object.keys(rehydratedInstance).includes('propertyF'));
-    assert(rehydratedInstance['propertyF'] === '67890');
+    assert(rehydratedInstance.propertyF === '67890');
 
     // Check no extra properties exist on the rehydrated object
     assert(
