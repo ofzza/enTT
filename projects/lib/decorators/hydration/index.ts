@@ -11,7 +11,7 @@ import { createPropertyCustomDecorator, getDecoratedClassDefinition, filterDefin
 /**
  * A raw object containing the same properties as class instance of type T
  */
-export type DehydratedInstance = Record<PropertyKey, any>;
+export type DehydratedInstance<T> = Record<PropertyKey, any>;
 
 // #endregion
 
@@ -102,9 +102,39 @@ export function bind<TInstance extends object, TValRehydrated, TValDehydrated>(
  * Casting structure (single instance | array of instances | hashmap of instances)
  */
 export enum CastAs {
+  /**
+   * Single instance of casting target class
+   */
   SingleInstance = 'SingleInstance',
+  /**
+   * Array of instancea of casting target class
+   */
   ArrayOfInstances = 'ArrayOfInstances',
-  HashmapOfInstances = 'HAshmapOfInstances',
+  /**
+   * Hashmap of instances of casting target class
+   */
+  HashmapOfInstances = 'HashmapOfInstances',
+}
+
+/**
+ * Rules for casting undefined values
+ */
+export enum CastUndefined {
+  /**
+   * Properties with undefined values will be explicitly set as undefined
+   */
+  Preserve = 'Preserve',
+  /**
+   * Properties with undefined values will be left out of dehydration and (re)hydration, keeping values set by other means
+   */
+  Skip = 'Skip',
+  /**
+   * Properties with undefined values will have their values coersed into defaut casting targets
+   * - For CastAs.SingleInstance:     new()
+   * - For CastAs.ArrayOfInstances:   []: Array<new()>
+   * - For CastAs.HashmapOfInstances: {}: Record<PropertyKey, new()>
+   */
+  CoerseIntoCastingDefault = 'CoerseIntoCastingDefault',
 }
 
 /**
@@ -145,16 +175,27 @@ export type HydrationCastingConfigurationStrictness =
 /**
  * Default hydration casting decorator configuration options
  */
-const hydrationCastingConfigurationOptionsDefaults = { strict: true };
+const hydrationCastingConfigurationOptionsDefaults: HydrationCastingConfigurationOptions = { strict: true };
+
 /**
  * Hydration casting decorator configuration options definition
  */
 export type HydrationCastingExecutionOptions = {
   /**
-   * Strictness, in strict mode only instances of expected class will be allowed to be dehydrated and only objects will be attempted to be (re)hydrated
+   * Strictness, in strict mode only instances of expected class (and undefined) will be allowed to be dehydrated
+   * and only objects (and undefined) will be attempted to be (re)hydrated; everything else will throw an error.
+   * Outside of strict mode, objects that are not instances of expected class can also be dehydrated.
    */
-  strict: boolean;
+  strict?: boolean;
+  /**
+   * Rules for handling undefined values when casting during dehydration or (re)hydration
+   */
+  undefined?: CastUndefined;
 };
+/**
+ * Default hydration casting decorator configuration options
+ */
+const hydrationCastingExecutionOptionsDefaults: HydrationCastingExecutionOptions = { undefined: CastUndefined.Preserve };
 
 // Unique identifier symbol identifying the Hydratable casting decorator
 const hydrationCastingDecoratorSymbol = Symbol('Hydration casting property decorator');
@@ -192,8 +233,8 @@ export function dehydrate<TInstance extends object>(
   instance: ClassInstance<TInstance>,
   strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
   options?: HydrationCastingExecutionOptions,
-): DehydratedInstance {
-  return dehydrateAsInstanceOfClass(instance, instance, strategy, options);
+): DehydratedInstance<TInstance> {
+  return dehydrateAsInstanceOfClass(instance, instance, strategy, { ...hydrationCastingExecutionOptionsDefaults, ...options });
 }
 
 /**
@@ -209,9 +250,9 @@ function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends obj
   instance: ClassInstance<TInstance>,
   strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
   options?: HydrationCastingExecutionOptions,
-): DehydratedInstance {
+): DehydratedInstance<TInstance> {
   // Ready an empty raw object to dehydrate into
-  const dehydrated: DehydratedInstance = {};
+  const dehydrated: DehydratedInstance<TInstance> = {};
 
   // Collect property names to use for dehydration
   const hydratingPropertiesDefinitions = collectHydratingPropertyDecoratorDefinitions(instance, strategy);
@@ -261,6 +302,20 @@ function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends obj
   return dehydrated;
 }
 
+/**
+ * Uncasting an undefined value will use behavior defined by the "undefined" option
+ * @param value Value to uncast
+ * @param castDefinition Casting definition to apply when uncasting
+ * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param options Hydration options controling fine tuning of the hydration process
+ * @returns Uncast value
+ */
+function uncast<TValue extends ClassInstance<object>, TUncast extends object>(
+  value: undefined,
+  castDefinition: HydrationCastingConfiguration<TUncast, CastAs>,
+  strategy?: HydrationStrategy,
+  options?: HydrationCastingExecutionOptions,
+): undefined; // TODO: infer "undefined" handling and only then set return type as undefined
 /**
  * Uncasting a value according to casting definition for a single instance cast will uncast as a single object
  * @param value Value to uncast
@@ -317,11 +372,16 @@ function uncast<
   TValueRecord extends Record<PropertyKey, TValue>,
   TUncast extends object,
 >(
-  value: TValue | TValueArray | TValueRecord,
+  value: undefined | TValue | TValueArray | TValueRecord,
   castDefinition: HydrationCastingConfiguration<TUncast>,
   strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
   options?: HydrationCastingExecutionOptions,
 ): undefined | TUncast | Array<TUncast> | Record<keyof TValueRecord, TUncast> {
+  // Check if preserving an undefined value and if so leave it as undefined
+  if (options?.undefined === CastUndefined.Preserve && value === undefined) {
+    return undefined;
+  }
+
   // Determine strictess mode
   const strict =
     options?.strict !== undefined
@@ -416,7 +476,7 @@ function uncast<
  * @returns Hydrated EnTT class instance hydrated from provided data
  */
 export function rehydrate<TInstance extends object>(
-  value: DehydratedInstance,
+  value: DehydratedInstance<TInstance>,
   instance: Class<TInstance> | ClassInstance<TInstance>,
   strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
   options?: HydrationCastingExecutionOptions,
@@ -446,6 +506,7 @@ export function rehydrate<TInstance extends object>(
       let processedValue: TInstance[keyof TInstance];
       // Use unprocessed value
       if (!definition.decorators.bySymbol[hydrationBindingDecoratorSymbol]?.[0]?.data?.conversion?.rehydrate) {
+        // Store unprocessed value
         processedValue = propertyValue;
       }
       // ... or process value via provided custom, (re)hydration callback
@@ -463,7 +524,9 @@ export function rehydrate<TInstance extends object>(
 
       // Cast the value to be (re)hydrated
       const castingDefinition = definition.decorators.bySymbol[hydrationCastingDecoratorSymbol]?.[0]?.data;
-      const castValue = !castingDefinition ? processedValue : recast(processedValue as any, castingDefinition, strategy, options);
+      const castValue = !castingDefinition
+        ? processedValue
+        : recast(processedValue as any, castingDefinition, strategy, { ...hydrationCastingExecutionOptionsDefaults, ...options });
 
       // Store cast value
       rehydrated[key as keyof TInstance] = castValue as TInstance[keyof TInstance];
@@ -474,6 +537,20 @@ export function rehydrate<TInstance extends object>(
   return rehydrated;
 }
 
+/**
+ * Recasting an undefined value will use behavior defined by the "undefined" option
+ * @param value Value to cast
+ * @param castDefinition Casting definition to apply when casting
+ * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param options Hydration options controling fine tuning of the hydration process
+ * @returns Cast instances
+ */
+function recast<TValue extends object, TCast extends ClassInstance<object>>(
+  value: undefined,
+  castDefinition: HydrationCastingConfiguration<TCast, CastAs.SingleInstance>,
+  strategy?: HydrationStrategy,
+  options?: HydrationCastingExecutionOptions,
+): undefined; // TODO: infer "undefined" handling and only then set return type as undefined
 /**
  * Casting a value according to casting definition for a single instance cast will cast as a single instance
  * @param value Value to cast
@@ -534,7 +611,12 @@ function recast<
   castDefinition: HydrationCastingConfiguration<TCast>,
   strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
   options?: HydrationCastingExecutionOptions,
-): TCast | Array<TCast> | Record<keyof TValueRecord, TCast> {
+): undefined | TCast | Array<TCast> | Record<keyof TValueRecord, TCast> {
+  // Check if preserving an undefined value and if so leave it as undefined
+  if (options?.undefined === CastUndefined.Preserve && value === undefined) {
+    return undefined;
+  }
+
   // Determine strictess mode
   const strict =
     options?.strict !== undefined

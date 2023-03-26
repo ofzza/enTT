@@ -94,6 +94,42 @@ export function testHydrationCastDecoratorRehydrate() {
     });
   });
 
+  // Check casting undefined while (re)hydrating preserves undefined
+  describe('Casting undefined while (re)hydrating preserves undefined', () => {
+    // Compose a testing instance with undefined property values
+    const value = createDehydratedTestCastExampleObj();
+    value['propSingle'] = undefined;
+    value['propCustomSingle'] = undefined;
+    value['propArray']![1] = undefined as unknown as TestCast;
+    value['propCustomArray'] = undefined;
+    value['propHashmap']!['b'] = undefined as unknown as TestCast;
+    value['propCustomHashmap'] = undefined;
+    // (Re)Hydrate the testing object containing undefined property values
+    const dehydratedInstance = rehydrate(value, TestCast, HydrationStrategy.OnlyBoundClassProperties);
+
+    // Verify (re)hydrating properties with undefined behavior: CastUndefined.Preserve
+    it('(Re)Hydrating properties with undefined behavior: CastUndefined.Preserve', () => {
+      assert(dehydratedInstance.propertySingle === undefined);
+      assert(dehydratedInstance.propertyCustomSingle === undefined);
+      assert(dehydratedInstance.propertyArray![1] === undefined);
+      assert(dehydratedInstance.propertyCustomArray === undefined);
+      assert(dehydratedInstance.propertyHashmap!['b'] === undefined);
+      assert(dehydratedInstance.propertyCustomHashmap === undefined);
+    });
+
+    // Verify (re)hydrating properties with undefined behavior: CastUndefined.Skip
+    it('(Re)Hydrating properties with undefined behavior: CastUndefined.Skip', () => {
+      // TODO: ...
+      assert(true);
+    });
+
+    // Verify (re)hydrating properties with undefined behavior: CastUndefined.CoerseIntoCastingDefault
+    it('(Re)Hydrating properties with undefined behavior: CastUndefined.CoerseIntoCastingDefault', () => {
+      // TODO: ...
+      assert(true);
+    });
+  });
+
   // Check (re)hydrating a class instance respects strictness settings in all cases
   describe('(Re)Hydrating a non-class-instance value respects strictness settings in all cases', () => {
     // Do not throw when rehydrating a non-object value in a non-strict property
@@ -158,6 +194,12 @@ export function testHydrationCastDecoratorRehydrate() {
     it(`Hashmap containing a Single non-instance won't throw when forcing a non-strict dehydration`, () => {
       expect(() => rehydrate(valueTestingCustomHashmap, TestCast, HydrationStrategy.AllClassProperties, { strict: false })).not.toThrow();
     });
+  });
+
+  // Check (re)hydrating a class instance is possible when class constructor is using required arguments
+  describe('(Re)Hydrating a class instance is possible when class constructor is using required arguments', () => {
+    // TODO: ...
+    it('', () => assert(true));
   });
 
   // Check (re)hydrating a class instance is resiliant to circular and shared references

@@ -87,6 +87,42 @@ export function testHydrationCastDecoratorDehydrate() {
     });
   });
 
+  // Check casting undefined while dehydrating preserves undefined
+  describe('Casting undefined while dehydrating preserves undefined', () => {
+    // Compose a testing instance with undefined property values
+    const instance = createTestClassInstance();
+    instance.propertySingle = undefined;
+    instance.propertyCustomSingle = undefined;
+    instance.propertyArray![1] = undefined as unknown as TestCast;
+    instance.propertyCustomArray = undefined;
+    instance.propertyHashmap!['b'] = undefined as unknown as TestCast;
+    instance.propertyCustomHashmap = undefined;
+    // Dehydrate the testing instance containing undefined property values
+    const dehydratedInstance = dehydrate(instance, HydrationStrategy.OnlyBoundClassProperties);
+
+    // Verify dehydrating properties with undefined behavior: CastUndefined.Preserve
+    it('Dehydrating properties with undefined behavior: CastUndefined.Preserve', () => {
+      assert(dehydratedInstance['propSingle'] === undefined);
+      assert(dehydratedInstance['propCustomSingle'] === undefined);
+      assert(dehydratedInstance['propArray'][1] === undefined);
+      assert(dehydratedInstance['propCustomArray'] === undefined);
+      assert(dehydratedInstance['propHashmap']['b'] === undefined);
+      assert(dehydratedInstance['propCustomHashmap'] === undefined);
+    });
+
+    // Verify dehydrating properties with undefined behavior: CastUndefined.Skip
+    it('Dehydrating properties with undefined behavior: CastUndefined.Skip', () => {
+      // TODO: ...
+      assert(true);
+    });
+
+    // Verify dehydrating properties with undefined behavior: CastUndefined.CoerseIntoCastingDefault
+    it('Dehydrating properties with undefined behavior: CastUndefined.CoerseIntoCastingDefault', () => {
+      // TODO: ...
+      assert(true);
+    });
+  });
+
   // Check dehydrating a class instance respects strictness settings in all cases
   describe('Dehydrating a non-class-instance value respects strictness settings in all cases', () => {
     // Do not throw when dehydrating a non-class-instance value in a non-strict property
