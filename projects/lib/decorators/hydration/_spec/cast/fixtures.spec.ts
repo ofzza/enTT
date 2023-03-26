@@ -32,7 +32,7 @@ export class TestCast {
   // Testing casting to single instance
   @def
   @bind('propSingle')
-  @cast(TestCast, CastAs.SingleInstance, false)
+  @cast(TestCast, CastAs.SingleInstance, { strict: false })
   public propertySingle?: TestCast;
   // Testing casting to single instance
   @def
@@ -43,13 +43,13 @@ export class TestCast {
       rehydrate: v => (v !== undefined ? v.data : undefined),
     },
   })
-  @cast(TestCast, CastAs.SingleInstance, true)
+  @cast(TestCast, CastAs.SingleInstance, { strict: true })
   public propertyCustomSingle?: TestCast;
 
   // Testing no cast to array
   @def
   @bind('propArray')
-  @cast(TestCast, CastAs.ArrayOfInstances, false)
+  @cast(TestCast, CastAs.ArrayOfInstances, { strict: { dehydrate: false, rehydrate: false } })
   public propertyArray?: Array<TestCast>;
   // Testing no cast to array with a customized binding (strict mode)
   @def
@@ -60,13 +60,13 @@ export class TestCast {
       rehydrate: v => (v !== undefined ? v.map(val => val.data) : undefined),
     },
   })
-  @cast(TestCast, CastAs.ArrayOfInstances, true)
+  @cast(TestCast, CastAs.ArrayOfInstances, { strict: { dehydrate: true, rehydrate: true } })
   public propertyCustomArray?: Array<TestCast>;
 
   // Testing no cast to hashmap
   @def
   @bind('propHashmap')
-  @cast(TestCast, CastAs.HashmapOfInstances, false)
+  @cast(TestCast, CastAs.HashmapOfInstances, { strict: { dehydrate: false, rehydrate: false } })
   public propertyHashmap?: Record<PropertyKey, TestCast>;
   // Testing no cast to hashmap with a customized binding (strict mode)
   @def
@@ -77,7 +77,7 @@ export class TestCast {
       rehydrate: v => (v !== undefined ? Object.keys(v).reduce((val, key: PropertyKey) => ({ ...val, [key]: v[key].data }), {}) : undefined),
     },
   })
-  @cast(TestCast, CastAs.HashmapOfInstances, true)
+  @cast(TestCast, CastAs.HashmapOfInstances, { strict: { dehydrate: true, rehydrate: true } })
   public propertyCustomHashmap?: Record<PropertyKey, TestCast>;
 }
 
@@ -100,15 +100,26 @@ export function createTestClassInstance() {
 }
 
 // Compose a degydrated object to test rehydration
-export const dehydratedTestCastExampleObj: any = {
-  propA: 'Value A',
-  propB: 'Value B',
-  propC: 'Value C',
-};
-dehydratedTestCastExampleObj.propRaw = { ...dehydratedTestCastExampleObj };
-dehydratedTestCastExampleObj.propSingle = { ...dehydratedTestCastExampleObj };
-dehydratedTestCastExampleObj.propCustomSingle = { data: { ...dehydratedTestCastExampleObj } };
-dehydratedTestCastExampleObj.propArray = [1, 2, 3].map(_ => ({ ...dehydratedTestCastExampleObj }));
-dehydratedTestCastExampleObj.propCustomArray = [1, 2, 3].map(_ => ({ data: { ...dehydratedTestCastExampleObj } }));
-dehydratedTestCastExampleObj.propHashmap = ['a', 'b', 'c'].reduce((obj, key) => ({ ...obj, [key]: { ...dehydratedTestCastExampleObj } }), {});
-dehydratedTestCastExampleObj.propCustomHashmap = ['a', 'b', 'c'].reduce((obj, key) => ({ ...obj, [key]: { data: { ...dehydratedTestCastExampleObj } } }), {});
+export function createDehydratedTestCastExampleObj(): any {
+  // Define a partial dehydrated object stub
+  const partialDehydratedTestCastExampleObj: any = {
+    propA: 'Value A',
+    propB: 'Value B',
+    propC: 'Value C',
+  };
+  // Compose a full dehydrated testing object
+  const dehydratedTestCastExampleObj = {
+    propA: partialDehydratedTestCastExampleObj.propA,
+    propB: partialDehydratedTestCastExampleObj.propB,
+    propC: partialDehydratedTestCastExampleObj.propC,
+    propRaw: { ...partialDehydratedTestCastExampleObj },
+    propSingle: { ...partialDehydratedTestCastExampleObj },
+    propCustomSingle: { data: { ...partialDehydratedTestCastExampleObj } },
+    propArray: [1, 2, 3].map(_ => ({ ...partialDehydratedTestCastExampleObj })),
+    propCustomArray: [1, 2, 3].map(_ => ({ data: { ...partialDehydratedTestCastExampleObj } })),
+    propHashmap: ['a', 'b', 'c'].reduce((obj, key) => ({ ...obj, [key]: { ...partialDehydratedTestCastExampleObj } }), {}),
+    propCustomHashmap: ['a', 'b', 'c'].reduce((obj, key) => ({ ...obj, [key]: { data: { ...partialDehydratedTestCastExampleObj } } }), {}),
+  };
+  // Return a full degydrated testing object
+  return dehydratedTestCastExampleObj;
+}

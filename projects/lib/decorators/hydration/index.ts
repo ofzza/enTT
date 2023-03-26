@@ -120,14 +120,40 @@ export type HydrationCastingConfiguration<T, TCastAs extends CastAs = CastAs> = 
    */
   targetStructure: TCastAs;
   /**
-   * Strict
+   * Hydration options controling fine tuning of the hydration process
    */
-  strict:
-    | boolean
-    | {
-        dehydrate: boolean;
-        rehydrate: boolean;
-      };
+  options: HydrationCastingConfigurationOptions;
+};
+/**
+ * Hydration casting decorator configuration options definition
+ */
+export type HydrationCastingConfigurationOptions = {
+  /**
+   * Strictness, in strict mode only instances of expected class will be allowed to be dehydrated and only objects will be attempted to be (re)hydrated
+   */
+  strict: HydrationCastingConfigurationStrictness;
+};
+/**
+ * Hydration casting decorator configuration options definition
+ */
+export type HydrationCastingConfigurationStrictness =
+  | boolean
+  | {
+      dehydrate: boolean;
+      rehydrate: boolean;
+    };
+/**
+ * Default hydration casting decorator configuration options
+ */
+const hydrationCastingConfigurationOptionsDefaults = { strict: true };
+/**
+ * Hydration casting decorator configuration options definition
+ */
+export type HydrationCastingExecutionOptions = {
+  /**
+   * Strictness, in strict mode only instances of expected class will be allowed to be dehydrated and only objects will be attempted to be (re)hydrated
+   */
+  strict: boolean;
 };
 
 // Unique identifier symbol identifying the Hydratable casting decorator
@@ -136,22 +162,17 @@ const hydrationCastingDecoratorSymbol = Symbol('Hydration casting property decor
  * When rehydrating a class instance, this property decorator configures how the property value will be cast before storing it
  * @param targetEnttType Class to be cast into when hydrating
  * @param targetStructure (Optional) Structure to the data should be interpreted as before casting (single instance | array of instances | hashmap of instances)
- * @param strict (Optional) If strict mode needs to be used (always, or per hydration/rehydration only)
+ * @param options (Optional) Hydration options controling fine tuning of the hydration process
  * @returns Property decorator
  */
 export function cast<TInstance extends object>(
   targetEnttType: Class<TInstance>,
   targetStructure: CastAs = CastAs.SingleInstance,
-  strict:
-    | boolean
-    | {
-        dehydrate: boolean;
-        rehydrate: boolean;
-      } = true,
+  options?: HydrationCastingConfigurationOptions,
 ): (target: ClassInstance<TInstance>, key: PropertyKey) => void {
   // Create and return decorator
   return createPropertyCustomDecorator<TInstance, HydrationCastingConfiguration<TInstance>>(
-    () => ({ targetEnttType, targetStructure, strict }),
+    () => ({ targetEnttType, targetStructure, options: { ...hydrationCastingConfigurationOptionsDefaults, ...options } }),
     hydrationCastingDecoratorSymbol,
   );
 }
@@ -164,13 +185,15 @@ export function cast<TInstance extends object>(
  * Dehydrates an instance of a class taking into account configuration provided via @bind and @cast decorators
  * @param instance Instance of an EnTT class to be dehydrated
  * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param options Hydration options controling fine tuning of the hydration process
  * @returns A dehydrated objet
  */
 export function dehydrate<TInstance extends object>(
   instance: ClassInstance<TInstance>,
   strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
+  options?: HydrationCastingExecutionOptions,
 ): DehydratedInstance {
-  return dehydrateAsInstanceOfClass(instance, instance, strategy);
+  return dehydrateAsInstanceOfClass(instance, instance, strategy, options);
 }
 
 /**
@@ -178,12 +201,14 @@ export function dehydrate<TInstance extends object>(
  * @param value Object to be dehydrated
  * @param instance Instance of a class or class decorated with @bind and @cast decorators, used to dehydrate the provided object
  * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param options Hydration options controling fine tuning of the hydration process
  * @returns A dehydrated objet
  */
 function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends object>(
   value: TValue,
   instance: ClassInstance<TInstance>,
   strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
+  options?: HydrationCastingExecutionOptions,
 ): DehydratedInstance {
   // Ready an empty raw object to dehydrate into
   const dehydrated: DehydratedInstance = {};
@@ -212,7 +237,7 @@ function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends obj
       const propertyValue = (value as unknown as TInstance)[key];
       // Uncast the value to be dehydrated
       const castingDefinition = definition.decorators.bySymbol[hydrationCastingDecoratorSymbol]?.[0]?.data;
-      const uncastValue = !castingDefinition ? propertyValue : uncast(propertyValue as any, castingDefinition);
+      const uncastValue = !castingDefinition ? propertyValue : uncast(propertyValue as any, castingDefinition, strategy, options);
       // Use unprocessed value (uncast if needed)
       if (!definition.decorators.bySymbol[hydrationBindingDecoratorSymbol]?.[0]?.data?.conversion?.dehydrate) {
         dehydrated[targetPropertyName] = uncastValue;
@@ -241,42 +266,49 @@ function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends obj
  * @param value Value to uncast
  * @param castDefinition Casting definition to apply when uncasting
  * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param options Hydration options controling fine tuning of the hydration process
  * @returns Uncast value
  */
 function uncast<TValue extends ClassInstance<object>, TUncast extends object>(
   value: TValue,
   castDefinition: HydrationCastingConfiguration<TUncast, CastAs.SingleInstance>,
   strategy?: HydrationStrategy,
+  options?: HydrationCastingExecutionOptions,
 ): TUncast;
 /**
  * Uncasting a value according to casting definition for a instance array cast will uncast as an array of objects
  * @param value Array of instances to uncast
  * @param castDefinition Casting definition to apply when uncasting
  * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param options Hydration options controling fine tuning of the hydration process
  * @returns Attay of uncast values
  */
 function uncast<TValue extends ClassInstance<object>, TValueArray extends Array<TValue>, TUncast extends object>(
   value: TValueArray,
   castDefinition: HydrationCastingConfiguration<TUncast, CastAs.ArrayOfInstances>,
   strategy?: HydrationStrategy,
+  options?: HydrationCastingExecutionOptions,
 ): Array<TUncast>;
 /**
  * Uncasting a value according to casting definition for a instance hashmap cast will uncast as a hashmap of objects
  * @param value Hashmap of instances to uncast
  * @param castDefinition Casting definition to apply when uncasting
  * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param options Hydration options controling fine tuning of the hydration process
  * @returns Hashmap of uncast values
  */
 function uncast<TValue extends ClassInstance<object>, TValueRecord extends Record<PropertyKey, TValue>, TUncast extends object>(
   value: TValueRecord,
   castDefinition: HydrationCastingConfiguration<TUncast, CastAs.HashmapOfInstances>,
   strategy?: HydrationStrategy,
+  options?: HydrationCastingExecutionOptions,
 ): Record<keyof TValueRecord, TUncast>;
 /**
  * Uncasting a value according to casting definition
  * @param value Instance, array of instances or a hashmap of instances to uncast
  * @param castDefinition Casting definition to apply when uncasting
  * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param options Hydration options controling fine tuning of the hydration process
  * @returns Uncast instance, array of instances of hashmap of instances
  */
 function uncast<
@@ -288,34 +320,35 @@ function uncast<
   value: TValue | TValueArray | TValueRecord,
   castDefinition: HydrationCastingConfiguration<TUncast>,
   strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
+  options?: HydrationCastingExecutionOptions,
 ): undefined | TUncast | Array<TUncast> | Record<keyof TValueRecord, TUncast> {
+  // Determine strictess mode
+  const strict =
+    options?.strict !== undefined
+      ? !!options?.strict
+      : castDefinition.options.strict === true || (castDefinition.options.strict instanceof Object && castDefinition.options.strict?.dehydrate === true);
+
   // If cast defined as a cast to single instance
   if (castDefinition.targetStructure === CastAs.SingleInstance) {
     // If value being cast is compatible with the cast
     if (value instanceof castDefinition.targetEnttType) {
       // Uncast by dehydrating an instance of expected class
-      return dehydrateAsInstanceOfClass(value, castDefinition.targetEnttType, strategy);
+      return dehydrateAsInstanceOfClass(value, castDefinition.targetEnttType, strategy, options);
     }
     // If value being cast is incompatible and cast is being performed in strict mode
-    else if (castDefinition.strict === true || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === true)) {
+    else if (strict) {
       // Throw error for trying a strict mode cast of unexpected value
       throw new Error(
         `Failed uncasting value. In strict mode when casting as CastAs.SingleInstance the value being uncast needs to be an instance of the class specified as the @cast target class!`,
       );
     }
     // If value being cast is incompatible, but cast-able and cast is being performed in non-strict mode
-    else if (
-      value instanceof Object &&
-      (castDefinition.strict === false || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === false))
-    ) {
+    else if (value instanceof Object && !strict) {
       // Uncast by dehydrating an instance of an unexpected class
-      return dehydrateAsInstanceOfClass(value, castDefinition.targetEnttType, strategy);
+      return dehydrateAsInstanceOfClass(value, castDefinition.targetEnttType, strategy, options);
     }
     // If value being cast is incompatible, and is not cast-able and cast is being performed in non-strict mode
-    else if (
-      !(value instanceof Object) &&
-      (castDefinition.strict === false || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === false))
-    ) {
+    else if (!(value instanceof Object) && !strict) {
       // Uncast as undefined
       return undefined;
     }
@@ -326,17 +359,17 @@ function uncast<
     // If value being cast is compatible with the cast
     if (value instanceof Array) {
       // Uncast each member of the array
-      return value.map(value => uncast(value, { ...castDefinition, targetStructure: CastAs.SingleInstance }, strategy)) as Array<TUncast>;
+      return value.map(value => uncast(value, { ...castDefinition, targetStructure: CastAs.SingleInstance }, strategy, options)) as Array<TUncast>;
     }
     // If value being cast is incompatible and cast is being performed in strict mode
-    else if (castDefinition.strict === true || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === true)) {
+    else if (strict) {
       // Throw error for trying a strict mode cast of unexpected value
       throw new Error(
         `Failed uncasting value. In strict mode when casting as CastAs.ArrayOfInstances the value being uncast needs to be an array of instances of the class specified as the @cast target class!`,
       );
     }
     // If value being cast is incompatible and cast is being performed in non-strict mode
-    else if (castDefinition.strict === false || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === false)) {
+    else if (!strict) {
       // Uncast as an empty array
       return [];
     }
@@ -348,19 +381,19 @@ function uncast<
     if (value instanceof Object) {
       // Uncast each member of the hashmap
       return (Object.keys(value) as Array<keyof TValue>).reduce((result: Record<keyof TValueRecord, TUncast>, key) => {
-        result[key] = uncast((value as TValueRecord)[key], { ...castDefinition, targetStructure: CastAs.SingleInstance }, strategy) as TUncast;
+        result[key] = uncast((value as TValueRecord)[key], { ...castDefinition, targetStructure: CastAs.SingleInstance }, strategy, options) as TUncast;
         return result;
       }, {} as Record<keyof TValueRecord, TUncast>);
     }
     // If value being cast is incompatible and cast is being performed in strict mode
-    else if (castDefinition.strict === true || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === true)) {
+    else if (strict) {
       // Throw error for trying a strict mode cast of unexpected value
       throw new Error(
         `Failed uncasting value. In strict mode when casting as CastAs.HashmapOfInstances the value being uncast needs to be a hashmap of instances of the class specified as the @cast target class!`,
       );
     }
     // If value being cast is incompatible and cast is being performed in non-strict mode
-    else if (castDefinition.strict === false || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === false)) {
+    else if (!strict) {
       // Uncast as an empty hashmap
       return {} as Record<keyof TValueRecord, TUncast>;
     }
@@ -379,12 +412,14 @@ function uncast<
  * @param value An object to (re)hydrate data from
  * @param instance EnTT class or class instance to hydrate with provided data
  * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param options Hydration options controling fine tuning of the hydration process
  * @returns Hydrated EnTT class instance hydrated from provided data
  */
 export function rehydrate<TInstance extends object>(
   value: DehydratedInstance,
   instance: Class<TInstance> | ClassInstance<TInstance>,
   strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
+  options?: HydrationCastingExecutionOptions,
 ): TInstance {
   // Ready an empty instance to (re)hydrate into
   const rehydrated: ClassInstance<TInstance> = typeof instance === 'function' ? new (instance as Class<TInstance>)() : instance;
@@ -428,12 +463,10 @@ export function rehydrate<TInstance extends object>(
 
       // Cast the value to be (re)hydrated
       const castingDefinition = definition.decorators.bySymbol[hydrationCastingDecoratorSymbol]?.[0]?.data;
-      const castValue = !castingDefinition
-        ? processedValue
-        : (recast(processedValue as any, definition.decorators.bySymbol[hydrationCastingDecoratorSymbol]?.[0]?.data) as unknown as TInstance[keyof TInstance]);
+      const castValue = !castingDefinition ? processedValue : recast(processedValue as any, castingDefinition, strategy, options);
 
       // Store cast value
-      rehydrated[key as keyof TInstance] = castValue;
+      rehydrated[key as keyof TInstance] = castValue as TInstance[keyof TInstance];
     }
   }
 
@@ -446,42 +479,49 @@ export function rehydrate<TInstance extends object>(
  * @param value Value to cast
  * @param castDefinition Casting definition to apply when casting
  * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param options Hydration options controling fine tuning of the hydration process
  * @returns Cast instances
  */
 function recast<TValue extends object, TCast extends ClassInstance<object>>(
   value: undefined | TValue,
   castDefinition: HydrationCastingConfiguration<TCast, CastAs.SingleInstance>,
   strategy?: HydrationStrategy,
+  options?: HydrationCastingExecutionOptions,
 ): TCast;
 /**
  * Casting a value according to casting definition for a instance array cast will cast as an array of instances
  * @param value Object to cast
  * @param castDefinition Casting definition to apply when casting
  * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param options Hydration options controling fine tuning of the hydration process
  * @returns Attay of cast instances
  */
 function recast<TValue extends object, TValueArray extends Array<TValue>, TCast extends ClassInstance<object>>(
   value: undefined | TValueArray,
   castDefinition: HydrationCastingConfiguration<TCast, CastAs.ArrayOfInstances>,
   strategy?: HydrationStrategy,
+  options?: HydrationCastingExecutionOptions,
 ): Array<TCast>;
 /**
  * Casting a value according to casting definition for a instance hashmap cast will cast as a hashmap of instances
  * @param value Array of objects to cast
  * @param castDefinition Casting definition to apply when casting
  * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param options Hydration options controling fine tuning of the hydration process
  * @returns Hashmap of cast instances
  */
 function recast<TValue extends object, TValueRecord extends Record<PropertyKey, TValue>, TCast extends ClassInstance<object>>(
   value: undefined | TValueRecord,
   castDefinition: HydrationCastingConfiguration<TCast, CastAs.HashmapOfInstances>,
   strategy?: HydrationStrategy,
+  options?: HydrationCastingExecutionOptions,
 ): Record<keyof TValueRecord, TCast>;
 /**
  * Casting a value according to casting definition
  * @param value Object, array of objects or hashmap of objects to cast
  * @param castDefinition Casting definition to apply when casting
  * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param options Hydration options controling fine tuning of the hydration process
  * @returns Cast instance, array of instances or hashmap of instances
  */
 function recast<
@@ -493,7 +533,14 @@ function recast<
   value: undefined | TValue | TValueArray | TValueRecord,
   castDefinition: HydrationCastingConfiguration<TCast>,
   strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
+  options?: HydrationCastingExecutionOptions,
 ): TCast | Array<TCast> | Record<keyof TValueRecord, TCast> {
+  // Determine strictess mode
+  const strict =
+    options?.strict !== undefined
+      ? !!options?.strict
+      : castDefinition.options.strict === true || (castDefinition.options.strict instanceof Object && castDefinition.options.strict?.rehydrate === true);
+
   // If cast defined as a cast to single instance
   if (castDefinition.targetStructure === CastAs.SingleInstance) {
     // If value being cast if undefined
@@ -504,17 +551,17 @@ function recast<
     // If value being cast is compatible with the cast
     else if (value && value instanceof Object) {
       // Cast by dehydrating an instance of expected class
-      return rehydrate(value, castDefinition.targetEnttType, strategy);
+      return rehydrate(value, castDefinition.targetEnttType, strategy, options);
     }
     // If value being cast is incompatible and cast is being performed in strict mode
-    else if (castDefinition.strict === true || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === true)) {
+    else if (strict) {
       // Throw error for trying a strict mode cast of unexpected value
       throw new Error(
         `Failed casting value. In strict mode when casting as CastAs.SingleInstance the value being cast needs to be an object which can be cast into a class instance specified as the @cast target class!`,
       );
     }
     // If value being cast is incompatible, cast is being performed in non-strict mode
-    else if (castDefinition.strict === false || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === false)) {
+    else if (!strict) {
       // Cast from undefined
       return new castDefinition.targetEnttType();
     }
@@ -530,17 +577,17 @@ function recast<
     // If value being cast is compatible with the cast
     else if (value instanceof Array) {
       // Cast each member of the array
-      return value.map(value => recast(value, { ...castDefinition, targetStructure: CastAs.SingleInstance }, strategy)) as Array<TCast>;
+      return value.map(value => recast(value, { ...castDefinition, targetStructure: CastAs.SingleInstance }, strategy, options)) as Array<TCast>;
     }
     // If value being cast is incompatible and cast is being performed in strict mode
-    else if (castDefinition.strict === true || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === true)) {
+    else if (strict) {
       // Throw error for trying a strict mode cast of unexpected value
       throw new Error(
         `Failed casting value. In strict mode when casting as CastAs.ArrayOfInstances the value being cast needs to be an array of objects which can be cast into an array of class instances specified as the @cast target class!`,
       );
     }
     // If value being cast is incompatible and cast is being performed in non-strict mode
-    else if (castDefinition.strict === false || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === false)) {
+    else if (!strict) {
       // Cast from undefined
       return [];
     }
@@ -557,19 +604,19 @@ function recast<
     else if (value instanceof Object) {
       // Cast each member of the hashmap
       return (Object.keys(value) as Array<keyof TValue>).reduce((result: Record<keyof TValueRecord, TCast>, key) => {
-        result[key] = recast((value as TValueRecord)[key], { ...castDefinition, targetStructure: CastAs.SingleInstance }, strategy) as TCast;
+        result[key] = recast((value as TValueRecord)[key], { ...castDefinition, targetStructure: CastAs.SingleInstance }, strategy, options) as TCast;
         return result;
       }, {} as Record<keyof TValueRecord, TCast>);
     }
     // If value being cast is incompatible and cast is being performed in strict mode
-    else if (castDefinition.strict === true || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === true)) {
+    else if (strict) {
       // Throw error for trying a strict mode cast of unexpected value
       throw new Error(
         `Failed casting value. In strict mode when casting as CastAs.HashmapOfInstances the value being cast needs to be a hashmap of objects which can be cast into a hashmap of class instances specified as the @cast target class!`,
       );
     }
     // If value being cast is incompatible and cast is being performed in non-strict mode
-    else if (castDefinition.strict === false || (castDefinition.strict instanceof Object && castDefinition.strict?.dehydrate === false)) {
+    else if (!strict) {
       // Cast from undefined
       return {} as Record<keyof TValueRecord, TCast>;
     }
