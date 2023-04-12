@@ -104,107 +104,83 @@ export function testHydrationCastDecoratorRehydrate() {
     value['propCustomArray'] = undefined;
     value['propHashmap']!['b'] = undefined as unknown as TestCast;
     value['propCustomHashmap'] = undefined;
-    // (Re)Hydrate the testing object containing undefined property values
-    const dehydratedInstance = rehydrate(value, TestCast, HydrationStrategy.OnlyBoundClassProperties);
 
-    // Verify (re)hydrating properties with undefined behavior: CastUndefined.Preserve
-    it('(Re)Hydrating properties with undefined behavior: CastUndefined.Preserve', () => {
-      assert(dehydratedInstance.propertySingle === undefined);
-      assert(dehydratedInstance.propertyCustomSingle === undefined);
-      assert(dehydratedInstance.propertyArray![1] === undefined);
-      assert(dehydratedInstance.propertyCustomArray === undefined);
-      assert(dehydratedInstance.propertyHashmap!['b'] === undefined);
-      assert(dehydratedInstance.propertyCustomHashmap === undefined);
-    });
+    // Verify (re)hydrating properties with undefined values
+    it('(Re)Hydrating properties with undefined values', () => {
+      // (Re)Hydrate the testing object containing undefined property values
+      const rehydratedInstance = rehydrate(value, TestCast, HydrationStrategy.OnlyBoundClassProperties);
+      // Test for preserved undefined values
+      assert(rehydratedInstance.propertySingle === undefined); // Value not set (still seen as undefined)
+      assert(rehydratedInstance.propertyArray instanceof Array);
+      assert(rehydratedInstance.propertyArray!.length === 2); // Undefined members of the array skipped
+      assert(rehydratedInstance.propertyHashmap instanceof Object);
+      assert(Object.keys(rehydratedInstance.propertyHashmap!).length === 2); // Undefined members of the hashmap skipped
+      // Test for respected custom binding where custom binding
+      assert(rehydratedInstance.propertyCustomSingle === undefined); // Custom binding set value based on received undefined
+      assert(rehydratedInstance.propertyCustomArray instanceof Array);
+      assert(rehydratedInstance.propertyCustomArray!.length === 0); // Custom binding set value based on received undefined
+      assert(rehydratedInstance.propertyCustomHashmap instanceof Object);
+      assert(Object.keys(rehydratedInstance.propertyCustomHashmap!).length === 0); // Custom binding set value based on received undefined
 
-    // Verify (re)hydrating properties with undefined behavior: CastUndefined.Skip
-    it('(Re)Hydrating properties with undefined behavior: CastUndefined.Skip', () => {
-      // TODO: ...
-      assert(true);
-    });
-
-    // Verify (re)hydrating properties with undefined behavior: CastUndefined.CoerseIntoCastingDefault
-    it('(Re)Hydrating properties with undefined behavior: CastUndefined.CoerseIntoCastingDefault', () => {
-      // TODO: ...
-      assert(true);
+      // Try setting array and hashmap cast properties to undefined
+      value['propArray'] = undefined;
+      value['propHashmap'] = undefined;
+      // (Re)Hydrate the testing object containing undefined property values
+      const rehydratedInstanceWithUndefinedCollections = rehydrate(value, TestCast, HydrationStrategy.OnlyBoundClassProperties);
+      // Test for preserved undefined values
+      assert(rehydratedInstanceWithUndefinedCollections.propertyArray === undefined); // Undefined values are skipped and default to class' default initialized value
+      assert(rehydratedInstanceWithUndefinedCollections.propertyHashmap === undefined); // Undefined values are skipped and default to class' default initialized value
     });
   });
 
-  // Check (re)hydrating a class instance respects strictness settings in all cases
-  describe('(Re)Hydrating a non-class-instance value respects strictness settings in all cases', () => {
-    // Do not throw when rehydrating a non-object value in a non-strict property
+  // Check (re)hydrating a class instance expects objects only to be cast
+  describe('(Re)Hydrating a non-class-instance value throws in all cases', () => {
+    // Throw when rehydrating a non-object value
     const valueTestingSingle = createDehydratedTestCastExampleObj();
     valueTestingSingle['propSingle'] = false as unknown as TestCast;
-    it(`Single not castable value won't throw when property not configured with strict casting`, () => {
-      expect(() => rehydrate(valueTestingSingle, TestCast, HydrationStrategy.AllClassProperties)).not.toThrow();
-    });
-    // ... except when forcing strict dehydration
-    it(`Single not castable value will throw when forcing a strict dehydration`, () => {
-      expect(() => rehydrate(valueTestingSingle, TestCast, HydrationStrategy.AllClassProperties, { strict: true })).toThrow();
-    });
-    // Do throw when rehydrating a non-object value in a strict property
-    const valueTestingCustomSingle = createDehydratedTestCastExampleObj();
-    valueTestingCustomSingle['propCustomSingle'] = { data: false } as unknown as TestCast;
-    it(`Single not castable value will throw when property configured with strict casting`, () => {
-      expect(() => rehydrate(valueTestingCustomSingle, TestCast, HydrationStrategy.AllClassProperties)).toThrow();
-    });
-    // ... except when forcing non-strict dehydration
-    it(`Single not castable value won't throw when forcing a non-strict dehydration`, () => {
-      expect(() => rehydrate(valueTestingCustomSingle, TestCast, HydrationStrategy.AllClassProperties, { strict: false })).not.toThrow();
+    it(`Single not castable value throws`, () => {
+      expect(() => rehydrate(valueTestingSingle, TestCast, HydrationStrategy.AllClassProperties)).toThrow();
     });
 
-    // Do not throw when rehydrating a non-object containing array in a non-strict property
+    // Throw when rehydrating a non-object containing array
     const valueTestingArray = createDehydratedTestCastExampleObj();
     valueTestingArray['propArray']![1] = false as unknown as TestCast;
-    it(`Array containing a not castable value won't throw when property not configured with strict casting`, () => {
-      expect(() => rehydrate(valueTestingArray, TestCast, HydrationStrategy.AllClassProperties)).not.toThrow();
-    });
-    // ... except when forcing strict dehydration
-    it(`Array containing a not castable value will throw when forcing a strict dehydration`, () => {
-      expect(() => rehydrate(valueTestingArray, TestCast, HydrationStrategy.AllClassProperties, { strict: true })).toThrow();
-    });
-    // Do throw when rehydrating a non-object containing array in a strict property
-    const valueTestingCustomArray = createDehydratedTestCastExampleObj();
-    valueTestingCustomArray['propCustomArray']![1] = { data: false } as unknown as TestCast;
-    it(`Array containing a not castable value will throw when property configured with strict casting`, () => {
-      expect(() => rehydrate(valueTestingCustomArray, TestCast, HydrationStrategy.AllClassProperties)).toThrow();
-    });
-    // ... except when forcing non-strict dehydration
-    it(`Array containing a not castable value won't throw when forcing a non-strict dehydration`, () => {
-      expect(() => rehydrate(valueTestingCustomArray, TestCast, HydrationStrategy.AllClassProperties, { strict: false })).not.toThrow();
+    it(`Array containing a not castable value throws`, () => {
+      expect(() => rehydrate(valueTestingArray, TestCast, HydrationStrategy.AllClassProperties)).toThrow();
     });
 
-    // Do not throw when rehydrating a non-object containing hashmap in a non-strict property
+    // Throw when rehydrating a non-object containing hashmap
     const valueTestingHashmap = createDehydratedTestCastExampleObj();
     valueTestingHashmap['propHashmap']!['b'] = false as unknown as TestCast;
-    it(`Hashmap containing a non-instance won't throw when property not configured with strict casting`, () => {
-      expect(() => rehydrate(valueTestingHashmap, TestCast, HydrationStrategy.AllClassProperties)).not.toThrow();
-    });
-    // ... except when forcing strict dehydration
-    it(`Hashmap containing a non-instance will throw when forcing a strict dehydration`, () => {
-      expect(() => rehydrate(valueTestingHashmap, TestCast, HydrationStrategy.AllClassProperties, { strict: true })).toThrow();
-    });
-    // Do throw when dehydrehydratingrating a non-object containing hashmap in a strict property
-    const valueTestingCustomHashmap = createDehydratedTestCastExampleObj();
-    valueTestingCustomHashmap['propCustomHashmap']!['b'] = { data: false } as unknown as TestCast;
-    it(`Hashmap containing a non-instance will throw when property configured with strict casting`, () => {
-      expect(() => rehydrate(valueTestingCustomHashmap, TestCast, HydrationStrategy.AllClassProperties)).toThrow();
-    });
-    // ... except when forcing non-strict dehydration
-    it(`Hashmap containing a Single non-instance won't throw when forcing a non-strict dehydration`, () => {
-      expect(() => rehydrate(valueTestingCustomHashmap, TestCast, HydrationStrategy.AllClassProperties, { strict: false })).not.toThrow();
+    it(`Hashmap containing a non-instance throws`, () => {
+      expect(() => rehydrate(valueTestingHashmap, TestCast, HydrationStrategy.AllClassProperties)).toThrow();
     });
   });
 
   // Check (re)hydrating a class instance is possible when class constructor is using required arguments
-  describe('(Re)Hydrating a class instance is possible when class constructor is using required arguments', () => {
-    // TODO: ...
-    it('', () => assert(true));
-  });
+  // describe('(Re)Hydrating a class instance is possible when class constructor is using required arguments', () => {
+  //   // TODO: ...
+  //   it('Test not implemented!', () =>
+  //     expect(() => {
+  //       throw new Error('Test not implemented!');
+  //     }).not.toThrow());
+  // });
 
   // Check (re)hydrating a class instance is resiliant to circular and shared references
-  describe('(Re)Hydrating a class instance is resiliant to circular and shared references', () => {
-    // TODO: ...
-    it('', () => assert(true));
-  });
+  // describe('(Re)Hydrating a class instance is resiliant to circular and shared references', () => {
+  //   // TODO: ...
+  //   it('Test not implemented!', () =>
+  //     expect(() => {
+  //       throw new Error('Test not implemented!');
+  //     }).not.toThrow());
+  // });
+
+  // Check using (re)hydration to append to an existing instance from a partial dehydrated object
+  // describe('(Re)Hydration to an existing instance from a partial dehydrated object is possible', () => {
+  //   // TODO: ...
+  //   it('Test not implemented!', () =>
+  //     expect(() => {
+  //       throw new Error('Test not implemented!');
+  //     }).not.toThrow());
+  // });
 }

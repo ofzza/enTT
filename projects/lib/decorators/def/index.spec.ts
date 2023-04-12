@@ -6,6 +6,9 @@ import { assert } from '../../tests.init';
 import { getDecoratedClassDefinition } from '../../lib';
 import { def } from './';
 
+// Import from library root
+import * as root from '../../';
+
 /**
  * Class with decorated properties and not-decorated properties of different access levels
  */
@@ -32,6 +35,14 @@ class Test<T> {
 export function testDefDecorator() {
   describe('@def decorator', () => {
     const definition = getDecoratedClassDefinition(Test);
+
+    // Can import from library root
+    describe('Decorator and related services can be imported from "./"', () => {
+      // Decorator
+      it('Can import decorator', () => {
+        assert(!!root.def);
+      });
+    });
 
     // Check explicitly not set properties with differing access levels
     it('Properties of different access levels, having explicitly typed value not set, registered', () => {

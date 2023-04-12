@@ -9,7 +9,7 @@ import { testDynamicPropertyDecorators } from './_spec/dynamicPropertyDecorator.
 import { testInheritabilityOfDecorators } from './_spec/inheritabilityOfDecorators.spec';
 
 // Test ...
-describe('EnTT library internals', () => {
+describe('Libraray core', () => {
   // Tests static custom class decorators cration and implementation
   describe('Can implement a custom, static class decorator', () => {
     testStaticClassDecorators();
