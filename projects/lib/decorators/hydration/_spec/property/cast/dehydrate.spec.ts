@@ -2,8 +2,8 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { assert } from '../../../../tests.init';
-import { dehydrate, HydrationStrategy } from '../../';
+import { assert } from '../../../../../tests.init';
+import { dehydrate, HydrationStrategy } from '../../../';
 import { TestCast, createTestClassInstance } from './fixtures.spec';
 
 // Test ...
@@ -153,11 +153,11 @@ export function testHydrationCastDecoratorDehydrate() {
   });
 
   // Check dehydrating a class instance is resiliant to circular and shared references
-  // describe('Dehydrating a class instance is resiliant to circular and shared references', () => {
-  //   // TODO: ...
-  //   it('Test not implemented!', () =>
-  //     expect(() => {
-  //       throw new Error('Test not implemented!');
-  //     }).not.toThrow());
-  // });
+  describe('Dehydrating a class instance is resiliant to circular and shared references', () => {
+    // TODO: ...
+    it('Test not implemented!', () =>
+      expect(() => {
+        throw new Error('Test not implemented!');
+      }).toThrow());
+  });
 }

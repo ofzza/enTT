@@ -1,13 +1,13 @@
-// enTT HYDRATION @bind decorator and services tests
+// enTT HYDRATION @bind properties decorator and services tests
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { assert } from '../../../../tests.init';
-import { dehydrate, rehydrate, HydrationStrategy } from '../../';
+import { assert } from '../../../../../tests.init';
+import { dehydrate, rehydrate, HydrationStrategy } from '../../../';
 import { HYDRATIONS_PER_SECOND, TestBinding, dehydratedTestBindingExampleObj } from './fixtures.spec';
 
 // Test ...
-export function testHydrationBindDecoratorDehydrate() {
+export function testHydrationBindPropertyDecoratorDehydrate() {
   // Instantiate a testing instance
   const instance = new TestBinding();
 

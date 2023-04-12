@@ -515,7 +515,7 @@ setTimeout(() => !isProduction() && verifyDecoratorUsage());
  *
  * ```ts
  * function MyStaticClassDecorator(data: any) {
- *   return createCustomDecorator();
+ *   return createClassCustomDecorator();
  * }
  * @MyStaticClassDecorator({ my: 'configuration' })
  * class MyClass { }
@@ -531,7 +531,7 @@ export function createClassCustomDecorator<TInstance extends object>(): (target:
  *
  * ```ts
  * function MyStaticClassDecorator(data: any) {
- *   return createCustomDecorator(
+ *   return createClassCustomDecorator(
  *     undefined
  *     Symbol('My class decorator symbol')
  *   );
@@ -551,7 +551,7 @@ export function createClassCustomDecorator<TInstance extends object>(configurati
  *
  * ```ts
  * function MyStaticClassDecorator(data: any) {
- *   return createCustomDecorator(
+ *   return createClassCustomDecorator(
  *     () => data, // Returned data which will be stored in decorator definition once decorator is used to decorate a class
  *     Symbol('My class decorator symbol')
  *   );
@@ -575,7 +575,7 @@ export function createClassCustomDecorator<TInstance extends object, TPayload>(
  *
  * ```ts
  * function MyDynamicClassDecorator(data: any) {
- *   return createCustomDecorator(
+ *   return createClassCustomDecorator(
  *     {
  *       onPropertyGet?: (target, prop) => target[prop],
  *       onPropertySet?: (target, prop, value) => (target[prop] = value),
@@ -654,7 +654,7 @@ export function createClassCustomDecorator<TInstance extends object, TPayload>(
  *
  * ```ts
  * function MyStaticPropertyDecorator(data: any) {
- *   return createCustomDecorator();
+ *   return createPropertyCustomDecorator();
  * }
  * class MyClass {
  *   @MyStaticPropertyDecorator({ my: 'configuration' })
@@ -672,7 +672,7 @@ export function createPropertyCustomDecorator<TInstance extends object>(): (targ
  *
  * ```ts
  * function MyStaticPropertyDecorator(data: any) {
- *   return createCustomDecorator(
+ *   return createPropertyCustomDecorator(
  *     undefined
  *     Symbol('My property decorator symbol')
  *   );
@@ -697,7 +697,7 @@ export function createPropertyCustomDecorator<TInstance extends object>(
  *
  * ```ts
  * function MyStaticPropertyDecorator(data: any) {
- *   return createCustomDecorator(
+ *   return createPropertyCustomDecorator(
  *     () => data, // Returned data which will be stored in decorator definition once decorator is used to decorate a property
  *     Symbol('My property decorator symbol')
  *   );
@@ -723,7 +723,7 @@ export function createPropertyCustomDecorator<TInstance extends object, TPayload
  *
  * ```ts
  * function MyDynamicPropertyDecorator(data: any) {
- *   return createCustomDecorator(
+ *   return createPropertyCustomDecorator(
  *     {
  *       onPropertyGet?: (target, prop) => target[prop],
  *       onPropertySet?: (target, prop, value) => (target[prop] = value),
@@ -751,7 +751,7 @@ export function createPropertyCustomDecorator<TInstance extends object, TPayload
   configuration?: CustomStaticPropertyDecoratorConfiguration<TPayload> | CustomDynamicPropertyDecoratorConfiguration<TInstance, TPayload, TValInner, TValOuter>,
   decoratorSymbol: symbol = Symbol(),
 ): (target: ClassInstance<TInstance>, key: PropertyKey, descriptor: PropertyDescriptor) => void {
-  return <TInstanceInternal extends TInstance>(target: ClassInstance<TInstanceInternal>, key: PropertyKey, descriptor: PropertyDescriptor) => {
+  return <TInstanceInternal extends TInstance>(target: ClassInstance<TInstanceInternal>, key: PropertyKey, _descriptor: PropertyDescriptor) => {
     // Check if multiple usages of the same decorator and if permitted
     if (configuration && configuration instanceof Object) {
       const propertyDefinitions = getDecoratedClassPropertyDecoratorDefinition(target, key, decoratorSymbol);

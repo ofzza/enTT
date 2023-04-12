@@ -2,17 +2,16 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { assert } from '../../../../tests.init';
+import { assert } from '../../../../../tests.init';
 
 // Import from library root
-import * as root from '../../';
+import * as root from '../../../';
 
 // Import tests
-import { testHydrationCastDecoratorDehydrate } from './dehydrate.spec';
-import { testHydrationCastDecoratorRehydrate } from './rehydrate.spec';
+import { testHydrationCastDecoratorHydration } from './hydration.spec';
 
 // Test ...
-export function testHydrationCastDecoratorAndCompanionServices() {
+export function testHydrationCastDecoratorAndCompanionServicesOnBoundPropertiesAndClasses() {
   // Can import from library root
   describe('Decorator and related services can be imported from "./"', () => {
     // Decorator
@@ -30,8 +29,6 @@ export function testHydrationCastDecoratorAndCompanionServices() {
     });
   });
 
-  // Test dehydration
-  testHydrationCastDecoratorDehydrate();
-  // Test rehydration
-  testHydrationCastDecoratorRehydrate();
+  // Test hydration
+  testHydrationCastDecoratorHydration();
 }

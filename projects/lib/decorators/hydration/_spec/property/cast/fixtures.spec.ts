@@ -1,9 +1,9 @@
-// enTT HYDRATION @bind decorator test fixtures
+// enTT HYDRATION @cast decorator test fixtures
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { def } from '../../../def';
-import { bind, cast, CastAs } from '../../';
+import { def } from '../../../../def';
+import { bindProperty, cast, CastAs } from '../../../';
 
 /**
  * Class decorated with Hydration decorators, used primarily to test the @cast decorator
@@ -11,32 +11,32 @@ import { bind, cast, CastAs } from '../../';
 export class TestCast {
   // Value property
   @def
-  @bind('propA')
+  @bindProperty('propA')
   public propertyA: string = 'A';
 
   // Value property
   @def
-  @bind('propB')
+  @bindProperty('propB')
   public propertyB: string = 'B';
 
   // Value property
   @def
-  @bind('propC')
+  @bindProperty('propC')
   public propertyC: string = 'C';
 
   // Testing no cast
   @def
-  @bind('propRaw')
+  @bindProperty('propRaw')
   public propertyRaw?: Record<PropertyKey, any>;
 
   // Testing casting to single instance
   @def
-  @bind('propSingle')
+  @bindProperty('propSingle')
   @cast(TestCast, CastAs.SingleInstance)
   public propertySingle?: TestCast;
   // Testing casting to single instance
   @def
-  @bind<object, undefined | TestCast, undefined | { data?: TestCast }>({
+  @bindProperty<object, undefined | TestCast, undefined | { data?: TestCast }>({
     propertyName: 'propCustomSingle',
     conversion: {
       dehydrate: v => (v !== undefined ? { data: v } : { data: undefined }),
@@ -48,12 +48,12 @@ export class TestCast {
 
   // Testing no cast to array
   @def
-  @bind('propArray')
+  @bindProperty('propArray')
   @cast(TestCast, CastAs.ArrayOfInstances)
   public propertyArray?: Array<TestCast>;
   // Testing no cast to array with a customized binding
   @def
-  @bind<object, undefined | Array<TestCast>, undefined | Array<{ data: TestCast }>>({
+  @bindProperty<object, undefined | Array<TestCast>, undefined | Array<{ data: TestCast }>>({
     propertyName: 'propCustomArray',
     conversion: {
       dehydrate: v => (v !== undefined ? v.map(val => ({ data: val })) : []),
@@ -65,12 +65,12 @@ export class TestCast {
 
   // Testing no cast to hashmap
   @def
-  @bind('propHashmap')
+  @bindProperty('propHashmap')
   @cast(TestCast, CastAs.HashmapOfInstances)
   public propertyHashmap?: Record<PropertyKey, TestCast>;
   // Testing no cast to hashmap with a customized binding
   @def
-  @bind<object, undefined | Record<PropertyKey, TestCast>, undefined | Record<PropertyKey, { data: TestCast }>>({
+  @bindProperty<object, undefined | Record<PropertyKey, TestCast>, undefined | Record<PropertyKey, { data: TestCast }>>({
     propertyName: 'propCustomHashmap',
     conversion: {
       dehydrate: v => (v !== undefined ? Object.keys(v).reduce((val, key: PropertyKey) => ({ ...val, [key]: { data: v[key] } }), {}) : {}),

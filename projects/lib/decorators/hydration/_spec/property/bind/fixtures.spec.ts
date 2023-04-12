@@ -2,14 +2,14 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { def } from '../../../def';
-import { bind } from '../../';
+import { def } from '../../../../def';
+import { bindProperty } from '../../../';
 
 // Set minimal expected number of hydrations performed per second
 export const HYDRATIONS_PER_SECOND = 10000;
 
 /**
- * Class decorated with Hydration decorators, used primarily to test the @bind decorator
+ * Class decorated with Hydration decorators, used primarily to test the @bind class properties decorator
  */
 export class TestBinding {
   constructor() {}
@@ -23,24 +23,24 @@ export class TestBinding {
 
   // Testing a property with unconfigured binding
   @def
-  @bind()
+  @bindProperty()
   public propertyC: string = 'Property C value';
 
   // Testing a property with binding configured only with property name as string
   @def
-  @bind('propD')
+  @bindProperty('propD')
   public propertyD: string = 'Property D value';
 
   // Testing a property with binding configured only with property name as a partial configuration object
   @def
-  @bind({
+  @bindProperty({
     propertyName: 'propE',
   })
   public propertyE: string = 'Property E value';
 
   // Testing a property with binding and conversion configured using a full form configuration object
   @def
-  @bind<object, string, number>({
+  @bindProperty<object, string, number>({
     propertyName: 'propF',
     conversion: {
       dehydrate: v => parseInt(v, 10),

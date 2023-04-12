@@ -2,20 +2,24 @@
 // ----------------------------------------------------------------------------
 
 // Import tests
-import { testHydrationBindDecoratorAndCompanionServices } from './_spec/bind/index.spec';
-import { testHydrationCastDecoratorAndCompanionServices } from './_spec/cast/index.spec';
+import { testHydrationBindPropertyDecoratorAndCompanionServices } from './_spec/property/bind/index.spec';
+import { testHydrationCastDecoratorAndCompanionServicesOnBoundPropertiesOnly } from './_spec/property/cast/index.spec';
+import { testHydrationBindClassDecoratorAndCompanionServices } from './_spec/class/bind/index.spec';
+import { testHydrationCastDecoratorAndCompanionServicesOnBoundPropertiesAndClasses } from './_spec/class/cast/index.spec';
 
 // Test ...
 export function testHydrationDecoratorsAndServices() {
   describe('EnTT HYDRATION decorators and companion services', () => {
     // Test @bind decorator
-    describe('@bind', () => {
-      testHydrationBindDecoratorAndCompanionServices();
+    describe('@bind properties', () => {
+      testHydrationBindPropertyDecoratorAndCompanionServices();
+      testHydrationBindClassDecoratorAndCompanionServices();
     });
 
     // Test @cast decorator
     describe('@cast', () => {
-      testHydrationCastDecoratorAndCompanionServices();
+      testHydrationCastDecoratorAndCompanionServicesOnBoundPropertiesOnly();
+      testHydrationCastDecoratorAndCompanionServicesOnBoundPropertiesAndClasses();
     });
   });
 }
