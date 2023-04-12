@@ -3,8 +3,8 @@
 
 // Import dependencies
 import { assert } from '../../../../../tests.init';
-import { dehydrate, rehydrate, HydrationStrategy } from '../../../';
-import { HYDRATIONS_PER_SECOND, TestBinding, dehydratedTestBindingExampleObj } from './fixtures.spec';
+import { dehydrate, HydrationStrategy } from '../../../';
+import { HYDRATIONS_PER_SECOND, TestBinding } from './fixtures.spec';
 
 // Test ...
 export function testHydrationBindPropertyDecoratorDehydrate() {

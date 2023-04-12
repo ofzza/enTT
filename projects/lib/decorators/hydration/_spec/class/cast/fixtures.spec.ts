@@ -3,7 +3,7 @@
 
 // Import dependencies
 import { def } from '../../../../def';
-import { bindConstructorArguments, bindProperty, cast, CastAs } from '../../../';
+import { bind, cast, CastAs } from '../../../';
 
 // Import existing fixtures
 import {
@@ -20,7 +20,7 @@ export { BoundDate, staticDate2000, staticDate2010, staticDate2020, staticDateIs
 /**
  * Class decorated with Hydration decorators, used primarily to test the @cast decorator
  */
-@bindConstructorArguments({
+@bind({
   conversion: {
     // Dehydrate to empty(ish) object, allowing per-property binding and casting to work
     dehydrate: () => ({ _constructor: 'DateCast' }),
@@ -43,7 +43,7 @@ export class DateCast {
    * Date property
    */
   @def
-  @bindProperty('propDate')
+  @bind('propDate')
   @cast(BoundDate, CastAs.SingleInstance)
   public propDate!: BoundDate;
 
@@ -51,7 +51,7 @@ export class DateCast {
    * Date array property
    */
   @def
-  @bindProperty('propDateArray')
+  @bind('propDateArray')
   @cast(BoundDate, CastAs.ArrayOfInstances)
   public propDateArray!: Array<BoundDate>;
 
@@ -59,7 +59,7 @@ export class DateCast {
    * Date hashmap property
    */
   @def
-  @bindProperty('propDateHashmap')
+  @bind('propDateHashmap')
   @cast(BoundDate, CastAs.HashmapOfInstances)
   public propDateHashmap!: Record<PropertyKey, BoundDate>;
 }

@@ -17,7 +17,7 @@ export function testHydrationBindPropertyDecoratorAndCompanionServices() {
   describe('Decorator and related services can be imported from "./"', () => {
     // Decorator
     it('Can import decorator', () => {
-      assert(!!root.bindProperty);
+      assert(!!root.bind);
     });
   });
 

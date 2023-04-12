@@ -18,7 +18,73 @@ export type DehydratedInstance<T> = Record<PropertyKey, any> | any;
 
 // #region Hydration @bind decorator
 
-type bindfn = typeof bindProperty | typeof bindConstructorArguments;
+/**
+ * TODO: ...
+ * @param config
+ * @returns Class decorator
+ */
+export function bind<TInstance extends object>(
+  config: HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>,
+): (target: Class<TInstance>) => void;
+/**
+ * TODO: ...
+ * @param config
+ * @returns Property decorator
+ */
+export function bind<TInstance extends object>(): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+/**
+ * TODO: ...
+ * @param config
+ * @returns Property decorator
+ */
+export function bind<TInstance extends object>(config: string): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+/**
+ * TODO: ...
+ * @param config
+ * @returns Property decorator
+ */
+export function bind<TInstance extends object, TValRehydrated, TValDehydrated>(
+  config: HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated>,
+): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+/**
+ * Common decorator factory for both bindConstructorArguments and bindProperty, depending on condifuration provided
+ * @param config Configuration object
+ * @returns Class or Property decorator
+ */
+export function bind<TInstance extends object, TValRehydrated, TValDehydrated>(
+  config?:
+    | string
+    | HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>
+    | HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated>,
+): ((target: Class<TInstance>) => void) | ((target: ClassInstance<TInstance>, key: PropertyKey) => void) {
+  // Cache decorators once created
+  let bindConstructorArgumentsDecorator: ReturnType<typeof bindConstructorArguments<TInstance>>;
+  let bindPropertyDecorator: ReturnType<typeof bindProperty<TInstance, TValRehydrated, TValDehydrated>>;
+
+  // Return an undetermined decorator, later to be determined if used to decorate a class or a property
+  return (target: Class<TInstance>, key?: PropertyKey) => {
+    // If decorating a class use class decorator
+    if (!key) {
+      // If not alreafy initialized, initialize decorator
+      if (!bindConstructorArgumentsDecorator) {
+        bindConstructorArgumentsDecorator = bindConstructorArguments(config as HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>);
+      }
+      // Apply decorator
+      bindConstructorArgumentsDecorator(target as Class<TInstance>);
+    }
+    // If decorating a property use property decorator
+    else {
+      // If not alreafy initialized, initialize decorator
+      if (!bindPropertyDecorator) {
+        bindPropertyDecorator = bindProperty<TInstance, TValRehydrated, TValDehydrated>(
+          config as HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated>,
+        );
+      }
+      // Apply decorator
+      bindPropertyDecorator(target as TInstance, key);
+    }
+  };
+}
 
 // #endregion
 
@@ -56,7 +122,9 @@ const hydrationBindingConstructorArgumentsDecoratorSymbol = Symbol('Hydration bi
  * @param config (Optional) Configuration object defining conversion methods to be used for dehydration/(re)hydration
  * @returns Class decorator
  */
-export function bindConstructorArguments<TInstance extends object>(config: HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>) {
+function bindConstructorArguments<TInstance extends object>(
+  config: HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>,
+): (target: Class<TInstance>) => void {
   return createClassCustomDecorator<TInstance, HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>>(
     () => config,
     hydrationBindingConstructorArgumentsDecoratorSymbol,
@@ -101,16 +169,14 @@ const hydrationBindingPropertyDecoratorSymbol = Symbol('Hydration binding proper
  * dehydrated/(re)hydrated from/to a propertyx of the same name without any value conversion.
  * @returns Property decorator
  */
-export function bindProperty<TInstance extends object, TValRehydrated, TValDehydrated>(): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+function bindProperty<TInstance extends object>(): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
 /**
  * When dehydrating/rehydrating a class instance, this property decorator configures the target name of the dehydraeted property
  * this property needs to be dehydrated/(re)hydrated to/from without any value conversion.
  * @param config Name of the dehydrated property this property needs to be dehydrated/(re)hydrated to/from.
  * @returns Property decorator
  */
-export function bindProperty<TInstance extends object, TValRehydrated, TValDehydrated>(
-  config: string,
-): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+function bindProperty<TInstance extends object>(config: string): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
 /**
  * When dehydrating/rehydrating a class instance, this property decorator configures the target name of the dehydraeted property
  * this property needs to be dehydrated/(re)hydrated to/from and defines callback functions handling data conversion in either direction.
@@ -118,10 +184,10 @@ export function bindProperty<TInstance extends object, TValRehydrated, TValDehyd
  * and callback functions handling data conversion in either direction.
  * @returns Property decorator
  */
-export function bindProperty<TInstance extends object, TValRehydrated, TValDehydrated>(
+function bindProperty<TInstance extends object, TValRehydrated, TValDehydrated>(
   config: HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated>,
 ): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
-export function bindProperty<TInstance extends object, TValRehydrated, TValDehydrated>(
+function bindProperty<TInstance extends object, TValRehydrated, TValDehydrated>(
   config?: string | HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated>,
 ): (target: ClassInstance<TInstance>, key: PropertyKey) => void {
   // Conpose full configuration object

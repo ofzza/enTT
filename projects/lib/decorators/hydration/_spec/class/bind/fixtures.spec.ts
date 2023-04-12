@@ -3,7 +3,7 @@
 
 // Import dependencies
 import { def } from '../../../../def';
-import { bindConstructorArguments } from '../../../';
+import { bind } from '../../../';
 
 /**
  * Overridden system class (as not to polute base class, works the same with base class) decorated with Hydration decorators,
@@ -12,7 +12,7 @@ import { bindConstructorArguments } from '../../../';
 export class BoundDate extends Date {}
 
 // Decorate existing class (TODO: Try getting rid of the explicit generic and infer from class being decorated?!)
-bindConstructorArguments<BoundDate>({
+bind<BoundDate>({
   conversion: {
     dehydrate: date => date.toISOString(),
     rehydrate: str => new BoundDate(str),

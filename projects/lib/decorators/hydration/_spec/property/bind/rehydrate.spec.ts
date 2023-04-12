@@ -3,7 +3,7 @@
 
 // Import dependencies
 import { assert } from '../../../../../tests.init';
-import { dehydrate, rehydrate, HydrationStrategy } from '../../../';
+import { rehydrate, HydrationStrategy } from '../../../';
 import { HYDRATIONS_PER_SECOND, TestBinding, dehydratedTestBindingExampleObj } from './fixtures.spec';
 
 // Test ...

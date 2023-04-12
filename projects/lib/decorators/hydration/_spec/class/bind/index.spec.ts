@@ -16,7 +16,7 @@ export function testHydrationBindClassDecoratorAndCompanionServices() {
   describe('Decorator and related services can be imported from "./"', () => {
     // Decorator
     it('Can import decorator', () => {
-      assert(!!root.bindConstructorArguments);
+      assert(!!root.bind);
     });
   });
 
