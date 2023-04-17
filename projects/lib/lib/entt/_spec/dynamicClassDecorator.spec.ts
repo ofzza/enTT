@@ -99,7 +99,7 @@ export function testDynamicClassDecorators() {
       assert(familyWarnings.length === 1);
 
       // EnTTify parent class
-      const Family = enttify(_Family);
+      const _ = enttify(_Family);
 
       // Check dynamic decorators no longer throwing warnings
       warnings.splice(0, warnings.length);
@@ -141,6 +141,33 @@ export function testDynamicClassDecorators() {
     it('Definitions are set correctly', () => {
       // Check if decorator definitions set properly for @StringTitleCase()
       const definition = getDecoratedClassDecoratorDefinition(_Family, stringTitleCaseDecoratorSymbol);
+      assert(!!definition);
+      assert(definition.length === 1);
+      assert(definition[0].owner === _Family);
+      assert(definition[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
+      assert(definition[0].data === true);
+    });
+    // Check if decorator definitions are set correctly
+    it('Definitions are set correctly and can be reached via enttified class', () => {
+      // EnTTify parent class
+      const Family = enttify(_Family);
+
+      // Check if decorator definitions set properly for @StringTitleCase()
+      const definition = getDecoratedClassDecoratorDefinition(Family, stringTitleCaseDecoratorSymbol);
+      assert(!!definition);
+      assert(definition.length === 1);
+      assert(definition[0].owner === _Family);
+      assert(definition[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
+      assert(definition[0].data === true);
+    });
+    // Check if decorator definitions are set correctly
+    it('Definitions are set correctly and can be reached via enttified class instance', () => {
+      // EnTTify parent class
+      const Family = enttify(_Family);
+      const family = new Family();
+
+      // Check if decorator definitions set properly for @StringTitleCase()
+      const definition = getDecoratedClassDecoratorDefinition(family, stringTitleCaseDecoratorSymbol);
       assert(!!definition);
       assert(definition.length === 1);
       assert(definition[0].owner === _Family);

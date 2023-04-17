@@ -4,12 +4,14 @@
 // Import dependencies
 import { assert } from '../../../tests.init';
 import {
+  Class,
   createClassCustomDecorator,
   getDecoratedClassDefinition,
   getDecoratedClassDecoratorDefinition,
   createPropertyCustomDecorator,
   getDecoratedClassPropertyDefinition,
   getDecoratedClassPropertyDecoratorDefinition,
+  enttify,
 } from '../';
 
 // Unique identifier symbol identifying the Decorative class decorator
@@ -137,83 +139,145 @@ export function testInheritabilityOfDecorators() {
   // Instantiate the extending class
   const polo = new PoloClass();
 
-  // Class decorators are inherited
-  it('Class decorators are inherited when inheriting a class', () => {
+  // Enttitify base class
+  const EnttifiedMarcoClass = enttify(MarcoClass);
+  // Enttitify extending class
+  const EnttifiedPoloClass = enttify(PoloClass);
+  // Extend enttified base class
+  class ExtendedEnttifiedMarcoClass extends EnttifiedMarcoClass {}
+  // Extend enttified extending class
+  class ExtendedEnttifiedPoloClass extends EnttifiedPoloClass {}
+
+  // Instantiate enttitified base class
+  const enttifiedMarco = new EnttifiedMarcoClass();
+  // Instantiate enttitified extending class
+  const enttifiedPolo = new EnttifiedPoloClass();
+  // Instantiate extended enttified base class
+  const extendedEnttifiedMarco = new ExtendedEnttifiedMarcoClass();
+  // Instantiate extended enttified extending class
+  const extendedEnttifiedPolo = new ExtendedEnttifiedPoloClass();
+
+  // Tests Marco (based) class's class decorators
+  function testMarcoClassDecorators<T extends MarcoClass>(instance: T) {
     // Get full class definition for the base class
-    const marcoClassDefinition = getDecoratedClassDefinition(marco);
-    const marcoClassDefinitionAll = marcoClassDefinition.decorators.all;
-    const marcoClassDefinitionBySymbol = marcoClassDefinition.decorators.bySymbol;
+    const definition = getDecoratedClassDefinition(instance);
+    const defAll = definition.decorators.all;
+    const defBySym = definition.decorators.bySymbol;
     // Verify all decorators are present and no extended decorators have poluted the base class
-    assert(marcoClassDefinitionAll.length === 2);
-    assert(marcoClassDefinitionAll.filter(def => def.decoratorSymbol === decoClassDecoratorSymbol).length === 1);
-    assert(marcoClassDefinitionAll.filter(def => def.decoratorSymbol === marcoClassDecoratorSymbol).length === 1);
-    assert(marcoClassDefinitionBySymbol[decoClassDecoratorSymbol].length === 1);
-    assert(marcoClassDefinitionBySymbol[decoClassDecoratorSymbol].filter(def => def.decoratorSymbol === decoClassDecoratorSymbol).length === 1);
-    assert(marcoClassDefinitionBySymbol[marcoClassDecoratorSymbol].length === 1);
-    assert(marcoClassDefinitionBySymbol[marcoClassDecoratorSymbol].filter(def => def.decoratorSymbol === marcoClassDecoratorSymbol).length === 1);
+    assert(defAll.length === 2);
+    assert(defAll.filter(def => def.decoratorSymbol === decoClassDecoratorSymbol && def.owner === MarcoClass).length === 1);
+    assert(defAll.filter(def => def.decoratorSymbol === marcoClassDecoratorSymbol && def.owner === MarcoClass).length === 1);
+    assert(defBySym[decoClassDecoratorSymbol].length === 1);
+    assert(defBySym[decoClassDecoratorSymbol].filter(def => def.decoratorSymbol === decoClassDecoratorSymbol && def.owner === MarcoClass).length === 1);
+    assert(defBySym[marcoClassDecoratorSymbol].length === 1);
+    assert(defBySym[marcoClassDecoratorSymbol].filter(def => def.decoratorSymbol === marcoClassDecoratorSymbol && def.owner === MarcoClass).length === 1);
     // Get explicit decorator definitions for the base class
     const marcoClassDecoratorDefinition = getDecoratedClassDecoratorDefinition(marco, decoClassDecoratorSymbol);
     // Verify base class decorators are present when searching for an explicit class decorator
     assert(marcoClassDecoratorDefinition.filter(def => def.decoratorSymbol === decoClassDecoratorSymbol).length === 1);
-
-    // Get full class definition for the extended class
-    const poloClassDefinition = getDecoratedClassDefinition(polo);
-    const poloClassDefinitionAll = poloClassDefinition.decorators.all;
-    const poloClassDefinitionBySymbol = poloClassDefinition.decorators.bySymbol;
-    // Verify all base and extended class decorators are present
-    assert(poloClassDefinitionAll.length === 4);
-    assert(poloClassDefinitionAll.filter(def => def.decoratorSymbol === decoClassDecoratorSymbol).length === 2);
-    assert(poloClassDefinitionAll.filter(def => def.decoratorSymbol === marcoClassDecoratorSymbol).length === 1);
-    assert(poloClassDefinitionAll.filter(def => def.decoratorSymbol === poloClassDecoratorSymbol).length === 1);
-    assert(poloClassDefinitionBySymbol[decoClassDecoratorSymbol].length === 2);
-    assert(poloClassDefinitionBySymbol[decoClassDecoratorSymbol].filter(def => def.decoratorSymbol === decoClassDecoratorSymbol).length === 2);
-    assert(poloClassDefinitionBySymbol[marcoClassDecoratorSymbol].length === 1);
-    assert(poloClassDefinitionBySymbol[marcoClassDecoratorSymbol].filter(def => def.decoratorSymbol === marcoClassDecoratorSymbol).length === 1);
-    assert(poloClassDefinitionBySymbol[poloClassDecoratorSymbol].length === 1);
-    assert(poloClassDefinitionBySymbol[poloClassDecoratorSymbol].filter(def => def.decoratorSymbol === poloClassDecoratorSymbol).length === 1);
-    // Get explicit decorator definitions for the extended class
-    const poloClassDecoratorDefinition = getDecoratedClassDecoratorDefinition(polo, decoClassDecoratorSymbol);
-    // Verify extended class decorators were both inherited and added when searching for an explicit class decorator
-    assert(poloClassDecoratorDefinition.filter(def => def.decoratorSymbol === decoClassDecoratorSymbol).length === 2);
-  });
-
-  // Class property decorators are inherited
-  it('Class property decorators are inherited when inheriting a class', () => {
+  }
+  // Tests Marco (based) class's class property decorators
+  function testMarcoClassPropertyDecorators<T extends MarcoClass>(instance: T) {
     // Get full class definition for the base class
-    const marcoPropertyDefinition = getDecoratedClassPropertyDefinition(marco, 'prop');
-    const marcoPropertyDefinitionAll = marcoPropertyDefinition.decorators.all;
-    const marcoPropertyDefinitionBySymbol = marcoPropertyDefinition.decorators.bySymbol;
+    const definition = getDecoratedClassPropertyDefinition(instance, 'prop');
+    const defAll = definition.decorators.all;
+    const defBySym = definition.decorators.bySymbol;
     // Verify all decorators are present and no extended decorators have poluted the base class
-    assert(marcoPropertyDefinitionAll.length === 2);
-    assert(marcoPropertyDefinitionAll.filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol).length === 1);
-    assert(marcoPropertyDefinitionAll.filter(def => def.decoratorSymbol === marcoPropertyDecoratorSymbol).length === 1);
-    assert(marcoPropertyDefinitionBySymbol[decoPropertyDecoratorSymbol].length === 1);
-    assert(marcoPropertyDefinitionBySymbol[decoPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol).length === 1);
-    assert(marcoPropertyDefinitionBySymbol[marcoPropertyDecoratorSymbol].length === 1);
-    assert(marcoPropertyDefinitionBySymbol[marcoPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === marcoPropertyDecoratorSymbol).length === 1);
+    assert(defAll.length === 2);
+    assert(defAll.filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol && def.owner === MarcoClass).length === 1);
+    assert(defAll.filter(def => def.decoratorSymbol === marcoPropertyDecoratorSymbol && def.owner === MarcoClass).length === 1);
+    assert(defBySym[decoPropertyDecoratorSymbol].length === 1);
+    assert(defBySym[decoPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol && def.owner === MarcoClass).length === 1);
+    assert(defBySym[marcoPropertyDecoratorSymbol].length === 1);
+    assert(defBySym[marcoPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === marcoPropertyDecoratorSymbol && def.owner === MarcoClass).length === 1);
     // Get explicit decorator definitions for the base class
     const marcoPropertyDecoratorDefinition = getDecoratedClassPropertyDecoratorDefinition(marco, 'prop', decoPropertyDecoratorSymbol);
     // Verify base class property decorators are present when searching for an explicit class decorator
     assert(marcoPropertyDecoratorDefinition.filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol).length === 1);
-
+  }
+  // Tests Polo (based) class's class decorators
+  function testPoloClassDecorators<T extends PoloClass>(instance: T) {
     // Get full class definition for the extended class
-    const poloPropertyDefinition = getDecoratedClassPropertyDefinition(polo, 'prop');
-    const poloPropertyDefinitionAll = poloPropertyDefinition.decorators.all;
-    const poloPropertyDefinitionBySymbol = poloPropertyDefinition.decorators.bySymbol;
+    const definition = getDecoratedClassDefinition(instance);
+    const defAll = definition.decorators.all;
+    const defBySym = definition.decorators.bySymbol;
     // Verify all base and extended class decorators are present
-    assert(poloPropertyDefinitionAll.length === 4);
-    assert(poloPropertyDefinitionAll.filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol).length === 2);
-    assert(poloPropertyDefinitionAll.filter(def => def.decoratorSymbol === marcoPropertyDecoratorSymbol).length === 1);
-    assert(poloPropertyDefinitionAll.filter(def => def.decoratorSymbol === poloPropertyDecoratorSymbol).length === 1);
-    assert(poloPropertyDefinitionBySymbol[decoPropertyDecoratorSymbol].length === 2);
-    assert(poloPropertyDefinitionBySymbol[decoPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol).length === 2);
-    assert(poloPropertyDefinitionBySymbol[marcoPropertyDecoratorSymbol].length === 1);
-    assert(poloPropertyDefinitionBySymbol[marcoPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === marcoPropertyDecoratorSymbol).length === 1);
-    assert(poloPropertyDefinitionBySymbol[poloPropertyDecoratorSymbol].length === 1);
-    assert(poloPropertyDefinitionBySymbol[poloPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === poloPropertyDecoratorSymbol).length === 1);
+    assert(defAll.length === 4);
+    assert(defAll.filter(def => def.decoratorSymbol === decoClassDecoratorSymbol).length === 2);
+    assert(defAll.filter(def => def.decoratorSymbol === marcoClassDecoratorSymbol).length === 1);
+    assert(defAll.filter(def => def.decoratorSymbol === poloClassDecoratorSymbol).length === 1);
+    assert(defBySym[decoClassDecoratorSymbol].length === 2);
+    assert(defBySym[decoClassDecoratorSymbol].filter(def => def.decoratorSymbol === decoClassDecoratorSymbol).length === 2);
+    assert(defBySym[decoClassDecoratorSymbol].filter(def => def.decoratorSymbol === decoClassDecoratorSymbol && def.owner === MarcoClass).length === 1);
+    assert(defBySym[decoClassDecoratorSymbol].filter(def => def.decoratorSymbol === decoClassDecoratorSymbol && def.owner === PoloClass).length === 1);
+    assert(defBySym[marcoClassDecoratorSymbol].length === 1);
+    assert(defBySym[marcoClassDecoratorSymbol].filter(def => def.decoratorSymbol === marcoClassDecoratorSymbol && def.owner === MarcoClass).length === 1);
+    assert(defBySym[marcoClassDecoratorSymbol].filter(def => def.decoratorSymbol === marcoClassDecoratorSymbol && def.owner === PoloClass).length === 0);
+    assert(defBySym[poloClassDecoratorSymbol].length === 1);
+    assert(defBySym[poloClassDecoratorSymbol].filter(def => def.decoratorSymbol === poloClassDecoratorSymbol && def.owner === MarcoClass).length === 0);
+    assert(defBySym[poloClassDecoratorSymbol].filter(def => def.decoratorSymbol === poloClassDecoratorSymbol && def.owner === PoloClass).length === 1);
+    // Get explicit decorator definitions for the extended class
+    const poloClassDecoratorDefinition = getDecoratedClassDecoratorDefinition(polo, decoClassDecoratorSymbol);
+    // Verify extended class decorators were both inherited and added when searching for an explicit class decorator
+    assert(poloClassDecoratorDefinition.filter(def => def.decoratorSymbol === decoClassDecoratorSymbol).length === 2);
+  }
+  // Tests Polo (based) class's class property decorators
+  function testPoloClassPropertyDecorators<T extends PoloClass>(instance: T) {
+    // Get full class definition for the extended class
+    const definition = getDecoratedClassPropertyDefinition(instance, 'prop');
+    const defAll = definition.decorators.all;
+    const defBySym = definition.decorators.bySymbol;
+    // Verify all base and extended class decorators are present
+    assert(defAll.length === 4);
+    assert(defAll.filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol).length === 2);
+    assert(defAll.filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol && def.owner === MarcoClass).length === 1);
+    assert(defAll.filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol && def.owner === PoloClass).length === 1);
+    assert(defAll.filter(def => def.decoratorSymbol === marcoPropertyDecoratorSymbol).length === 1);
+    assert(defAll.filter(def => def.decoratorSymbol === poloPropertyDecoratorSymbol).length === 1);
+    assert(defBySym[decoPropertyDecoratorSymbol].length === 2);
+    assert(defBySym[decoPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol).length === 2);
+    assert(defBySym[decoPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol && def.owner === MarcoClass).length === 1);
+    assert(defBySym[decoPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol && def.owner === PoloClass).length === 1);
+    assert(defBySym[marcoPropertyDecoratorSymbol].length === 1);
+    assert(defBySym[marcoPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === marcoPropertyDecoratorSymbol && def.owner === MarcoClass).length === 1);
+    assert(defBySym[marcoPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === marcoPropertyDecoratorSymbol && def.owner === PoloClass).length === 0);
+    assert(defBySym[poloPropertyDecoratorSymbol].length === 1);
+    assert(defBySym[poloPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === poloPropertyDecoratorSymbol && def.owner === MarcoClass).length === 0);
+    assert(defBySym[poloPropertyDecoratorSymbol].filter(def => def.decoratorSymbol === poloPropertyDecoratorSymbol && def.owner === PoloClass).length === 1);
     // Get explicit decorator definitions for the extended class
     const polooPropertyDecoratorDefinition = getDecoratedClassPropertyDecoratorDefinition(polo, 'prop', decoPropertyDecoratorSymbol);
     // Verify base class property decorators were both inherited and added when searching for an explicit class decorator
     assert(polooPropertyDecoratorDefinition.filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol).length === 2);
-  });
+  }
+
+  // Class decorators are present on base class
+  it('Class decorators are present on base class', () => testMarcoClassDecorators(marco));
+  // Class property decorators are present on base class
+  it('Class property decorators are present on base class', () => testMarcoClassPropertyDecorators(marco));
+
+  // Class decorators are inherited when extending a class
+  it('Class decorators are inherited when extending a class', () => testPoloClassDecorators(polo));
+  // Class property decorators are inherited when extending a class
+  it('Class property decorators are inherited when extending a class', () => testPoloClassPropertyDecorators(polo));
+
+  // Class decorators are inherited when enttifying a class
+  it('Class decorators are inherited when enttifying a class', () => testMarcoClassDecorators(enttifiedMarco));
+  // Class property decorators are inherited when enttifying a class
+  it('Class property decorators are inherited when enttifying a class', () => testMarcoClassPropertyDecorators(enttifiedMarco));
+
+  // Class decorators are inherited when enttifying an extended class
+  it('Class decorators are inherited when enttifying an extended class', () => testPoloClassDecorators(enttifiedPolo));
+  // Class property decorators are inherited when enttifying an extended class
+  it('Class property decorators are inherited when enttifying an extended class', () => testPoloClassPropertyDecorators(enttifiedPolo));
+
+  // Class decorators are inherited when extending an enttified class
+  it('Class decorators are inherited when extending an enttified class', () => testMarcoClassDecorators(extendedEnttifiedMarco));
+  // Class property decorators are inherited when extending an enttified class
+  it('Class property decorators are inherited when extending an enttified class', () => testMarcoClassPropertyDecorators(extendedEnttifiedMarco));
+
+  // Class decorators are inherited when extending an enttified, previously extended class
+  it('Class decorators are inherited when extending an enttified, previously extended class', () => testPoloClassDecorators(extendedEnttifiedPolo));
+  // Class property decorators are inherited when extending an enttified, previously extended class
+  it('Class property decorators are inherited when extending an enttified, previously extended class', () =>
+    testPoloClassPropertyDecorators(extendedEnttifiedPolo));
 }

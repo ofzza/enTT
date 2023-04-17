@@ -54,6 +54,14 @@ const decoratedClasses: WeakMap<Class<Object>, EnttDefinition> = new WeakMap();
 export function getDecoratedClassDefinition<T extends object>(target: ClassInstance<T>): EnttDefinition;
 export function getDecoratedClassDefinition<T extends object>(target: Class<T>): EnttDefinition;
 export function getDecoratedClassDefinition<T extends object>(target: Class<T> | ClassInstance<T>): EnttDefinition {
+  // Check if proxy of a class
+  if (target && (target as unknown as any)[EnttClassProxySymbol]) {
+    return getDecoratedClassDefinition((target as unknown as any)[EnttClassProxySymbol]);
+  }
+  // Check if proxy of a class instance
+  if (target && (target as unknown as any)[EnttClassInstanceProxySymbol]) {
+    return getDecoratedClassDefinition((target as unknown as any)[EnttClassInstanceProxySymbol]);
+  }
   // Check if using instance of class to get definition
   if (typeof target !== 'function') {
     return getDecoratedClassDefinition(target.constructor);
@@ -115,17 +123,16 @@ function registerDecoratedClassDefinition<T extends object>(
     return registerDecoratedClassDefinition(target.constructor, isCalledFromDecoratorRegistration);
   }
 
-  // Check if already registered
-  const definition = decoratedClasses.get(target as Class<T>);
-  if (definition) {
-    return definition;
-  }
-  // ... and register if not
-  else {
-    const definition = new EnttDefinition(target as Class<T>);
+  // Get definition
+  let definition = decoratedClasses.get(target as Class<T>);
+  // Register definition if doesn't already exist
+  if (!definition) {
+    definition = new EnttDefinition(target as Class<T>);
     decoratedClasses.set(target as Class<T>, definition);
-    return definition;
   }
+
+  // Return definition
+  return definition;
 }
 
 /**
@@ -140,6 +147,14 @@ export function getDecoratedClassDecoratorDefinition<T extends object>(
   target: Class<T> | ClassInstance<T>,
   decoratorSymbol: symbol,
 ): Array<EnttDecoratorDefinition> {
+  // Check if proxy of a class
+  if (target && (target as unknown as any)[EnttClassProxySymbol]) {
+    return getDecoratedClassDecoratorDefinition((target as unknown as any)[EnttClassProxySymbol], decoratorSymbol);
+  }
+  // Check if proxy of a class instance
+  if (target && (target as unknown as any)[EnttClassInstanceProxySymbol]) {
+    return getDecoratedClassDecoratorDefinition((target as unknown as any)[EnttClassInstanceProxySymbol], decoratorSymbol);
+  }
   // Check if using instance of class to get definition
   if (typeof target !== 'function') {
     return getDecoratedClassDecoratorDefinition(target.constructor, decoratorSymbol);
@@ -210,6 +225,14 @@ function registerDecoratedClassDecoratorDefinition<T extends object>(
 export function getDecoratedClassPropertyDefinition<T extends object>(target: ClassInstance<T>, propertyKey: PropertyKey): EnttPropertyDefinition;
 export function getDecoratedClassPropertyDefinition<T extends object>(target: Class<T>, propertyKey: PropertyKey): EnttPropertyDefinition;
 export function getDecoratedClassPropertyDefinition<T extends object>(target: Class<T> | ClassInstance<T>, propertyKey: PropertyKey): EnttPropertyDefinition {
+  // Check if proxy of a class
+  if (target && (target as unknown as any)[EnttClassProxySymbol]) {
+    return getDecoratedClassPropertyDefinition((target as unknown as any)[EnttClassProxySymbol], propertyKey);
+  }
+  // Check if proxy of a class instance
+  if (target && (target as unknown as any)[EnttClassInstanceProxySymbol]) {
+    return getDecoratedClassPropertyDefinition((target as unknown as any)[EnttClassInstanceProxySymbol], propertyKey);
+  }
   // Check if using instance of class to get definition
   if (typeof target !== 'function') {
     return getDecoratedClassPropertyDefinition(target.constructor, propertyKey);
@@ -295,6 +318,14 @@ export function getDecoratedClassPropertyDecoratorDefinition<T extends object>(
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
 ): Array<EnttDecoratorDefinition> {
+  // Check if proxy of a class
+  if (target && (target as unknown as any)[EnttClassProxySymbol]) {
+    return getDecoratedClassPropertyDecoratorDefinition((target as unknown as any)[EnttClassProxySymbol], propertyKey, decoratorSymbol);
+  }
+  // Check if proxy of a class instance
+  if (target && (target as unknown as any)[EnttClassInstanceProxySymbol]) {
+    return getDecoratedClassPropertyDecoratorDefinition((target as unknown as any)[EnttClassInstanceProxySymbol], propertyKey, decoratorSymbol);
+  }
   // Check if using instance of class to get definition
   if (typeof target !== 'function') {
     return getDecoratedClassPropertyDecoratorDefinition(target.constructor, propertyKey, decoratorSymbol);
@@ -799,6 +830,15 @@ export function createPropertyCustomDecorator<TInstance extends object, TPayload
 // #region EnTT dynamic functionality via EnTT proxy
 
 /**
+ * Symbol used to access a "hidden" property intended to identify Enttified classes' Proxies
+ */
+const EnttClassProxySymbol = Symbol('Property key used to identify class Proxies');
+/**
+ * Symbol used to access a "hidden" property intended to identify Enttified class instances' Proxies
+ */
+const EnttClassInstanceProxySymbol = Symbol('Property key used to identify class instance Proxies');
+
+/**
  * Holds references to all classes that were EnTTified
  */
 const enttifiedClassesByUnderlyingClass: WeakMap<Class<object>, Class<EnttInstance<object>>> = new WeakMap();
@@ -820,7 +860,23 @@ export function enttify<T extends ClassInstance<object>>(TargetClass: Class<T>):
   const ProxyClass = alreadyEnTTified
     ? (enttifiedClassesByUnderlyingClass.get(TargetClass) as Class<EnttInstance<T>>)
     : (new Proxy(TargetClass, {
-        // Intercept constructng an instance
+        /**
+         * Intercepts get access to the underlyng object property
+         * @param _TargetClass Underlying object baing proxied
+         * @param key Key of the property being accessed
+         * @returns If checking "hidden" property intended to identify Enttified classes' Proxies, return original proxyied class
+         * to confirm self as proxy, else returns property value
+         */
+        get: (_TargetClass: Class<T>, key: PropertyKey) => {
+          // If checking "hidden" property intended to identify Enttified classes' Proxies, return original proxyied class to confirm self as proxy
+          return key === EnttClassProxySymbol ? _TargetClass : (_TargetClass as unknown as any)[key];
+        },
+        /**
+         * Intercept constructng an instance
+         * @param _TargetClass
+         * @param args
+         * @returns
+         */
         construct: (_TargetClass: Class<T>, args: Array<any>): EnttInstance<T> => {
           // Run original constructor and get original instance of the class
           const target = new _TargetClass(...args);
@@ -865,9 +921,15 @@ function createProxyhandlerForEnttInstance<T extends object>(target: T): ProxyHa
      * Intercepts get access to the underlyng object property
      * @param target Underlying object baing proxied
      * @param key Key of the property being accessed
-     * @returns Value to be returned from the getter, having been intercepted
+     * @returns Value to be returned from the getter, having been intercepted.
+     * (If checking "hidden" property intended to identify Enttified class instances' Proxies, return original proxyied class to confirm self as proxy)
      */
     get: (target: ClassInstance<T>, key: PropertyKey) => {
+      // If checking "hidden" property intended to identify Enttified classes' Proxies, return original proxyied class to confirm self as proxy
+      if (key === EnttClassInstanceProxySymbol) {
+        return target.constructor as Class<T>;
+      }
+
       // Initialize getting value
       let processed = (target as any)[key];
       // Get class definition

@@ -194,6 +194,51 @@ export function testDynamicPropertyDecorators() {
       assert(numDefinition[0].decoratorSymbol === numericDateValueDecoratorSymbol);
       assert(numDefinition[0].data === true);
     });
+    // Check if decorator definitions are set correctly
+    it('Definitions are set correctly and can be reached via enttified class', () => {
+      // EnTTify parent class
+      const Timestamped = enttify(_Timestamped);
+
+      // Check if decorator definitions set properly for @StringDateValue()
+      const strDefinition = getDecoratedClassPropertyDecoratorDefinition(Timestamped, 'created', stringDateValueDecoratorSymbol);
+      assert(!!strDefinition);
+      assert(strDefinition.length === 1);
+      assert(strDefinition[0].owner === _Timestamped);
+      assert(strDefinition[0].ownerPropertyKey === 'created');
+      assert(strDefinition[0].decoratorSymbol === stringDateValueDecoratorSymbol);
+      assert(strDefinition[0].data === true);
+      // Check if decorator definitions set properly for @NumericDateValue()
+      const numDefinition = getDecoratedClassPropertyDecoratorDefinition(Timestamped, 'modified', numericDateValueDecoratorSymbol);
+      assert(!!numDefinition);
+      assert(numDefinition.length === 1);
+      assert(numDefinition[0].owner === _Timestamped);
+      assert(numDefinition[0].ownerPropertyKey === 'modified');
+      assert(numDefinition[0].decoratorSymbol === numericDateValueDecoratorSymbol);
+      assert(numDefinition[0].data === true);
+    });
+    // Check if decorator definitions are set correctly
+    it('Definitions are set correctly and can be reached via enttified class instance', () => {
+      // EnTTify parent class
+      const Timestamped = enttify(_Timestamped);
+      const timestamped = new Timestamped();
+
+      // Check if decorator definitions set properly for @StringDateValue()
+      const strDefinition = getDecoratedClassPropertyDecoratorDefinition(timestamped, 'created', stringDateValueDecoratorSymbol);
+      assert(!!strDefinition);
+      assert(strDefinition.length === 1);
+      assert(strDefinition[0].owner === _Timestamped);
+      assert(strDefinition[0].ownerPropertyKey === 'created');
+      assert(strDefinition[0].decoratorSymbol === stringDateValueDecoratorSymbol);
+      assert(strDefinition[0].data === true);
+      // Check if decorator definitions set properly for @NumericDateValue()
+      const numDefinition = getDecoratedClassPropertyDecoratorDefinition(timestamped, 'modified', numericDateValueDecoratorSymbol);
+      assert(!!numDefinition);
+      assert(numDefinition.length === 1);
+      assert(numDefinition[0].owner === _Timestamped);
+      assert(numDefinition[0].ownerPropertyKey === 'modified');
+      assert(numDefinition[0].decoratorSymbol === numericDateValueDecoratorSymbol);
+      assert(numDefinition[0].data === true);
+    });
 
     // Check if decorator definitions can be used multiple times only if explicitly permitted
     it('Dynamic decorators can only be used multiple times on the same target when explicitly permitted', () => {
