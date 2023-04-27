@@ -12,7 +12,7 @@ trap cleanup EXIT
 # Build library version
 echo '';
 echo '> Building latest library version ...';
-(cd $DIR/.. && prettier --write . && tsc --build --clean && tsc --project tsconfig.lib.json)
+(cd $DIR/.. && prettier --write . && tsc --build --clean && tsc --declaration --project tsconfig.lib.json)
 bash ./build-docs.sh
 
 echo '';

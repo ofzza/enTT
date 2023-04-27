@@ -197,7 +197,7 @@ export function testStaticPropertyDecorators() {
         assert(definition.properties[key].owner === Test);
         assert(definition.properties[key].ownerPropertyKey === key);
         assert(!!definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol]);
-        assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].length);
+        assert(!!definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol].length);
         assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0].owner === Test);
         assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0].ownerPropertyKey === key);
         assert(definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0].decoratorSymbol === defaultValueDecoratorSymbol);
@@ -223,7 +223,7 @@ export function testStaticPropertyDecorators() {
       assert(definition.properties['pub'].owner === Test);
       assert(definition.properties['pub'].ownerPropertyKey === 'pub');
       assert(!!definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol]);
-      assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].length);
+      assert(!!definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol].length);
       assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].owner === Test);
       assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].ownerPropertyKey === 'pub');
       assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].decoratorSymbol === labelDecoratorSymbol);
