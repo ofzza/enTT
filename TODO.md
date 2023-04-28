@@ -1,3 +1,9 @@
+# Testing
+
+- [x] Import `@ofzza/ts-std` as dependency and use `assert`/`refute` as implemented there
+- [ ] JSDocs for generics (@template)
+- [ ] Write type inference tests using `assert`/`refute`
+
 # Change detection
 
 - [ ] Track changes for all EnTTified instances:
@@ -9,9 +15,9 @@
 
 # Custom Class decorators
 
-- [ ] Add support for custom class decorators
-  - [ ] Static class decorators
-  - [ ] Dynamic class decorators
+- [x] Add support for custom class decorators
+  - [x] Static class decorators
+  - [x] Dynamic class decorators
 
 # Implement core decorators
 
@@ -22,10 +28,11 @@
 ## @Hydration core decorators and companion services
 
 - [x] Bind properties for (re)hydrate/dehydrate calls
-- [ ] Cast property values on (re)hydrate call as single/array/hashmap of:
-  - [ ] Entities
-  - [ ] Other classes (ex: Date, Map, Set, ...)
+- [x] Cast property values on (re)hydrate call as single/array/hashmap of:
+  - [x] Entities
+  - [x] Other classes (ex: Date, Map, Set, ...)
 - [ ] Consider handling circular references
+- [ ] Consider handling shared references
 
 ## @Validation core decorators and companion services
 

@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { assert } from '../../../../../tests.init';
+import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { dehydrate, rehydrate } from '../../../';
 import { DateCast, BoundDate, staticDateIsoString2000, staticDateIsoString2010, staticDateIsoString2020 } from './fixtures.spec';
 

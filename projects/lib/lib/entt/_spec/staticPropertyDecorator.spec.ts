@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { assert } from '../../../tests.init';
+import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { Class, createPropertyCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
 
 // Unique identifier symbol identifying the DefaultValue decorator

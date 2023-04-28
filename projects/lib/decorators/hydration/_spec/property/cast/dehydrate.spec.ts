@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { assert } from '../../../../../tests.init';
+import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { dehydrate, HydrationStrategy } from '../../../';
 import { TestCast, createTestClassInstance } from './fixtures.spec';
 
