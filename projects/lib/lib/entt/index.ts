@@ -2,9 +2,8 @@
 // ----------------------------------------------------------------------------
 
 // Import and (re)export types
+import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import {
-  Class,
-  ClassInstance,
   EnttInstance,
   FullPathPropertyValue,
   CustomClassDecoratorImplementation,
@@ -18,8 +17,6 @@ import {
   EnttDecoratorDefinition,
 } from './internals';
 export {
-  Class,
-  ClassInstance,
   EnttInstance,
   FullPathPropertyValue,
   CustomClassDecoratorImplementation,

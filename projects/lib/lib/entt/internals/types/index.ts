@@ -1,18 +1,8 @@
 // enTT lib types
 // ----------------------------------------------------------------------------
 
-// #region Utility types
-
-/**
- * A class which constructs instances of type T
- */
-export type Class<T> = new (...args: Array<any>) => T;
-/**
- * An instance of type T of a class which constructs instances of type T
- */
-export type ClassInstance<T> = InstanceType<Class<T>>;
-
-// #endregion
+// Import dependencies
+import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 
 // #region EnTT types: Helper types
 

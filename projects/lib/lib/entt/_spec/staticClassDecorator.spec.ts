@@ -3,7 +3,8 @@
 
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
-import { Class, ClassInstance, createClassCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
+import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
+import { createClassCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
 
 // Unique identifier symbol identifying the FromString decorator
 const fromStringDecoratorSymbol = Symbol('From string class decorator');

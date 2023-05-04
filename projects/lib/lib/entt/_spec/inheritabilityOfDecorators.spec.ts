@@ -4,7 +4,6 @@
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import {
-  Class,
   createClassCustomDecorator,
   getDecoratedClassDefinition,
   getDecoratedClassDecoratorDefinition,

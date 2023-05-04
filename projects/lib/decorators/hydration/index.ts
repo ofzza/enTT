@@ -2,9 +2,10 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { Class, ClassInstance, EnttPropertyDefinition } from '../../lib';
-import { deepCloneObject } from '../../utils';
+import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
+import { EnttPropertyDefinition } from '../../lib';
 import { createClassCustomDecorator, createPropertyCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../../lib';
+import { deepCloneObject } from '../../utils';
 
 // #region Utility types
 
