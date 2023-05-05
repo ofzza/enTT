@@ -3,7 +3,7 @@
 
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
-import { Class } from '@ofzza/ts-std/types/corejs/class';
+import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import { createPropertyCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
 
 // Unique identifier symbol identifying the DefaultValue decorator
@@ -33,7 +33,7 @@ function Label(label: string) {
  * @param target The class to be initialized
  * @returns Instance with values set as configured
  */
-function initializeWithDefaultValues<T extends object>(target: Class<T>): T {
+function initializeWithDefaultValues<T extends ClassInstance>(target: Class<T>): T {
   const definition = getDecoratedClassDefinition(target);
   return Object.keys(definition.properties).reduce((instance, key) => {
     (instance as any)[key] = definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0]?.data;
@@ -46,7 +46,7 @@ function initializeWithDefaultValues<T extends object>(target: Class<T>): T {
  * @param target The class instance to verify
  * @returns A record of property value verification
  */
-function checkDefaultValues<T extends object>(target: T): Record<PropertyKey, boolean> {
+function checkDefaultValues<T extends ClassInstance>(target: T): Record<PropertyKey, boolean> {
   const definition = getDecoratedClassDefinition(target);
   return Object.keys(definition.properties).reduce((check, key) => {
     (check as any)[key] = (target as any)[key] === definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0]?.data;

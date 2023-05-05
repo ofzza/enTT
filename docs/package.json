@@ -1,6 +1,6 @@
 {
   "name": "@ofzza/entt",
-  "version": "4.0.0-alpha-3",
+  "version": "4.0.0-alpha-4",
   "description": "Modular TypeScript data-modeling solution, implementing nestable serialization/deserialization and flexible validation",
   "private": false,
   "main": "./lib/index.js",
@@ -49,7 +49,7 @@
     "@angular/platform-browser": "^14.2.0",
     "@angular/platform-browser-dynamic": "^14.2.0",
     "@angular/router": "^14.2.0",
-    "@ofzza/ts-std": "^0.0.3",
+    "@ofzza/ts-std": "^0.0.4",
     "@ofzza/ngx-showcase": "latest",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",

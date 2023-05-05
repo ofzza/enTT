@@ -9,12 +9,12 @@ import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 /**
  * A transparent proxy to the underlying class instance with dynamic EnTT functionality attached
  */
-export type EnttInstance<T extends object> = T & {};
+export type EnttInstance<T extends ClassInstance> = T & {};
 
 /**
  * Describes a property value and all the information needed to get/set that value
  */
-export type FullPathPropertyValue<T, V> = {
+export type FullPathPropertyValue<T extends ClassInstance, V> = {
   /**
    * Parent instance containing the property containing the value
    */
@@ -54,7 +54,7 @@ export interface ICustomDecoratorImplementation {
 /**
  * Definition for a class decorator, holding all its proxy hooks implementation
  */
-export class CustomClassDecoratorImplementation<TInstance> implements ICustomDecoratorImplementation {
+export class CustomClassDecoratorImplementation<TInstance extends ClassInstance> implements ICustomDecoratorImplementation {
   /**
    * Constructor
    * @param onPropertyGet Proxy hook to be called when any property value is being requested
@@ -74,7 +74,7 @@ export type CustomStaticClassDecoratorConfiguration<TPayload> = () => TPayload;
 /**
  * Definition for custom dynamic decorator configuration
  */
-export type CustomDynamicClassDecoratorConfiguration<TInstance extends object, TPayload> = {
+export type CustomDynamicClassDecoratorConfiguration<TInstance extends ClassInstance, TPayload> = {
   /**
    * Callback function expected to return data which will be stored within a class's decorator definition once decorator is used to decorate a class
    */
@@ -103,7 +103,9 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance extends object, T
 /**
  * Definition for a property decorator, holding all its proxy hooks implementation
  */
-export class CustomPropertyDecoratorImplementation<TInstance, TValInner = any, TValOuter = any> implements ICustomDecoratorImplementation {
+export class CustomPropertyDecoratorImplementation<TInstance extends ClassInstance, TValInner = any, TValOuter = any>
+  implements ICustomDecoratorImplementation
+{
   /**
    * Constructor
    * @param onPropertyGet Proxy hook to be called when property value is being requested
@@ -123,7 +125,7 @@ export type CustomStaticPropertyDecoratorConfiguration<TPayload> = () => TPayloa
 /**
  * Definition for custom dynamic decorator configuration
  */
-export type CustomDynamicPropertyDecoratorConfiguration<TInstance extends object, TPayload, TValInner = any, TValOuter = any> = {
+export type CustomDynamicPropertyDecoratorConfiguration<TInstance extends ClassInstance, TPayload, TValInner = any, TValOuter = any> = {
   /**
    * Callback function expected to return data which will be stored within a property's decorator definition once decorator is used to decorate a property
    */
