@@ -3,6 +3,7 @@
 
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
+import { ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import {
   Info,
   Warning,
@@ -22,6 +23,25 @@ const ENTTITIFICATION_SLOWDOWN_FACTOR = 1000;
 
 // Holds warnings thrown by `verifyDecoratorUsage()` calls, out in public for test inspection purposes
 const warnings: Array<Info | Warning | Error> = [];
+
+// Holds all instances of classes decorated with `@RegisterInstance()`
+const registeredInstances: Array<ClassInstance> = [];
+
+// Unique identifier symbol identifying the RegisterInstance decorator
+const registerInstanceDecoratorSymbol = Symbol('Register instance decorator');
+/**
+ * Makes sure every instance is registered into a central static repository while it is being constructed
+ * @returns Class decorator
+ */
+function RegisterInstance() {
+  return createClassCustomDecorator(
+    {
+      composeDecoratorDefinitionPayload: () => true,
+      onConstruct: (instance: ClassInstance) => registeredInstances.push(instance),
+    },
+    registerInstanceDecoratorSymbol,
+  );
+}
 
 // Unique identifier symbol identifying the StringTitleCase decorator
 const stringTitleCaseDecoratorSymbol = Symbol('String title case class decorator');
@@ -72,6 +92,7 @@ function SimonSays(name: string) {
 
 // Export tests
 export function testDynamicClassDecorators() {
+  @RegisterInstance()
   @StringTitleCase()
   class _Family {
     @def public father: string = 'homer j simpson';
@@ -96,7 +117,7 @@ export function testDynamicClassDecorators() {
       warnings.splice(0, warnings.length);
       verifyDecoratorUsage((msg: any) => warnings.push(msg));
       familyWarnings = warnings.filter(w => w.message.includes('_Family'));
-      assert(familyWarnings.length === 1);
+      assert(familyWarnings.length === 2);
 
       // EnTTify parent class
       const _ = enttify(_Family);
@@ -139,26 +160,40 @@ export function testDynamicClassDecorators() {
 
     // Check if decorator definitions are set correctly
     it('Definitions are set correctly', () => {
+      // Check if decorator definitions set properly for @RegisterInstance()
+      const definitionA = getDecoratedClassDecoratorDefinition(_Family, registerInstanceDecoratorSymbol);
+      assert(!!definitionA);
+      assert(definitionA.length === 1);
+      assert(definitionA[0].owner === _Family);
+      assert(definitionA[0].decoratorSymbol === registerInstanceDecoratorSymbol);
+      assert(definitionA[0].data === true);
       // Check if decorator definitions set properly for @StringTitleCase()
-      const definition = getDecoratedClassDecoratorDefinition(_Family, stringTitleCaseDecoratorSymbol);
-      assert(!!definition);
-      assert(definition.length === 1);
-      assert(definition[0].owner === _Family);
-      assert(definition[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
-      assert(definition[0].data === true);
+      const definitionB = getDecoratedClassDecoratorDefinition(_Family, stringTitleCaseDecoratorSymbol);
+      assert(!!definitionB);
+      assert(definitionB.length === 1);
+      assert(definitionB[0].owner === _Family);
+      assert(definitionB[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
+      assert(definitionB[0].data === true);
     });
     // Check if decorator definitions are set correctly
     it('Definitions are set correctly and can be reached via enttified class', () => {
       // EnTTify parent class
       const Family = enttify(_Family);
 
+      // Check if decorator definitions set properly for @RegisterInstance()
+      const definitionA = getDecoratedClassDecoratorDefinition(Family, registerInstanceDecoratorSymbol);
+      assert(!!definitionA);
+      assert(definitionA.length === 1);
+      assert(definitionA[0].owner === _Family);
+      assert(definitionA[0].decoratorSymbol === registerInstanceDecoratorSymbol);
+      assert(definitionA[0].data === true);
       // Check if decorator definitions set properly for @StringTitleCase()
-      const definition = getDecoratedClassDecoratorDefinition(Family, stringTitleCaseDecoratorSymbol);
-      assert(!!definition);
-      assert(definition.length === 1);
-      assert(definition[0].owner === _Family);
-      assert(definition[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
-      assert(definition[0].data === true);
+      const definitionB = getDecoratedClassDecoratorDefinition(Family, stringTitleCaseDecoratorSymbol);
+      assert(!!definitionB);
+      assert(definitionB.length === 1);
+      assert(definitionB[0].owner === _Family);
+      assert(definitionB[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
+      assert(definitionB[0].data === true);
     });
     // Check if decorator definitions are set correctly
     it('Definitions are set correctly and can be reached via enttified class instance', () => {
@@ -166,13 +201,20 @@ export function testDynamicClassDecorators() {
       const Family = enttify(_Family);
       const family = new Family();
 
+      // Check if decorator definitions set properly for @RegisterInstance()
+      const definitionA = getDecoratedClassDecoratorDefinition(family, registerInstanceDecoratorSymbol);
+      assert(!!definitionA);
+      assert(definitionA.length === 1);
+      assert(definitionA[0].owner === _Family);
+      assert(definitionA[0].decoratorSymbol === registerInstanceDecoratorSymbol);
+      assert(definitionA[0].data === true);
       // Check if decorator definitions set properly for @StringTitleCase()
-      const definition = getDecoratedClassDecoratorDefinition(family, stringTitleCaseDecoratorSymbol);
-      assert(!!definition);
-      assert(definition.length === 1);
-      assert(definition[0].owner === _Family);
-      assert(definition[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
-      assert(definition[0].data === true);
+      const definitionB = getDecoratedClassDecoratorDefinition(family, stringTitleCaseDecoratorSymbol);
+      assert(!!definitionB);
+      assert(definitionB.length === 1);
+      assert(definitionB[0].owner === _Family);
+      assert(definitionB[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
+      assert(definitionB[0].data === true);
     });
 
     // Check if decorator definitions can be used multiple times only if explicitly permitted
@@ -189,6 +231,26 @@ export function testDynamicClassDecorators() {
         @SimonSays('B')
         class Test {}
       }).not.toThrow();
+    });
+
+    // Check dynamic decorators correctly hooking into constructor
+    it('Dynamic decorators correctly hooking into constructor', () => {
+      // EnTTify parent class
+      const Family = enttify(_Family);
+
+      // Clear registered instances repository
+      registeredInstances.splice(0, registeredInstances.length);
+
+      // Check created instances are registered
+      const instanceA = new Family();
+      assert(registeredInstances.length === 1);
+      assert(registeredInstances[0] === instanceA);
+      const instanceB = new Family();
+      assert(registeredInstances.length === 2);
+      assert(registeredInstances[1] === instanceB);
+      const instanceC = new Family();
+      assert(registeredInstances.length === 3);
+      assert(registeredInstances[2] === instanceC);
     });
 
     // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property setters/getters

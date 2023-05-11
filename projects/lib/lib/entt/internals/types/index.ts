@@ -57,10 +57,12 @@ export interface ICustomDecoratorImplementation {
 export class CustomClassDecoratorImplementation<TInstance extends ClassInstance> implements ICustomDecoratorImplementation {
   /**
    * Constructor
+   * @param onConstruct Proxy hook to be called when instance is being constructed
    * @param onPropertyGet Proxy hook to be called when any property value is being requested
    * @param onPropertySet Proxy hook to be called when any property value is being set
    */
   constructor(
+    public onConstruct?: (instance: TInstance) => void,
     public onPropertyGet?: (v: FullPathPropertyValue<TInstance, AnalyserNode>) => any,
     public onPropertySet?: (v: FullPathPropertyValue<TInstance, any>) => any,
   ) {}
@@ -81,9 +83,13 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance extends ClassInst
   composeDecoratorDefinitionPayload?: () => TPayload;
   /**
    * Callback function expected to return a boolean value signifying if the decorator is allowed to be used multiple times on the same target
-   * @returns
    */
   composeDecoratorMultipleUsagePermission?: () => boolean;
+  /**
+   * Callback function called when an EnTTified instance of the decorated EnTTified class is being constructed. The callback is allowed to mutate the
+   * EnTTified instance before it is returned as constructed.
+   */
+  onConstruct?: (instance: TInstance) => void;
   /**
    * Callback function called when accessing (getting) any property of an EnTTified instance. The callback is expected to transform the value being returned
    * before it is passed on ...

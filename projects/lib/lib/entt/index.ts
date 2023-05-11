@@ -507,7 +507,21 @@ function registerDecoratedClassForVerification<TInstance extends ClassInstance, 
   key?: PropertyKey,
 ) {
   // If decorator requires a EnTTified model, queue up verification if the model was indeed EnTTified
-  if (configuration && typeof configuration === 'object' && (configuration.onPropertyGet || configuration.onPropertySet)) {
+  if (
+    configuration &&
+    typeof configuration === 'object' &&
+    ((configuration as CustomDynamicClassDecoratorConfiguration<TInstance, TPayload>).onConstruct ||
+      (
+        configuration as
+          | CustomDynamicClassDecoratorConfiguration<TInstance, TPayload>
+          | CustomDynamicPropertyDecoratorConfiguration<TInstance, TValOuter, TValInner, TPayload>
+      ).onPropertyGet ||
+      (
+        configuration as
+          | CustomDynamicClassDecoratorConfiguration<TInstance, TPayload>
+          | CustomDynamicPropertyDecoratorConfiguration<TInstance, TValOuter, TValInner, TPayload>
+      ).onPropertySet)
+  ) {
     // Register class as requiring EnTTification
     validationQueueForClassesRequiringEnttification.push({
       target,
@@ -673,7 +687,11 @@ export function createClassCustomDecorator<TInstance extends ClassInstance, TPay
       // Update definition for the class
       definition.data = configuration?.composeDecoratorDefinitionPayload?.();
       // Register decorator definition
-      definition.implementation = new CustomClassDecoratorImplementation<TInstance>(configuration?.onPropertyGet, configuration?.onPropertySet);
+      definition.implementation = new CustomClassDecoratorImplementation<TInstance>(
+        configuration?.onConstruct,
+        configuration?.onPropertyGet,
+        configuration?.onPropertySet,
+      );
       // If decorator requires a EnTTified model, queue up verification if the model was indeed EnTTified
       registerDecoratedClassForVerification(configuration, target);
     }
@@ -867,23 +885,14 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
     ? (enttifiedClassesByUnderlyingClass.get(TargetClass) as Class<EnttInstance<T>>)
     : (new Proxy(TargetClass, {
         /**
-         * Intercepts get access to the underlyng object property
-         * @param _TargetClass Underlying object baing proxied
-         * @param key Key of the property being accessed
-         * @returns If checking "hidden" property intended to identify Enttified classes' Proxies, return original proxyied class
-         * to confirm self as proxy, else returns property value
-         */
-        get: (_TargetClass: Class<T>, key: PropertyKey) => {
-          // If checking "hidden" property intended to identify Enttified classes' Proxies, return original proxyied class to confirm self as proxy
-          return key === EnttClassProxySymbol ? _TargetClass : (_TargetClass as unknown as any)[key];
-        },
-        /**
          * Intercept constructng an instance
          * @param _TargetClass
          * @param args
          * @returns
          */
         construct: (_TargetClass: Class<T>, args: Array<any>): EnttInstance<T> => {
+          // Get class definition
+          const classDefinition = registerDecoratedClassDefinition(_TargetClass);
           // Run original constructor and get original instance of the class
           const target = new _TargetClass(...args);
           const handler = createProxyhandlerForEnttInstance(target);
@@ -895,8 +904,28 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
           const proxy = new Proxy(target, handler) as EnttInstance<T>;
           // Register original instance by the proxy
           underlyingInstancesByEnttifiedInstance.set(proxy, target);
+          // Process EnTTified instance through all registered constructor hooks
+          for (const decoratorDefinition of [...classDefinition.decorators.all].reverse()) {
+            if (decoratorDefinition.implementation) {
+              const decoratorImplementation = decoratorDefinition.implementation as CustomClassDecoratorImplementation<T>;
+              if (decoratorImplementation) {
+                decoratorImplementation.onConstruct?.(proxy);
+              }
+            }
+          }
           // Return a proxy to the original instance
           return proxy;
+        },
+        /**
+         * Intercepts get access to the underlyng object property
+         * @param _TargetClass Underlying object baing proxied
+         * @param key Key of the property being accessed
+         * @returns If checking "hidden" property intended to identify Enttified classes' Proxies, return original proxyied class
+         * to confirm self as proxy, else returns property value
+         */
+        get: (_TargetClass: Class<T>, key: PropertyKey) => {
+          // If checking "hidden" property intended to identify Enttified classes' Proxies, return original proxyied class to confirm self as proxy
+          return key === EnttClassProxySymbol ? _TargetClass : (_TargetClass as unknown as any)[key];
         },
       }) as Class<EnttInstance<T>>);
   // Register original class by the proxy
