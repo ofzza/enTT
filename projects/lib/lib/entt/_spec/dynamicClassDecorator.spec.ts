@@ -267,9 +267,9 @@ export function testDynamicClassDecorators() {
       assert(family.father === 'Homer J Simpson');
       assert(family.mother === 'Marge Simpson');
       assert(family.child === 'Bart El Barto Simpson');
-      assert(underlying.father === 'homer j simpson');
-      assert(underlying.mother === 'marge simpson');
-      assert(underlying.child === 'bart el barto simpson');
+      assert(underlying!.father === 'homer j simpson');
+      assert(underlying!.mother === 'marge simpson');
+      assert(underlying!.child === 'bart el barto simpson');
 
       // Verify dynamic decorator intercepts property getters/setters during property value assignment
       family.father = 'Abraham Jebediah Simpson';
@@ -278,9 +278,9 @@ export function testDynamicClassDecorators() {
       assert(family.father === 'Abraham Jebediah Simpson');
       assert(family.mother === 'Mona Penelope Simpson');
       assert(family.child === 'Homer J Simpson');
-      assert(underlying.father === 'abraham jebediah simpson');
-      assert(underlying.mother === 'mona penelope simpson');
-      assert(underlying.child === 'homer j simpson');
+      assert(underlying!.father === 'abraham jebediah simpson');
+      assert(underlying!.mother === 'mona penelope simpson');
+      assert(underlying!.child === 'homer j simpson');
     });
 
     // Check dynamic decorators can be stacked and will intercept getters/setters in order they were added to the property in
@@ -296,17 +296,17 @@ export function testDynamicClassDecorators() {
       // Verify dynamic decorator intercepts property getters/setters during instance construction
       assert(quotes.quote === `Mr. Burns says: Moe says: Homer says: Apu says: Everything's coming up Milhouse.`);
       assert(quotes.quote === `Mr. Burns says: Moe says: Homer says: Apu says: Everything's coming up Milhouse.`);
-      assert(underlying.quote === `Everything's coming up Milhouse.`);
+      assert(underlying!.quote === `Everything's coming up Milhouse.`);
 
       // Verify dynamic decorator intercepts property getters/setters during property value assignment
       quotes.quote = `Mr. Burns says: Moe says: Homer says: Apu says: You tried your best and you failed miserably. The lesson is: Never try.`;
       assert(quotes.quote === `Mr. Burns says: Moe says: Homer says: Apu says: You tried your best and you failed miserably. The lesson is: Never try.`);
-      assert(underlying.quote === `You tried your best and you failed miserably. The lesson is: Never try.`);
+      assert(underlying!.quote === `You tried your best and you failed miserably. The lesson is: Never try.`);
 
       // Verify dynamic decorator intercepts property getters/setters after underlying instance property value assignment
-      underlying.quote = `I can't promise I'll try, but I'll try to try.`;
+      underlying!.quote = `I can't promise I'll try, but I'll try to try.`;
       assert(quotes.quote === `Mr. Burns says: Moe says: Homer says: Apu says: I can't promise I'll try, but I'll try to try.`);
-      assert(underlying.quote === `I can't promise I'll try, but I'll try to try.`);
+      assert(underlying!.quote === `I can't promise I'll try, but I'll try to try.`);
     });
   });
 }

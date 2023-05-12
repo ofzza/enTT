@@ -273,24 +273,24 @@ export function testDynamicPropertyDecorators() {
       // Verify dynamic decorator intercepts property getters/setters during instance construction
       assert(timestamped.created instanceof Date);
       assert(timestamped.modified instanceof Date);
-      assert(typeof underlying.created === 'string');
-      assert(typeof underlying.modified === 'number');
+      assert(typeof underlying!.created === 'string');
+      assert(typeof underlying!.modified === 'number');
 
       // Verify dynamic decorator intercepts property getters/setters during property value assignment
       timestamped.created = new Date();
       timestamped.modified = new Date();
       assert(timestamped.created instanceof Date);
       assert(timestamped.modified instanceof Date);
-      assert(typeof underlying.created === 'string');
-      assert(typeof underlying.modified === 'number');
+      assert(typeof underlying!.created === 'string');
+      assert(typeof underlying!.modified === 'number');
 
       // Verify dynamic decorator intercepts property getters/setters after underlying instance property value assignment
-      underlying.created = new Date().toISOString() as unknown as Date;
-      underlying.modified = new Date().getTime() as unknown as Date;
+      underlying!.created = new Date().toISOString() as unknown as Date;
+      underlying!.modified = new Date().getTime() as unknown as Date;
       assert(timestamped.created instanceof Date);
       assert(timestamped.modified instanceof Date);
-      assert(typeof underlying.created === 'string');
-      assert(typeof underlying.modified === 'number');
+      assert(typeof underlying!.created === 'string');
+      assert(typeof underlying!.modified === 'number');
     });
 
     // Check dynamic decorators can be stacked and will intercept getters/setters in order they were added to the property in
@@ -305,33 +305,33 @@ export function testDynamicPropertyDecorators() {
 
       // Verify dynamic decorator intercepts property getters/setters during instance construction
       assert(numerics.first === 36);
-      assert(underlying.first === 0);
+      assert(underlying!.first === 0);
       assert(numerics.second === 20);
-      assert(underlying.second === 0);
+      assert(underlying!.second === 0);
       assert(numerics.third === 10);
-      assert(underlying.third === 0);
+      assert(underlying!.third === 0);
 
       // Verify dynamic decorator intercepts property getters/setters during property value assignment
       numerics.first = 48;
       assert(numerics.first === 48);
-      assert(underlying.first === 1);
+      assert(underlying!.first === 1);
       numerics.second = 28;
       assert(numerics.second === 28);
-      assert(underlying.second === 1);
+      assert(underlying!.second === 1);
       numerics.third = 13;
       assert(numerics.third === 13);
-      assert(underlying.third === 1);
+      assert(underlying!.third === 1);
 
       // Verify dynamic decorator intercepts property getters/setters after underlying instance property value assignment
-      underlying.first = 2;
+      underlying!.first = 2;
       assert(numerics.first === 60);
-      assert(underlying.first === 2);
-      underlying.second = 2;
+      assert(underlying!.first === 2);
+      underlying!.second = 2;
       assert(numerics.second === 36);
-      assert(underlying.second === 2);
-      underlying.third = 2;
+      assert(underlying!.second === 2);
+      underlying!.third = 2;
       assert(numerics.third === 16);
-      assert(underlying.third === 2);
+      assert(underlying!.third === 2);
     });
   });
 }

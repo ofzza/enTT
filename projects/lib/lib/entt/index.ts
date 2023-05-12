@@ -865,11 +865,15 @@ const EnttClassInstanceProxySymbol = Symbol('Property key used to identify class
 /**
  * Holds references to all classes that were EnTTified
  */
-const enttifiedClassesByUnderlyingClass: WeakMap<Class<object>, Class<EnttInstance<object>>> = new WeakMap();
+const enttifiedClassesByUnderlyingClass: WeakMap<Class<object>, Class<EnttInstance<ClassInstance>>> = new WeakMap();
+/**
+ * Holds references to all classes that were EnTTified
+ */
+const underlyingClassesByEnttifiedClass: WeakMap<Class<EnttInstance<ClassInstance>>, Class<ClassInstance>> = new WeakMap();
 /**
  * Holds references to all instances that were EnTTified
  */
-const underlyingInstancesByEnttifiedInstance: WeakMap<EnttInstance<object>, any> = new WeakMap();
+const underlyingInstancesByEnttifiedInstance: WeakMap<EnttInstance<ClassInstance>, ClassInstance> = new WeakMap();
 
 /**
  * Wraps a class into a proxy which will hook into the constructor and replace the constructed instance with a proxy to
@@ -931,9 +935,19 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
   // Register original class by the proxy
   if (!alreadyEnTTified) {
     enttifiedClassesByUnderlyingClass.set(TargetClass.prototype.constructor, ProxyClass);
+    underlyingClassesByEnttifiedClass.set(ProxyClass, TargetClass.prototype.constructor);
   }
   // Return proxy to the original class
   return ProxyClass;
+}
+
+/**
+ * Given an EnTTified class, finds the underlying class that was EnTTified
+ * @param TargetClass EnTTified class
+ * @returns Underlying class that was EnTTified
+ */
+export function getUnderlyingEnttifiedClass<T extends ClassInstance>(TargetClass: Class<EnttInstance<T>>): Class<T> | undefined {
+  return underlyingClassesByEnttifiedClass.get(TargetClass) as Class<T> | undefined;
 }
 
 /**
@@ -941,8 +955,8 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
  * @param proxy EnTTified object instance
  * @returns Underlying object instance that was EnTTified
  */
-export function getUnderlyingEnttifiedInstance<T extends ClassInstance>(proxy: EnttInstance<T>): ClassInstance<T> {
-  return underlyingInstancesByEnttifiedInstance.get(proxy);
+export function getUnderlyingEnttifiedInstance<T extends ClassInstance>(proxy: EnttInstance<T>): ClassInstance<T> | undefined {
+  return underlyingInstancesByEnttifiedInstance.get(proxy) as ClassInstance<T> | undefined;
 }
 
 /**
