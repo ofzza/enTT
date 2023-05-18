@@ -953,7 +953,14 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
             if (decoratorDefinition.implementation) {
               const decoratorImplementation = decoratorDefinition.implementation as CustomClassDecoratorImplementation<T>;
               if (decoratorImplementation) {
-                decoratorImplementation.onConstruct?.(proxy);
+                // Execute simple callback
+                if (typeof decoratorImplementation.onConstruct === 'function') {
+                  decoratorImplementation.onConstruct?.(proxy);
+                }
+                // Execute staged callback
+                else if (decoratorImplementation.onConstruct instanceof Object) {
+                  decoratorImplementation.onConstruct?.on?.(proxy);
+                }
               }
             }
           }
@@ -1032,7 +1039,14 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
         if (decoratorDefinition.implementation) {
           const decoratorImplementation = decoratorDefinition.implementation as CustomClassDecoratorImplementation<T>;
           if (decoratorImplementation.onPropertyGet) {
-            processed = decoratorImplementation.onPropertyGet({ target, key, value: processed });
+            // Execute simple callback
+            if (typeof decoratorImplementation.onPropertyGet === 'function') {
+              processed = decoratorImplementation.onPropertyGet({ target, key, value: processed });
+            }
+            // Execute staged callback
+            else if (decoratorImplementation.onPropertyGet instanceof Object && decoratorImplementation.onPropertyGet.on) {
+              processed = decoratorImplementation.onPropertyGet.on({ target, key, value: processed });
+            }
           }
         }
       }
@@ -1043,7 +1057,14 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
         if (decoratorDefinition.implementation) {
           const decoratorImplementation = decoratorDefinition.implementation as CustomPropertyDecoratorImplementation<T, any, any>;
           if (decoratorImplementation.onPropertyGet) {
-            processed = decoratorImplementation.onPropertyGet({ target, key, value: processed });
+            // Execute simple callback
+            if (typeof decoratorImplementation.onPropertyGet === 'function') {
+              processed = decoratorImplementation.onPropertyGet({ target, key, value: processed });
+            }
+            // Execute staged callback
+            else if (decoratorImplementation.onPropertyGet instanceof Object && decoratorImplementation.onPropertyGet.on) {
+              processed = decoratorImplementation.onPropertyGet.on({ target, key, value: processed });
+            }
           }
         }
       }
@@ -1066,7 +1087,14 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
         if (decoratorDefinition.implementation) {
           const decoratorImplementation = decoratorDefinition.implementation as CustomPropertyDecoratorImplementation<T, any, any>;
           if (decoratorImplementation.onPropertySet) {
-            processed = decoratorImplementation.onPropertySet({ target, key, value: processed });
+            // Execute simple callback
+            if (typeof decoratorImplementation.onPropertySet === 'function') {
+              processed = decoratorImplementation.onPropertySet({ target, key, value: processed });
+            }
+            // Execute staged callback
+            else if (decoratorImplementation.onPropertySet instanceof Object && decoratorImplementation.onPropertySet.on) {
+              processed = decoratorImplementation.onPropertySet.on({ target, key, value: processed });
+            }
           }
         }
       }
@@ -1077,7 +1105,14 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
         if (decoratorDefinition.implementation) {
           const decoratorImplementation = decoratorDefinition.implementation as CustomClassDecoratorImplementation<T>;
           if (decoratorImplementation.onPropertySet) {
-            processed = decoratorImplementation.onPropertySet({ target, key, value: processed });
+            // Execute simple callback
+            if (typeof decoratorImplementation.onPropertySet === 'function') {
+              processed = decoratorImplementation.onPropertySet({ target, key, value: processed });
+            }
+            // Execute staged callback
+            else if (decoratorImplementation.onPropertySet instanceof Object && decoratorImplementation.onPropertySet.on) {
+              processed = decoratorImplementation.onPropertySet.on({ target, key, value: processed });
+            }
           }
         }
       }

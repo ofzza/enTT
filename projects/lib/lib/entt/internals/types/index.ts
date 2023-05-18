@@ -34,17 +34,40 @@ export type FullPathPropertyValue<T extends ClassInstance, V> = {
 // #region EnTT types: Custom decorator types
 
 /**
+ * Type definition for a callback function for enttified class instance onConstruct hook
+ */
+export type OnConstructorCallback<TInstance extends ClassInstance> =
+  | ((instance: TInstance) => void)
+  | { allow?: (instance: any) => boolean; on?: (instance: any) => void };
+/**
+ * Type definition for a callback function for enttified class instance onPropertyGet hook
+ */
+export type OnPropertyGetCallback<TInstance extends ClassInstance, TValInner = any, TValOuter = any> =
+  | ((v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter)
+  | { allow?: (v: FullPathPropertyValue<TInstance, TValInner>) => boolean; on?: (v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter };
+/**
+ * Type definition for a callback function for enttified class instance onPropertySet hook
+ */
+export type OnPropertySetCallback<TInstance extends ClassInstance, TValInner = any, TValOuter = any> =
+  | ((v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner)
+  | { allow?: (v: FullPathPropertyValue<TInstance, TValOuter>) => boolean; on?: (v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner };
+
+/**
  * Interface for a decorator definition, holding all its proxy hooks implementation
  */
 export interface ICustomDecoratorImplementation {
   /**
+   * Implementation of the constructor hook
+   */
+  onConstruct?: OnConstructorCallback<any>;
+  /**
    * Implementation of the getter hook
    */
-  onPropertyGet?: (v: any) => any;
+  onPropertyGet?: OnPropertyGetCallback<any, any, any>;
   /**
    * Implementation of the setter hook
    */
-  onPropertySet?: (v: any) => any;
+  onPropertySet?: OnPropertySetCallback<any, any, any>;
 }
 
 // #endregion
@@ -62,9 +85,9 @@ export class CustomClassDecoratorImplementation<TInstance extends ClassInstance>
    * @param onPropertySet Proxy hook to be called when any property value is being set
    */
   constructor(
-    public onConstruct?: (instance: TInstance) => void,
-    public onPropertyGet?: (v: FullPathPropertyValue<TInstance, AnalyserNode>) => any,
-    public onPropertySet?: (v: FullPathPropertyValue<TInstance, any>) => any,
+    public onConstruct?: OnConstructorCallback<TInstance>,
+    public onPropertyGet?: OnPropertyGetCallback<TInstance, any, any>,
+    public onPropertySet?: OnPropertySetCallback<TInstance, any, any>,
   ) {}
 }
 
@@ -118,8 +141,8 @@ export class CustomPropertyDecoratorImplementation<TInstance extends ClassInstan
    * @param onPropertySet Proxy hook to be called when property value is being set
    */
   constructor(
-    public onPropertyGet?: (v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter,
-    public onPropertySet?: (v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner,
+    public onPropertyGet?: OnPropertyGetCallback<TInstance, TValInner, TValOuter>,
+    public onPropertySet?: OnPropertySetCallback<TInstance, TValInner, TValOuter>,
   ) {}
 }
 
