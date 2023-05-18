@@ -270,7 +270,7 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance extends ClassInst
    *   }
    *   ```
    */
-  onPropertyGet?: (v: FullPathPropertyValue<TInstance, any>) => any;
+  onPropertyGet?: OnPropertyGetCallback<TInstance, any, any>;
   /**
    * Setter interception/transformation configuration can be expressed as:
    *
@@ -301,7 +301,7 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance extends ClassInst
    *   }
    *   ```
    */
-  onPropertySet?: (v: FullPathPropertyValue<TInstance, any>) => any;
+  onPropertySet?: OnPropertySetCallback<TInstance, any, any>;
 };
 
 // #endregion
@@ -421,7 +421,7 @@ export type CustomDynamicPropertyDecoratorConfiguration<TInstance extends ClassI
    *   }
    *   ```
    */
-  onPropertyGet?: (v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter;
+  onPropertyGet?: OnPropertyGetCallback<TInstance, any, any>;
   /**
    * Setter interception/transformation configuration can be expressed as:
    *
@@ -452,7 +452,7 @@ export type CustomDynamicPropertyDecoratorConfiguration<TInstance extends ClassI
    *   }
    *   ```
    */
-  onPropertySet?: (v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner;
+  onPropertySet?: OnPropertySetCallback<TInstance, any, any>;
 };
 
 // #endregion

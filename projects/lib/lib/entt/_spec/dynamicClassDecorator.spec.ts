@@ -1,6 +1,11 @@
 // Dynamic class decorators creation and usage TESTS
 // ----------------------------------------------------------------------------
 
+// TODO:
+// - Write tests for onGet staged configuration
+// - Write tests for onSet staged configuration
+// - Write tests for onSet interceptor configuration
+
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { ClassInstance } from '@ofzza/ts-std/types/corejs/class';
