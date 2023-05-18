@@ -60,8 +60,13 @@ export function getDecoratedClassDefinition<T extends ClassInstance>(target: Cla
     return getDecoratedClassDefinition((target as unknown as any)[EnttClassInstanceProxySymbol]);
   }
   // Check if using instance of class to get definition
-  if (typeof target !== 'function') {
+  if (typeof target !== 'function' && target?.constructor) {
     return getDecoratedClassDefinition(target.constructor);
+  }
+
+  // If target is not a class, return empty definition
+  if (typeof target !== 'function') {
+    return new EnttDefinition(target as Class<T>);
   }
 
   // Initialize definitions
@@ -116,8 +121,13 @@ function registerDecoratedClassDefinition<T extends ClassInstance>(
   isCalledFromDecoratorRegistration: boolean = true,
 ): EnttDefinition {
   // Check if using instance of class to get definition
-  if (typeof target !== 'function') {
+  if (typeof target !== 'function' && target?.constructor) {
     return registerDecoratedClassDefinition(target.constructor, isCalledFromDecoratorRegistration);
+  }
+
+  // If target is not a class, return empty definition
+  if (typeof target !== 'function') {
+    return new EnttDefinition(target as Class<T>);
   }
 
   // Get definition
@@ -156,8 +166,13 @@ export function getDecoratedClassDecoratorDefinition<T extends ClassInstance>(
     return getDecoratedClassDecoratorDefinition((target as unknown as any)[EnttClassInstanceProxySymbol], decoratorSymbol);
   }
   // Check if using instance of class to get definition
-  if (typeof target !== 'function') {
+  if (typeof target !== 'function' && target?.constructor) {
     return getDecoratedClassDecoratorDefinition(target.constructor, decoratorSymbol);
+  }
+
+  // If target is not a class, return empty definition
+  if (typeof target !== 'function') {
+    return [];
   }
 
   // Initialize definitions
@@ -193,8 +208,13 @@ function registerDecoratedClassDecoratorDefinition<T extends ClassInstance>(
   isCalledFromDecoratorRegistration: boolean = true,
 ): Array<EnttDecoratorDefinition> {
   // Check if using instance of class to get definition
-  if (typeof target !== 'function') {
+  if (typeof target !== 'function' && target?.constructor) {
     return registerDecoratedClassDecoratorDefinition(target.constructor, decoratorSymbol, isCalledFromDecoratorRegistration);
+  }
+
+  // If target is not a class, return empty definition
+  if (typeof target !== 'function') {
+    return [];
   }
 
   // Get definition for target property
@@ -237,8 +257,13 @@ export function getDecoratedClassPropertyDefinition<T extends ClassInstance>(
     return getDecoratedClassPropertyDefinition((target as unknown as any)[EnttClassInstanceProxySymbol], propertyKey);
   }
   // Check if using instance of class to get definition
-  if (typeof target !== 'function') {
+  if (typeof target !== 'function' && target?.constructor) {
     return getDecoratedClassPropertyDefinition(target.constructor, propertyKey);
+  }
+
+  // If target is not a class, return empty definition
+  if (typeof target !== 'function') {
+    return new EnttPropertyDefinition(target as Class<T>, propertyKey);
   }
 
   // Initialize definitions
@@ -289,8 +314,13 @@ function registerDecoratedClassPropertyDefinition<T extends ClassInstance>(
   isCalledFromDecoratorRegistration: boolean = true,
 ): EnttPropertyDefinition {
   // Check if using instance of class to get definition
-  if (typeof target !== 'function') {
+  if (typeof target !== 'function' && target?.constructor) {
     return registerDecoratedClassPropertyDefinition(target.constructor, propertyKey, isCalledFromDecoratorRegistration);
+  }
+
+  // If target is not a class, return empty definition
+  if (typeof target !== 'function') {
+    return new EnttPropertyDefinition(target as Class<T>, propertyKey);
   }
 
   // Get definition for target class
@@ -330,8 +360,13 @@ export function getDecoratedClassPropertyDecoratorDefinition<T extends ClassInst
     return getDecoratedClassPropertyDecoratorDefinition((target as unknown as any)[EnttClassInstanceProxySymbol], propertyKey, decoratorSymbol);
   }
   // Check if using instance of class to get definition
-  if (typeof target !== 'function') {
+  if (typeof target !== 'function' && target?.constructor) {
     return getDecoratedClassPropertyDecoratorDefinition(target.constructor, propertyKey, decoratorSymbol);
+  }
+
+  // If target is not a class, return empty definition
+  if (typeof target !== 'function') {
+    return [];
   }
 
   // Initialize definitions
@@ -371,8 +406,13 @@ function registerDecoratedClassPropertyDecoratorDefinition<T extends ClassInstan
   isCalledFromDecoratorRegistration: boolean = true,
 ): Array<EnttDecoratorDefinition> {
   // Check if using instance of class to get definition
-  if (typeof target !== 'function') {
+  if (typeof target !== 'function' && target?.constructor) {
     return registerDecoratedClassPropertyDecoratorDefinition(target.constructor, propertyKey, decoratorSymbol, isCalledFromDecoratorRegistration);
+  }
+
+  // If target is not a class, return empty definition
+  if (typeof target !== 'function') {
+    return [];
   }
 
   // Get definition for target property

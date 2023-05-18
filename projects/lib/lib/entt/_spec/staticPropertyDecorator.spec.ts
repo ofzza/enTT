@@ -4,7 +4,7 @@
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
-import { createPropertyCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
+import { createPropertyCustomDecorator, getDecoratedClassDefinition, getDecoratedClassPropertyDefinition, filterDefinition, EnttPropertyDefinition } from '../';
 
 // Unique identifier symbol identifying the DefaultValue decorator
 const defaultValueDecoratorSymbol = Symbol('Default value property decorator');
@@ -72,6 +72,35 @@ export function testStaticPropertyDecorators() {
     @DefaultValue(defaults['priv'])
     private priv!: string;
   }
+
+  // Check if, given a non-existent class property, definitions will still be returned well formed
+  describe('Accessing definitions for a non-existent class property will still returns a well formed definitions object', () => {
+    // Validation of an empty EnTT definition
+    function validateEmptyPropertyDefinition(target: any, propertyKey: any) {
+      it(`getDecoratedClassPropertyDefinition(${
+        (typeof target === 'function' ? target?.name : false) || JSON.stringify(target)
+      }, ${propertyKey}) returns a valid empty definition`, () => {
+        // Get definition
+        const def = getDecoratedClassPropertyDefinition(target as unknown as Class<Test>, propertyKey);
+        // Check definition
+        assert(!!def);
+        assert(def instanceof Object);
+        // Check decorators
+        assert(def.decorators instanceof Object);
+        assert(def.decorators.all instanceof Array);
+        assert(def.decorators.all.length === 0);
+        assert(def.decorators.bySymbol instanceof Object);
+        assert(Object.keys(def.decorators.bySymbol).length === 0);
+      });
+    }
+
+    // Get missing definitions via unknown
+    validateEmptyPropertyDefinition(undefined, 'thisPropertyDoesNotExist');
+    validateEmptyPropertyDefinition(null, 'thisPropertyDoesNotExist');
+    validateEmptyPropertyDefinition({}, 'thisPropertyDoesNotExist');
+    validateEmptyPropertyDefinition(Date, 'thisPropertyDoesNotExist');
+    validateEmptyPropertyDefinition(Test, 'thisPropertyDoesNotExist');
+  });
 
   // Check if, given a class, properties can be found as having been decorated
   describe('Definitions are set correctly and can be reached via class', () => {

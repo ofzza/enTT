@@ -4,7 +4,7 @@
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
-import { createClassCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../';
+import { createClassCustomDecorator, getDecoratedClassDefinition, filterDefinition, EnttDefinition } from '../';
 
 // Unique identifier symbol identifying the FromString decorator
 const fromStringDecoratorSymbol = Symbol('From string class decorator');
@@ -69,6 +69,37 @@ export function testStaticClassDecorators() {
     public what!: string;
     public where!: string;
   }
+
+  // Check if, given a non-existent class, definitions will still be returned well formed
+  describe('Accessing definitions for a non-existent class will still returns a well formed definitions object', () => {
+    // Validation of an empty EnTT definition
+    function validateEmptyDefinition(target: any) {
+      it(`getDecoratedClassDefinition(${
+        (typeof target === 'function' ? target?.name : false) || JSON.stringify(target)
+      }) returns a valid empty definition`, () => {
+        // Get definition
+        const def = getDecoratedClassDefinition(target as unknown as Class<Test>);
+        // Check definition
+        assert(!!def);
+        assert(def instanceof Object);
+        // Check decorators
+        assert(def.decorators instanceof Object);
+        assert(def.decorators.all instanceof Array);
+        assert(def.decorators.all.length === 0);
+        assert(def.decorators.bySymbol instanceof Object);
+        assert(Object.keys(def.decorators.bySymbol).length === 0);
+        // Check properties
+        assert(def.properties instanceof Object);
+        assert(Object.keys(def.properties).length === 0);
+      });
+    }
+
+    // Get missing definitions via unknown
+    validateEmptyDefinition(undefined);
+    validateEmptyDefinition(null);
+    validateEmptyDefinition({});
+    validateEmptyDefinition(Date);
+  });
 
   // Check if, given a class, class can be found as having been decorated
   describe('Definitions are set correctly and can be reached via class', () => {
