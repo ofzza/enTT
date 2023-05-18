@@ -974,6 +974,10 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
      * (If checking "hidden" property intended to identify Enttified class instances' Proxies, return original proxyied class to confirm self as proxy)
      */
     get: (target: ClassInstance<T>, key: PropertyKey) => {
+      // If checking "hidden" property intended to identify Enttified classes return undefined
+      if (key === EnttClassProxySymbol) {
+        return undefined;
+      }
       // If checking "hidden" property intended to identify Enttified classes' Proxies, return original proxyied class to confirm self as proxy
       if (key === EnttClassInstanceProxySymbol) {
         return target.constructor as Class<T>;
