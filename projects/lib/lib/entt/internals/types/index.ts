@@ -34,17 +34,51 @@ export type FullPathPropertyValue<T extends ClassInstance, V> = {
 // #region EnTT types: Custom decorator types
 
 /**
+ * Type definition for a callback function for enttified class instance onConstruct hook
+ */
+export type OnConstructorCallback<TInstance extends ClassInstance> =
+  | ((instance: TInstance) => void)
+  | { allow?: (instance: any) => boolean; on?: (instance: any) => void };
+/**
+ * Type definition for a callback function for enttified class instance onPropertyGet hook
+ */
+export type OnPropertyGetCallback<TInstance extends ClassInstance, TValInner = any, TValOuter = any> =
+  | ((v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter)
+  | { allow?: (v: FullPathPropertyValue<TInstance, TValInner>) => boolean; on?: (v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter };
+/**
+ * Type definition for a callback function for enttified class instance onPropertySet hook
+ */
+export type OnPropertySetCallback<TInstance extends ClassInstance, TValInner = any, TValOuter = any> =
+  | ((v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner)
+  | { allow?: (v: FullPathPropertyValue<TInstance, TValOuter>) => boolean; on?: (v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner };
+
+/**
  * Interface for a decorator definition, holding all its proxy hooks implementation
  */
 export interface ICustomDecoratorImplementation {
   /**
    * Implementation of the getter hook
    */
-  onPropertyGet?: (v: any) => any;
+  onPropertyGet?: OnPropertyGetCallback<any, any, any>;
   /**
    * Implementation of the setter hook
    */
-  onPropertySet?: (v: any) => any;
+  onPropertySet?: OnPropertySetCallback<any, any, any>;
+}
+
+/**
+ * Interface for a property decorator definition, holding all its proxy hooks implementation
+ */
+export interface ICustomPropertyDecoratorImplementation extends ICustomDecoratorImplementation {}
+
+/**
+ * Interface for a class decorator definition, holding all its proxy hooks implementation
+ */
+export interface ICustomClassDecoratorImplementation extends ICustomDecoratorImplementation {
+  /**
+   * Implementation of the constructor hook
+   */
+  onConstruct?: OnConstructorCallback<any>;
 }
 
 // #endregion
@@ -54,7 +88,7 @@ export interface ICustomDecoratorImplementation {
 /**
  * Definition for a class decorator, holding all its proxy hooks implementation
  */
-export class CustomClassDecoratorImplementation<TInstance extends ClassInstance> implements ICustomDecoratorImplementation {
+export class CustomClassDecoratorImplementation<TInstance extends ClassInstance> implements ICustomClassDecoratorImplementation {
   /**
    * Constructor
    * @param onConstruct Proxy hook to be called when instance is being constructed
@@ -62,9 +96,9 @@ export class CustomClassDecoratorImplementation<TInstance extends ClassInstance>
    * @param onPropertySet Proxy hook to be called when any property value is being set
    */
   constructor(
-    public onConstruct?: (instance: TInstance) => void,
-    public onPropertyGet?: (v: FullPathPropertyValue<TInstance, AnalyserNode>) => any,
-    public onPropertySet?: (v: FullPathPropertyValue<TInstance, any>) => any,
+    public onConstruct?: OnConstructorCallback<TInstance>,
+    public onPropertyGet?: OnPropertyGetCallback<TInstance, any, any>,
+    public onPropertySet?: OnPropertySetCallback<TInstance, any, any>,
   ) {}
 }
 
@@ -110,7 +144,7 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance extends ClassInst
  * Definition for a property decorator, holding all its proxy hooks implementation
  */
 export class CustomPropertyDecoratorImplementation<TInstance extends ClassInstance, TValInner = any, TValOuter = any>
-  implements ICustomDecoratorImplementation
+  implements ICustomPropertyDecoratorImplementation
 {
   /**
    * Constructor
@@ -118,8 +152,8 @@ export class CustomPropertyDecoratorImplementation<TInstance extends ClassInstan
    * @param onPropertySet Proxy hook to be called when property value is being set
    */
   constructor(
-    public onPropertyGet?: (v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter,
-    public onPropertySet?: (v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner,
+    public onPropertyGet?: OnPropertyGetCallback<TInstance, TValInner, TValOuter>,
+    public onPropertySet?: OnPropertySetCallback<TInstance, TValInner, TValOuter>,
   ) {}
 }
 
@@ -170,13 +204,33 @@ export class EnttDefinition {
    * Holds class decorator definitions for decorators applied to this class
    */
   public decorators: {
-    all: Array<EnttDecoratorDefinition>;
-    bySymbol: Record<symbol, Array<EnttDecoratorDefinition>>;
+    all: Array<EnttClassDecoratorDefinition>;
+    bySymbol: Record<symbol, Array<EnttClassDecoratorDefinition>>;
   } = { all: [], bySymbol: {} };
   /**
    * Holds property definitions for this entity
    */
   public properties: Record<PropertyKey, EnttPropertyDefinition> = {};
+}
+/**
+ * Definition for a single EnTT decorator used on an EnTT class
+ */
+export class EnttClassDecoratorDefinition {
+  /**
+   * Constructor
+   * @param decoratorSymbol Unique symbol of the decorator this definition refers to
+   * @param owner Stores the parent class this definition refers to
+   * @param ownerPropertyKey Name of the property this definition refers to
+   */
+  constructor(public readonly decoratorSymbol: symbol, public readonly owner: Class<object>) {}
+  /**
+   * Decorator hooks implementation (per decorator instance because a hook implementation can trap values from a decorator factory and thus be specific to the instance)
+   */
+  implementation?: ICustomClassDecoratorImplementation;
+  /**
+   * Holds data the decorator was configured with
+   */
+  data: any;
 }
 /**
  * Definition for an entity property carrying properties decorated with EnTT functionality
@@ -192,14 +246,14 @@ export class EnttPropertyDefinition {
    * Holds property decorator definitions for decorators applied to this property
    */
   public decorators: {
-    all: Array<EnttDecoratorDefinition>;
-    bySymbol: Record<symbol, Array<EnttDecoratorDefinition>>;
+    all: Array<EnttPropertyDecoratorDefinition>;
+    bySymbol: Record<symbol, Array<EnttPropertyDecoratorDefinition>>;
   } = { all: [], bySymbol: {} };
 }
 /**
- * Definition for a single EnTT decorator used on an EnTT class or one of its constituents
+ * Definition for a single EnTT decorator used on an EnTT class property
  */
-export class EnttDecoratorDefinition {
+export class EnttPropertyDecoratorDefinition {
   /**
    * Constructor
    * @param decoratorSymbol Unique symbol of the decorator this definition refers to

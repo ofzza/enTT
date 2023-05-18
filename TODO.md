@@ -1,8 +1,8 @@
 # Bugs and similar
 
-- [ ] EnTTified class won't access constructor property: `(new (enttify(_MyClass))()).constructor`
+- [x] EnTTified class won't access constructor property: `(new (enttify(_MyClass))()).constructor`
+- [x] EntTTified instances call dedcorated onPropertyGet callbacks when accessing what is supposed to be their hidden ID property: `EnttClassProxySymbol = Symbol('Property key used to identify class Proxies')`
 - [ ] Need a mechanism for `onPropertyGet` and `onPropertySet` callbacks not to cacsade between multiple decorators, but instead to provide a definitive action. (For example, setters should not end up setting a property on underlying instance!)
-- [ ] EntTTified instances call dedcorated onPropertyGet callbacks when accessing what is supposed to be their hidden ID property: `EnttClassProxySymbol = Symbol('Property key used to identify class Proxies')`
 
 # Testing
 

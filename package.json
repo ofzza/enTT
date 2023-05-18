@@ -1,6 +1,6 @@
 {
   "name": "@ofzza/entt",
-  "version": "4.0.0-alpha-8",
+  "version": "4.0.0-alpha-9",
   "description": "Modular TypeScript data-modeling solution, implementing nestable serialization/deserialization and flexible validation",
   "private": false,
   "main": "./lib/index.js",
@@ -13,7 +13,7 @@
     "dev-showcase": "ng serve",
     "test-showcase": "ng test",
     "prettier": "prettier --write .",
-    "build-docs": "./scripts/build-docs.sh"
+    "build-docs": "bash ./scripts/build-docs.sh"
   },
   "pre-commit": [
     "prettier",
