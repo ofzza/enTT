@@ -691,10 +691,14 @@ export function createClassCustomDecorator<TInstance extends ClassInstance, TPay
   decoratorSymbol: symbol,
 ): (target: Class<TInstance>) => void;
 /**
- * TODO: ...
- * @param configuration
- * @param decoratorSymbol
- * @returns
+ * Helper function used to create a custom decoorator.
+ * @param configuration (Optional) Decorator configuration on form of:
+ * - either a Callback function expected to return data which will be stored within a class's decorator definition once decorator is used to
+ *   decorate a class
+ * - or decorator configuration object with a callback function returning data to be stored within the decorator definition and optional proxy
+ *   hooks to be called when underlying decorated object is being accessed.
+ * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
+ * @returns Decorator
  */
 export function createClassCustomDecorator<TInstance extends ClassInstance, TPayload>(
   configuration?: CustomStaticClassDecoratorConfiguration<TPayload> | CustomDynamicClassDecoratorConfiguration<TInstance, TPayload>,
@@ -942,6 +946,7 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
           // Run original constructor and get original instance of the class
           const target = new _TargetClass(...args);
           const handler = createProxyhandlerForEnttInstance(target);
+
           // Process all initially set property values
           for (const key of Object.keys(target)) {
             (target as any)[key] = handler.set?.(target, key, (target as any)[key], undefined);
@@ -950,22 +955,18 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
           const proxy = new Proxy(target, handler) as EnttInstance<T>;
           // Register original instance by the proxy
           underlyingInstancesByEnttifiedInstance.set(proxy, target);
+
           // Process EnTTified instance through all registered constructor hooks
           for (const decoratorDefinition of [...classDefinition.decorators.all].reverse()) {
             if (decoratorDefinition.implementation) {
               const decoratorImplementation = decoratorDefinition.implementation as CustomClassDecoratorImplementation<T>;
               if (decoratorImplementation) {
                 // Execute simple callback
-                if (typeof decoratorImplementation.onConstruct === 'function') {
-                  decoratorImplementation.onConstruct?.(proxy);
-                }
-                // Execute staged callback
-                else if (decoratorImplementation.onConstruct instanceof Object) {
-                  decoratorImplementation.onConstruct?.on?.(proxy);
-                }
+                decoratorImplementation.onConstruct?.(proxy);
               }
             }
           }
+
           // Return a proxy to the original instance
           return proxy;
         },
@@ -1034,8 +1035,11 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
 
       // Initialize getting value
       let processed = (target as any)[key];
+
       // Get class definition
       const classDefinition = registerDecoratedClassDefinition(target);
+      // Check all decorators for interceptor callbacks, and execute interceptors instead of chainging transformations if found
+      // TODO: ...
       // Process value through all registered getter hooks
       for (const decoratorDefinition of [...classDefinition.decorators.all].reverse()) {
         if (decoratorDefinition.implementation) {
@@ -1046,14 +1050,17 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
               processed = decoratorImplementation.onPropertyGet({ target, key, value: processed });
             }
             // Execute staged callback
-            else if (decoratorImplementation.onPropertyGet instanceof Object && decoratorImplementation.onPropertyGet.on) {
-              processed = decoratorImplementation.onPropertyGet.on({ target, key, value: processed });
+            else if (decoratorImplementation.onPropertyGet instanceof Object && decoratorImplementation.onPropertyGet.transform) {
+              processed = decoratorImplementation.onPropertyGet.transform({ target, key, value: processed });
             }
           }
         }
       }
+
       // Get property definition
       const propDefinition = registerDecoratedClassPropertyDefinition(target, key);
+      // Check all decorators for interceptor callbacks, and execute interceptors instead of chainging transformations if found
+      // TODO: ...
       // Process value through all registered getter hooks
       for (const decoratorDefinition of [...propDefinition.decorators.all].reverse()) {
         if (decoratorDefinition.implementation) {
@@ -1064,12 +1071,13 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
               processed = decoratorImplementation.onPropertyGet({ target, key, value: processed });
             }
             // Execute staged callback
-            else if (decoratorImplementation.onPropertyGet instanceof Object && decoratorImplementation.onPropertyGet.on) {
-              processed = decoratorImplementation.onPropertyGet.on({ target, key, value: processed });
+            else if (decoratorImplementation.onPropertyGet instanceof Object && decoratorImplementation.onPropertyGet.transform) {
+              processed = decoratorImplementation.onPropertyGet.transform({ target, key, value: processed });
             }
           }
         }
       }
+
       // Return processed value
       return processed;
     },
@@ -1083,7 +1091,10 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
       // Initialize setting value
       let processed = value;
       // Get property definition
+
       const propDefinition = registerDecoratedClassPropertyDefinition(target, key);
+      // Check all decorators for interceptor callbacks, and execute interceptors instead of chainging transformations if found
+      // TODO: ...
       // Process value through all registered setter hooks
       for (const decoratorDefinition of [...propDefinition.decorators.all]) {
         if (decoratorDefinition.implementation) {
@@ -1094,14 +1105,17 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
               processed = decoratorImplementation.onPropertySet({ target, key, value: processed });
             }
             // Execute staged callback
-            else if (decoratorImplementation.onPropertySet instanceof Object && decoratorImplementation.onPropertySet.on) {
-              processed = decoratorImplementation.onPropertySet.on({ target, key, value: processed });
+            else if (decoratorImplementation.onPropertySet instanceof Object && decoratorImplementation.onPropertySet.transform) {
+              processed = decoratorImplementation.onPropertySet.transform({ target, key, value: processed });
             }
           }
         }
       }
+
       // Get class definition
       const classDefinition = registerDecoratedClassDefinition(target);
+      // Check all decorators for interceptor callbacks, and execute interceptors instead of chainging transformations if found
+      // TODO: ...
       // Process value through all registered setter hooks
       for (const decoratorDefinition of [...classDefinition.decorators.all]) {
         if (decoratorDefinition.implementation) {
@@ -1112,12 +1126,13 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
               processed = decoratorImplementation.onPropertySet({ target, key, value: processed });
             }
             // Execute staged callback
-            else if (decoratorImplementation.onPropertySet instanceof Object && decoratorImplementation.onPropertySet.on) {
-              processed = decoratorImplementation.onPropertySet.on({ target, key, value: processed });
+            else if (decoratorImplementation.onPropertySet instanceof Object && decoratorImplementation.onPropertySet.transform) {
+              processed = decoratorImplementation.onPropertySet.transform({ target, key, value: processed });
             }
           }
         }
       }
+
       // Set and return processed value
       return ((target as any)[key] = processed);
     },

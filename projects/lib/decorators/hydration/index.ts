@@ -20,28 +20,32 @@ export type DehydratedInstance<T> = Record<PropertyKey, any> | any;
 // #region Hydration @bind decorator
 
 /**
- * TODO: ...
- * @param config
+ * Bind class decorator factory, creates a binding class decorator
+ * @param config Binding configuration provides custom callback functions to be used during the dehydration and (re)hydration process
  * @returns Class decorator
  */
 export function bind<TInstance extends ClassInstance>(
   config: HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>,
 ): (target: Class<TInstance>) => void;
 /**
- * TODO: ...
- * @param config
+ * Bind class property decorator factory, creates a binding class property decorator, binding the property during the dehydration and (re)hydration process
+ * to a target property of the same name
  * @returns Property decorator
  */
 export function bind<TInstance extends ClassInstance>(): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
 /**
- * TODO: ...
- * @param config
+ * Bind class property decorator factory, creates a binding class property decorator, binding the property during the dehydration and (re)hydration process
+ * to a target property of a configured name
+ * @param config Name of the target property to be used as binding target during the dehydration and (re)hydration process
  * @returns Property decorator
  */
 export function bind<TInstance extends ClassInstance>(config: string): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
 /**
- * TODO: ...
- * @param config
+ * Bind class property decorator factory, creates a binding class property decorator, binding the property during the dehydration and (re)hydration process
+ * to a target property of a configured name
+ * @param config Binding configuration provides:
+ * - name of the target property to be used as binding target during the dehydration and (re)hydration process
+ * - custom callback functions to be used during the dehydration and (re)hydration process
  * @returns Property decorator
  */
 export function bind<TInstance extends ClassInstance, TValRehydrated, TValDehydrated>(
