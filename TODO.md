@@ -3,12 +3,19 @@
 - [x] EnTTified class won't access constructor property: `(new (enttify(_MyClass))()).constructor`
 - [x] EntTTified instances call dedcorated onPropertyGet callbacks when accessing what is supposed to be their hidden ID property: `EnttClassProxySymbol = Symbol('Property key used to identify class Proxies')`
 - [ ] Need a mechanism for `onPropertyGet` and `onPropertySet` callbacks not to cacsade between multiple decorators, but instead to provide a definitive action. (For example, setters should not end up setting a property on underlying instance!)
+  - [ ] Write tests for
+    - [ ] Staged onGet class callbacks
+    - [ ] Staged onGet property callbacks
+    - [ ] Staged onSet class callbacks
+    - [ ] Staged onSet property callbacks
+    - [ ] Intercepting onSet class callbacks
+    - [ ] Intercepting onSet property callbacks
 
 # Testing
 
 - [x] Import `@ofzza/ts-std` as dependency and use `assert`/`refute` as implemented there
-- [ ] JSDocs for generics (@template)
 - [ ] Write type inference tests using `assert`/`refute`
+- [ ] JSDocs for generics (@template)
 
 # Change detection
 
