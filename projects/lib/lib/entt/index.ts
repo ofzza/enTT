@@ -964,14 +964,15 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
           const target = new _TargetClass(...args);
           const handler = createProxyhandlerForEnttInstance(target);
 
-          // Process all initially set property values
-          for (const key of Object.keys(target)) {
-            (target as any)[key] = handler.set?.(target, key, (target as any)[key], undefined);
-          }
           // Compose a proxy to the original instance, implementing dynamic EnTT functionality
           const proxy = new Proxy(target, handler) as EnttInstance<T>;
           // Register original instance by the proxy
           underlyingInstancesByEnttifiedInstance.set(proxy, target);
+
+          // Process all initially set property values
+          for (const key of Object.keys(target)) {
+            (proxy as any)[key] = (target as any)[key];
+          }
 
           // Process EnTTified instance through all registered constructor hooks
           for (const decoratorDefinition of [...classDefinition.decorators.all].reverse()) {
@@ -1040,7 +1041,7 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
      * @returns Value to be returned from the getter, having been intercepted.
      * (If checking "hidden" property intended to identify Enttified class instances' Proxies, return original proxyied class to confirm self as proxy)
      */
-    get: (target: ClassInstance<T>, key: PropertyKey) => {
+    get: (_: ClassInstance<T>, key: PropertyKey) => {
       // If checking "hidden" property intended to identify Enttified classes return undefined
       if (key === EnttClassProxySymbol) {
         return undefined;
@@ -1113,7 +1114,7 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
      * @param key Key of the property being accessed
      * @returns Value that was set, having intercepted it and set it to the underlying proxied object
      */
-    set: (target: ClassInstance<T>, key: PropertyKey, value: any) => {
+    set: (_: ClassInstance<T>, key: PropertyKey, value: any) => {
       // Initialize setting value
       let processed = value;
 
@@ -1160,30 +1161,34 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
         }
       }
 
-      // If any interceptor callback set execute interceptors only and don't set value
+      // If any interceptor callback found execute interceptors only and don't set value
       if (onPropertySetCallbacks.intercept.length) {
         for (const interceptCallbackFn of onPropertySetCallbacks.intercept) {
           interceptCallbackFn({ target, key, value: processed });
         }
-        // Don't execute any other callbacks and don't set value
-        return;
       }
 
-      // Execute all getter "before" hooks
-      for (const beforeCallbackFn of onPropertySetCallbacks.before) {
-        beforeCallbackFn({ target, key, value: processed });
-      }
-      // Execute all getter "transform" hooks
-      for (const transformCallbackFn of onPropertySetCallbacks.transform) {
-        processed = transformCallbackFn({ target, key, value: processed });
-      }
-      // Execute all getter "after" hooks
-      for (const afterCallbackFn of onPropertySetCallbacks.after) {
-        afterCallbackFn({ target, key, value: processed });
+      // If no interceptor callback found, execute staged callbacks
+      else {
+        // Execute all getter "before" hooks
+        for (const beforeCallbackFn of onPropertySetCallbacks.before) {
+          beforeCallbackFn({ target, key, value: processed });
+        }
+        // Execute all getter "transform" hooks
+        for (const transformCallbackFn of onPropertySetCallbacks.transform) {
+          processed = transformCallbackFn({ target, key, value: processed });
+        }
+        // Execute all getter "after" hooks
+        for (const afterCallbackFn of onPropertySetCallbacks.after) {
+          afterCallbackFn({ target, key, value: processed });
+        }
+
+        // Set value
+        (target as any)[key] = processed;
       }
 
-      // Set and return processed value
-      return ((target as any)[key] = processed);
+      // Return successful set operation
+      return true;
     },
   };
 }

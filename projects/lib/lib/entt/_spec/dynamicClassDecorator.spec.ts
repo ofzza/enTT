@@ -158,7 +158,6 @@ export function testDynamicClassDecorators() {
       const enttifiedInstantiationsPerSecond = (1000 * countEnttified) / (Date.now() - startPlain);
 
       // Check number of instantiations per second
-      debugger;
       assert(plainInstantiationsPerSecond > INSTANTIATIONS_PER_SECOND);
       assert(enttifiedInstantiationsPerSecond > INSTANTIATIONS_PER_SECOND);
       assert(plainInstantiationsPerSecond / enttifiedInstantiationsPerSecond < ENTTITIFICATION_SLOWDOWN_FACTOR);
