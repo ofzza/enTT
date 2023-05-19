@@ -54,12 +54,8 @@ export type OnPropertySetCallback<TInstance extends ClassInstance, TValInner = a
   | ((v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner)
   | {
       intercept: (v: FullPathPropertyValue<TInstance, TValOuter>) => void;
-      before: undefined;
-      transform: undefined;
-      after: undefined;
     }
   | {
-      intercept: undefined;
       before?: (v: FullPathPropertyValue<TInstance, TValOuter>) => void;
       transform?: (v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner;
       after?: (v: FullPathPropertyValue<TInstance, TValOuter>) => void;
