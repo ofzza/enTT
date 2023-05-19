@@ -468,7 +468,7 @@ export type CustomDynamicPropertyDecoratorConfiguration<TInstance extends ClassI
 /**
  * Definition for an entity carrying properties decorated with EnTT functionality
  */
-export class EnttDefinition {
+export class EnttDefinition<T extends ClassInstance> {
   /**
    * Constructor
    * @param owner Stores the parent class this definition refers to
@@ -478,18 +478,18 @@ export class EnttDefinition {
    * Holds class decorator definitions for decorators applied to this class
    */
   public decorators: {
-    all: Array<EnttClassDecoratorDefinition>;
-    bySymbol: Record<symbol, Array<EnttClassDecoratorDefinition>>;
+    all: Array<EnttClassDecoratorDefinition<T>>;
+    bySymbol: Record<symbol, Array<EnttClassDecoratorDefinition<T>>>;
   } = { all: [], bySymbol: {} };
   /**
    * Holds property definitions for this entity
    */
-  public properties: Record<PropertyKey, EnttPropertyDefinition> = {};
+  public properties: Record<PropertyKey, EnttPropertyDefinition<T>> = {};
 }
 /**
  * Definition for a single EnTT decorator used on an EnTT class
  */
-export class EnttClassDecoratorDefinition {
+export class EnttClassDecoratorDefinition<T extends ClassInstance> {
   /**
    * Constructor
    * @param decoratorSymbol Unique symbol of the decorator this definition refers to
@@ -500,7 +500,7 @@ export class EnttClassDecoratorDefinition {
   /**
    * Decorator hooks implementation (per decorator instance because a hook implementation can trap values from a decorator factory and thus be specific to the instance)
    */
-  implementation?: ICustomClassDecoratorImplementation<any>; // TODO: Replace with full proper generic typing
+  implementation?: ICustomClassDecoratorImplementation<T>; // TODO: Replace with full proper generic typing
   /**
    * Holds data the decorator was configured with
    */
@@ -509,7 +509,7 @@ export class EnttClassDecoratorDefinition {
 /**
  * Definition for an entity property carrying properties decorated with EnTT functionality
  */
-export class EnttPropertyDefinition {
+export class EnttPropertyDefinition<T extends ClassInstance> {
   /**
    * Constructor
    * @param owner Stores the parent class this definition refers to
@@ -520,14 +520,14 @@ export class EnttPropertyDefinition {
    * Holds property decorator definitions for decorators applied to this property
    */
   public decorators: {
-    all: Array<EnttPropertyDecoratorDefinition>;
-    bySymbol: Record<symbol, Array<EnttPropertyDecoratorDefinition>>;
+    all: Array<EnttPropertyDecoratorDefinition<T>>;
+    bySymbol: Record<symbol, Array<EnttPropertyDecoratorDefinition<T>>>;
   } = { all: [], bySymbol: {} };
 }
 /**
  * Definition for a single EnTT decorator used on an EnTT class property
  */
-export class EnttPropertyDecoratorDefinition {
+export class EnttPropertyDecoratorDefinition<T extends ClassInstance> {
   /**
    * Constructor
    * @param decoratorSymbol Unique symbol of the decorator this definition refers to
@@ -538,7 +538,7 @@ export class EnttPropertyDecoratorDefinition {
   /**
    * Decorator hooks implementation (per decorator instance because a hook implementation can trap values from a decorator factory and thus be specific to the instance)
    */
-  implementation?: ICustomPropertyDecoratorImplementation<any>; // TODO: Replace with full proper generic typing
+  implementation?: ICustomPropertyDecoratorImplementation<T>; // TODO: Replace with full proper generic typing
   /**
    * Holds data the decorator was configured with
    */

@@ -802,14 +802,14 @@ export enum HydrationStrategy {
 function collectHydratingPropertyDecoratorDefinitions<TInstance extends ClassInstance>(
   instance: ClassInstance<TInstance>,
   strategy: HydrationStrategy,
-): Record<keyof TInstance, false | EnttPropertyDefinition> {
+): Record<keyof TInstance, false | EnttPropertyDefinition<TInstance>> {
   // Get instance's class's decorator definitions
   const allDecoratedPropertiesDefinitions = getDecoratedClassDefinition(instance);
   const onlyBoundPropertiesDefinitions = filterDefinition(allDecoratedPropertiesDefinitions, hydrationBindingPropertyDecoratorSymbol);
   const allPropertiesKeys = [...new Set([...Object.keys(allDecoratedPropertiesDefinitions.properties), ...Object.keys(instance)])];
 
   // Collect property definitions depending on the selected strategy
-  const properties: Record<PropertyKey, false | EnttPropertyDefinition> = {};
+  const properties: Record<PropertyKey, false | EnttPropertyDefinition<TInstance>> = {};
   if (strategy === HydrationStrategy.AllClassProperties) {
     for (const key of allPropertiesKeys) {
       properties[key] = allDecoratedPropertiesDefinitions.properties[key] || false;
