@@ -1,4 +1,4 @@
-# Bugs and similar
+# Bugs and optimizations
 
 - [x] EnTTified class won't access constructor property: `(new (enttify(_MyClass))()).constructor`
 - [x] EntTTified instances call dedcorated onPropertyGet callbacks when accessing what is supposed to be their hidden ID property: `EnttClassProxySymbol = Symbol('Property key used to identify class Proxies')`
@@ -10,6 +10,7 @@
     - [ ] Staged onSet property callbacks
     - [ ] Intercepting onSet class callbacks
     - [ ] Intercepting onSet property callbacks
+- [ ] Genericize Decorator definition classes: `Entt____Definition`
 
 # Testing
 
