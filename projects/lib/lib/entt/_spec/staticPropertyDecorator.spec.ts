@@ -74,7 +74,7 @@ export function testStaticPropertyDecorators() {
   }
 
   // Check if, given a non-existent class property, definitions will still be returned well formed
-  describe('Accessing definitions for a non-existent class property will still returns a well formed definitions object', () => {
+  describe('Accessing definitions for a non registered, but existing class property will still returns a well formed definitions object', () => {
     // Validation of an empty EnTT definition
     function validateEmptyPropertyDefinition(target: any, propertyKey: any) {
       it(`getDecoratedClassPropertyDefinition(${
@@ -95,11 +95,11 @@ export function testStaticPropertyDecorators() {
     }
 
     // Get missing definitions via unknown
-    validateEmptyPropertyDefinition(undefined, 'thisPropertyDoesNotExist');
-    validateEmptyPropertyDefinition(null, 'thisPropertyDoesNotExist');
-    validateEmptyPropertyDefinition({}, 'thisPropertyDoesNotExist');
-    validateEmptyPropertyDefinition(Date, 'thisPropertyDoesNotExist');
-    validateEmptyPropertyDefinition(Test, 'thisPropertyDoesNotExist');
+    validateEmptyPropertyDefinition(undefined, 'toString');
+    validateEmptyPropertyDefinition(null, 'toString');
+    validateEmptyPropertyDefinition({}, 'toString');
+    validateEmptyPropertyDefinition(Date, 'toString');
+    validateEmptyPropertyDefinition(Test, 'toString');
   });
 
   // Check if, given a class, properties can be found as having been decorated

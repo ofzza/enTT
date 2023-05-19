@@ -812,7 +812,7 @@ function collectHydratingPropertyDecoratorDefinitions<TInstance extends ClassIns
   const properties: Record<PropertyKey, false | EnttPropertyDefinition<TInstance>> = {};
   if (strategy === HydrationStrategy.AllClassProperties) {
     for (const key of allPropertiesKeys) {
-      properties[key] = allDecoratedPropertiesDefinitions.properties[key] || false;
+      properties[key] = allDecoratedPropertiesDefinitions.properties[key];
     }
   } else if (strategy === HydrationStrategy.AllDecoratedClassProperties) {
     for (const key of Object.keys(allDecoratedPropertiesDefinitions.properties)) {

@@ -335,7 +335,9 @@ function registerDecoratedClassPropertyDefinition<T extends ClassInstance>(
   // Get definition for target class
   const definition = registerDecoratedClassDefinition<T>(target as Class<T>, isCalledFromDecoratorRegistration);
   // Return (first register if required) property definition
-  return definition.properties[propertyKey] || (definition.properties[propertyKey] = new EnttPropertyDefinition(target as Class<T>, propertyKey));
+  return {}.hasOwnProperty.bind(definition.properties)(propertyKey) // Digging down to potentially occluded "hasOwnProperty" method
+    ? definition.properties[propertyKey]
+    : (definition.properties[propertyKey] = new EnttPropertyDefinition(target as Class<T>, propertyKey));
 }
 
 /**
