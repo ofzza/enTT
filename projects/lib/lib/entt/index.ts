@@ -47,16 +47,16 @@ export { Logger, Warning, Info, log, setLogging };
 /**
  * All classes carrying properties decorated with EnTT functionality
  */
-const decoratedClasses: WeakMap<Class<Object>, EnttDefinition> = new WeakMap();
+const decoratedClasses: WeakMap<Class<Object>, EnttDefinition<ClassInstance>> = new WeakMap();
 
 /**
  * Gets (and first registers if necesarry) definitions for a class decorated by or carrying properties decorated with EnTT functionality
  * @param target A class (or instance of a class) decorated by or  carrying properties decorated with EnTT functionality
  * @returns Definition of associated EnTT functionality for the class
  */
-export function getDecoratedClassDefinition<T extends ClassInstance>(target: ClassInstance<T>): EnttDefinition;
-export function getDecoratedClassDefinition<T extends ClassInstance>(target: Class<T>): EnttDefinition;
-export function getDecoratedClassDefinition<T extends ClassInstance>(target: Class<T> | ClassInstance<T>): EnttDefinition {
+export function getDecoratedClassDefinition<T extends ClassInstance>(target: ClassInstance<T>): EnttDefinition<T>;
+export function getDecoratedClassDefinition<T extends ClassInstance>(target: Class<T>): EnttDefinition<T>;
+export function getDecoratedClassDefinition<T extends ClassInstance>(target: Class<T> | ClassInstance<T>): EnttDefinition<T> {
   // Check if proxy of a class
   if (target && (target as unknown as any)[EnttClassProxySymbol]) {
     return getDecoratedClassDefinition((target as unknown as any)[EnttClassProxySymbol]);
@@ -67,7 +67,7 @@ export function getDecoratedClassDefinition<T extends ClassInstance>(target: Cla
   }
   // Check if using instance of class to get definition
   if (typeof target !== 'function' && target?.constructor) {
-    return getDecoratedClassDefinition(target.constructor);
+    return getDecoratedClassDefinition<T>(target.constructor as Class<T>);
   }
 
   // If target is not a class, return empty definition
@@ -76,13 +76,13 @@ export function getDecoratedClassDefinition<T extends ClassInstance>(target: Cla
   }
 
   // Initialize definitions
-  const composedDefinition: EnttDefinition = new EnttDefinition(target as Class<T>);
-  const definitions: Array<EnttDefinition> = [];
+  const composedDefinition: EnttDefinition<T> = new EnttDefinition(target as Class<T>);
+  const definitions: Array<EnttDefinition<T>> = [];
 
   // Collect definitions for the class and all it's inherited classes
   let current = target;
   do {
-    definitions.push(registerDecoratedClassDefinition(current, false));
+    definitions.push(registerDecoratedClassDefinition<T>(current as Class<T>, false));
   } while ((current = Object.getPrototypeOf(current)));
 
   // Join definitions for the class and all it's inherited classes
@@ -120,15 +120,15 @@ export function getDecoratedClassDefinition<T extends ClassInstance>(target: Cla
  * @param isCalledFromDecoratorRegistration If executed from a decorator being registered
  * @returns Definition of associated EnTT functionality for the class
  */
-function registerDecoratedClassDefinition<T extends ClassInstance>(target: ClassInstance<T>, isCalledFromDecoratorRegistration?: boolean): EnttDefinition;
-function registerDecoratedClassDefinition<T extends ClassInstance>(target: Class<T>, isCalledFromDecoratorRegistration?: boolean): EnttDefinition;
+function registerDecoratedClassDefinition<T extends ClassInstance>(target: ClassInstance<T>, isCalledFromDecoratorRegistration?: boolean): EnttDefinition<T>;
+function registerDecoratedClassDefinition<T extends ClassInstance>(target: Class<T>, isCalledFromDecoratorRegistration?: boolean): EnttDefinition<T>;
 function registerDecoratedClassDefinition<T extends ClassInstance>(
   target: Class<T> | ClassInstance<T>,
   isCalledFromDecoratorRegistration: boolean = true,
-): EnttDefinition {
+): EnttDefinition<T> {
   // Check if using instance of class to get definition
   if (typeof target !== 'function' && target?.constructor) {
-    return registerDecoratedClassDefinition(target.constructor, isCalledFromDecoratorRegistration);
+    return registerDecoratedClassDefinition<T>(target.constructor as Class<T>, isCalledFromDecoratorRegistration);
   }
 
   // If target is not a class, return empty definition
@@ -157,12 +157,15 @@ function registerDecoratedClassDefinition<T extends ClassInstance>(
 export function getDecoratedClassDecoratorDefinition<T extends ClassInstance>(
   target: ClassInstance<T>,
   decoratorSymbol: symbol,
-): Array<EnttClassDecoratorDefinition>;
-export function getDecoratedClassDecoratorDefinition<T extends ClassInstance>(target: Class<T>, decoratorSymbol: symbol): Array<EnttClassDecoratorDefinition>;
+): Array<EnttClassDecoratorDefinition<T>>;
+export function getDecoratedClassDecoratorDefinition<T extends ClassInstance>(
+  target: Class<T>,
+  decoratorSymbol: symbol,
+): Array<EnttClassDecoratorDefinition<T>>;
 export function getDecoratedClassDecoratorDefinition<T extends ClassInstance>(
   target: Class<T> | ClassInstance<T>,
   decoratorSymbol: symbol,
-): Array<EnttClassDecoratorDefinition> {
+): Array<EnttClassDecoratorDefinition<T>> {
   // Check if proxy of a class
   if (target && (target as unknown as any)[EnttClassProxySymbol]) {
     return getDecoratedClassDecoratorDefinition((target as unknown as any)[EnttClassProxySymbol], decoratorSymbol);
@@ -173,7 +176,7 @@ export function getDecoratedClassDecoratorDefinition<T extends ClassInstance>(
   }
   // Check if using instance of class to get definition
   if (typeof target !== 'function' && target?.constructor) {
-    return getDecoratedClassDecoratorDefinition(target.constructor, decoratorSymbol);
+    return getDecoratedClassDecoratorDefinition<T>(target.constructor as Class<T>, decoratorSymbol);
   }
 
   // If target is not a class, return empty definition
@@ -182,11 +185,11 @@ export function getDecoratedClassDecoratorDefinition<T extends ClassInstance>(
   }
 
   // Initialize definitions
-  const definitions: Array<EnttClassDecoratorDefinition> = [];
+  const definitions: Array<EnttClassDecoratorDefinition<T>> = [];
   // Collect definitions for the class and all it's inherited classes
   let current = target;
   do {
-    definitions.splice(0, 0, ...registerDecoratedClassDecoratorDefinition(current, decoratorSymbol, false));
+    definitions.splice(0, 0, ...registerDecoratedClassDecoratorDefinition<T>(current as Class<T>, decoratorSymbol, false));
   } while ((current = Object.getPrototypeOf(current)));
   // Return collected definitions
   return definitions;
@@ -202,20 +205,20 @@ function registerDecoratedClassDecoratorDefinition<T extends ClassInstance>(
   target: ClassInstance<T>,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration?: boolean,
-): Array<EnttClassDecoratorDefinition>;
+): Array<EnttClassDecoratorDefinition<T>>;
 function registerDecoratedClassDecoratorDefinition<T extends ClassInstance>(
   target: Class<T>,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration?: boolean,
-): Array<EnttClassDecoratorDefinition>;
+): Array<EnttClassDecoratorDefinition<T>>;
 function registerDecoratedClassDecoratorDefinition<T extends ClassInstance>(
   target: Class<T> | ClassInstance<T>,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration: boolean = true,
-): Array<EnttClassDecoratorDefinition> {
+): Array<EnttClassDecoratorDefinition<T>> {
   // Check if using instance of class to get definition
   if (typeof target !== 'function' && target?.constructor) {
-    return registerDecoratedClassDecoratorDefinition(target.constructor, decoratorSymbol, isCalledFromDecoratorRegistration);
+    return registerDecoratedClassDecoratorDefinition<T>(target.constructor as Class<T>, decoratorSymbol, isCalledFromDecoratorRegistration);
   }
 
   // If target is not a class, return empty definition
@@ -224,7 +227,7 @@ function registerDecoratedClassDecoratorDefinition<T extends ClassInstance>(
   }
 
   // Get definition for target property
-  const definition = registerDecoratedClassDefinition(target, isCalledFromDecoratorRegistration);
+  const definition = registerDecoratedClassDefinition<T>(target as Class<T>, isCalledFromDecoratorRegistration);
 
   // Only register additional decorator if being called from decorator registration function
   if (isCalledFromDecoratorRegistration) {
@@ -248,12 +251,12 @@ function registerDecoratedClassDecoratorDefinition<T extends ClassInstance>(
  * @param propertyKey Name of the property decorated with EnTT functionality
  * @returns Definition of associated EnTT functionality for the class property
  */
-export function getDecoratedClassPropertyDefinition<T extends ClassInstance>(target: ClassInstance<T>, propertyKey: PropertyKey): EnttPropertyDefinition;
-export function getDecoratedClassPropertyDefinition<T extends ClassInstance>(target: Class<T>, propertyKey: PropertyKey): EnttPropertyDefinition;
+export function getDecoratedClassPropertyDefinition<T extends ClassInstance>(target: ClassInstance<T>, propertyKey: PropertyKey): EnttPropertyDefinition<T>;
+export function getDecoratedClassPropertyDefinition<T extends ClassInstance>(target: Class<T>, propertyKey: PropertyKey): EnttPropertyDefinition<T>;
 export function getDecoratedClassPropertyDefinition<T extends ClassInstance>(
   target: Class<T> | ClassInstance<T>,
   propertyKey: PropertyKey,
-): EnttPropertyDefinition {
+): EnttPropertyDefinition<T> {
   // Check if proxy of a class
   if (target && (target as unknown as any)[EnttClassProxySymbol]) {
     return getDecoratedClassPropertyDefinition((target as unknown as any)[EnttClassProxySymbol], propertyKey);
@@ -264,7 +267,7 @@ export function getDecoratedClassPropertyDefinition<T extends ClassInstance>(
   }
   // Check if using instance of class to get definition
   if (typeof target !== 'function' && target?.constructor) {
-    return getDecoratedClassPropertyDefinition(target.constructor, propertyKey);
+    return getDecoratedClassPropertyDefinition<T>(target.constructor as Class<T>, propertyKey);
   }
 
   // If target is not a class, return empty definition
@@ -273,13 +276,13 @@ export function getDecoratedClassPropertyDefinition<T extends ClassInstance>(
   }
 
   // Initialize definitions
-  const composedDefinition: EnttPropertyDefinition = new EnttPropertyDefinition(target as Class<T>, propertyKey);
-  const definitions: Array<EnttPropertyDefinition> = [];
+  const composedDefinition: EnttPropertyDefinition<T> = new EnttPropertyDefinition(target as Class<T>, propertyKey);
+  const definitions: Array<EnttPropertyDefinition<T>> = [];
 
   // Collect definitions for the class and all it's inherited classes
   let current = target;
   do {
-    definitions.push(registerDecoratedClassPropertyDefinition(current, propertyKey, false));
+    definitions.push(registerDecoratedClassPropertyDefinition<T>(current as Class<T>, propertyKey, false));
   } while ((current = Object.getPrototypeOf(current)));
 
   // Join definitions for the class and all it's inherited classes
@@ -308,20 +311,20 @@ function registerDecoratedClassPropertyDefinition<T extends ClassInstance>(
   target: ClassInstance<T>,
   propertyKey: PropertyKey,
   isCalledFromDecoratorRegistration?: boolean,
-): EnttPropertyDefinition;
+): EnttPropertyDefinition<T>;
 function registerDecoratedClassPropertyDefinition<T extends ClassInstance>(
   target: Class<T>,
   propertyKey: PropertyKey,
   isCalledFromDecoratorRegistration?: boolean,
-): EnttPropertyDefinition;
+): EnttPropertyDefinition<T>;
 function registerDecoratedClassPropertyDefinition<T extends ClassInstance>(
   target: Class<T> | ClassInstance<T>,
   propertyKey: PropertyKey,
   isCalledFromDecoratorRegistration: boolean = true,
-): EnttPropertyDefinition {
+): EnttPropertyDefinition<T> {
   // Check if using instance of class to get definition
   if (typeof target !== 'function' && target?.constructor) {
-    return registerDecoratedClassPropertyDefinition(target.constructor, propertyKey, isCalledFromDecoratorRegistration);
+    return registerDecoratedClassPropertyDefinition<T>(target.constructor as Class<T>, propertyKey, isCalledFromDecoratorRegistration);
   }
 
   // If target is not a class, return empty definition
@@ -330,7 +333,7 @@ function registerDecoratedClassPropertyDefinition<T extends ClassInstance>(
   }
 
   // Get definition for target class
-  const definition = registerDecoratedClassDefinition(target, isCalledFromDecoratorRegistration);
+  const definition = registerDecoratedClassDefinition<T>(target as Class<T>, isCalledFromDecoratorRegistration);
   // Return (first register if required) property definition
   return definition.properties[propertyKey] || (definition.properties[propertyKey] = new EnttPropertyDefinition(target as Class<T>, propertyKey));
 }
@@ -346,17 +349,17 @@ export function getDecoratedClassPropertyDecoratorDefinition<T extends ClassInst
   target: ClassInstance<T>,
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
-): Array<EnttPropertyDecoratorDefinition>;
+): Array<EnttPropertyDecoratorDefinition<T>>;
 export function getDecoratedClassPropertyDecoratorDefinition<T extends ClassInstance>(
   target: Class<T>,
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
-): Array<EnttPropertyDecoratorDefinition>;
+): Array<EnttPropertyDecoratorDefinition<T>>;
 export function getDecoratedClassPropertyDecoratorDefinition<T extends ClassInstance>(
   target: Class<T> | ClassInstance<T>,
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
-): Array<EnttPropertyDecoratorDefinition> {
+): Array<EnttPropertyDecoratorDefinition<T>> {
   // Check if proxy of a class
   if (target && (target as unknown as any)[EnttClassProxySymbol]) {
     return getDecoratedClassPropertyDecoratorDefinition((target as unknown as any)[EnttClassProxySymbol], propertyKey, decoratorSymbol);
@@ -367,7 +370,7 @@ export function getDecoratedClassPropertyDecoratorDefinition<T extends ClassInst
   }
   // Check if using instance of class to get definition
   if (typeof target !== 'function' && target?.constructor) {
-    return getDecoratedClassPropertyDecoratorDefinition(target.constructor, propertyKey, decoratorSymbol);
+    return getDecoratedClassPropertyDecoratorDefinition<T>(target.constructor as Class<T>, propertyKey, decoratorSymbol);
   }
 
   // If target is not a class, return empty definition
@@ -376,11 +379,11 @@ export function getDecoratedClassPropertyDecoratorDefinition<T extends ClassInst
   }
 
   // Initialize definitions
-  const definitions: Array<EnttPropertyDecoratorDefinition> = [];
+  const definitions: Array<EnttPropertyDecoratorDefinition<T>> = [];
   // Collect definitions for the class and all it's inherited classes
   let current = target;
   do {
-    definitions.splice(0, 0, ...registerDecoratedClassPropertyDecoratorDefinition(current, propertyKey, decoratorSymbol, false));
+    definitions.splice(0, 0, ...registerDecoratedClassPropertyDecoratorDefinition<T>(current as Class<T>, propertyKey, decoratorSymbol, false));
   } while ((current = Object.getPrototypeOf(current)));
   // Return collected definitions
   return definitions;
@@ -398,22 +401,27 @@ function registerDecoratedClassPropertyDecoratorDefinition<T extends ClassInstan
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration?: boolean,
-): Array<EnttPropertyDecoratorDefinition>;
+): Array<EnttPropertyDecoratorDefinition<T>>;
 function registerDecoratedClassPropertyDecoratorDefinition<T extends ClassInstance>(
   target: Class<T>,
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration?: boolean,
-): Array<EnttPropertyDecoratorDefinition>;
+): Array<EnttPropertyDecoratorDefinition<T>>;
 function registerDecoratedClassPropertyDecoratorDefinition<T extends ClassInstance>(
   target: Class<T> | ClassInstance<T>,
   propertyKey: PropertyKey,
   decoratorSymbol: symbol,
   isCalledFromDecoratorRegistration: boolean = true,
-): Array<EnttPropertyDecoratorDefinition> {
+): Array<EnttPropertyDecoratorDefinition<T>> {
   // Check if using instance of class to get definition
   if (typeof target !== 'function' && target?.constructor) {
-    return registerDecoratedClassPropertyDecoratorDefinition(target.constructor, propertyKey, decoratorSymbol, isCalledFromDecoratorRegistration);
+    return registerDecoratedClassPropertyDecoratorDefinition<T>(
+      target.constructor as Class<T>,
+      propertyKey,
+      decoratorSymbol,
+      isCalledFromDecoratorRegistration,
+    );
   }
 
   // If target is not a class, return empty definition
@@ -422,7 +430,7 @@ function registerDecoratedClassPropertyDecoratorDefinition<T extends ClassInstan
   }
 
   // Get definition for target property
-  const definition = registerDecoratedClassPropertyDefinition(target, propertyKey, isCalledFromDecoratorRegistration);
+  const definition = registerDecoratedClassPropertyDefinition<T>(target as Class<T>, propertyKey, isCalledFromDecoratorRegistration);
 
   // Only register additional decorator if being called from decorator registration function
   if (isCalledFromDecoratorRegistration) {
@@ -446,7 +454,7 @@ function registerDecoratedClassPropertyDecoratorDefinition<T extends ClassInstan
  * @param decoratorSymbol Unique decorator symbol signifying the decorator to filter by
  * @returns Filtered EnttDefinition. Returned EnttDefinition will only be left containin properties to which the filtering decorator was applied.
  */
-export function filterDefinition(definition: EnttDefinition, decoratorSymbol: symbol): EnttDefinition;
+export function filterDefinition<T extends ClassInstance>(definition: EnttDefinition<T>, decoratorSymbol: symbol): EnttDefinition<T>;
 /**
  * Filters hashmap of definitions to only contain info on the filtering decorator
  * @param definition EnttPropertyDefinition hashmap to be filtered.
@@ -454,21 +462,24 @@ export function filterDefinition(definition: EnttDefinition, decoratorSymbol: sy
  * @returns Filtered EnttPropertyDefinition hashmap. Returned EnttPropertyDefinition hashmap will only be left containin properties to which the filtering decorator
  * was applied and each EnttPropertyDefinition in the hashmap will only contain decorator definitions for the filtering decorator.
  */
-export function filterDefinition(definition: Record<PropertyKey, EnttPropertyDefinition>, decoratorSymbol: symbol): Record<PropertyKey, EnttPropertyDefinition>;
+export function filterDefinition<T extends ClassInstance>(
+  definition: Record<PropertyKey, EnttPropertyDefinition<T>>,
+  decoratorSymbol: symbol,
+): Record<PropertyKey, EnttPropertyDefinition<T>>;
 /**
  * Filters a definition to only contain info on the filtering decorator
  * @param definition EnttPropertyDefinition to be filtered.
  * @param decoratorSymbol Unique decorator symbol signifying the decorator to filter by
  * @returns Filtered EnttPropertyDefinition. Returned EnttPropertyDefinition will only contain decorator definitions for the filtering decorator.
  */
-export function filterDefinition(definition: EnttPropertyDefinition, decoratorSymbol: symbol): EnttPropertyDefinition;
-export function filterDefinition(
-  definition: EnttDefinition | Record<PropertyKey, EnttPropertyDefinition> | EnttPropertyDefinition,
+export function filterDefinition<T extends ClassInstance>(definition: EnttPropertyDefinition<T>, decoratorSymbol: symbol): EnttPropertyDefinition<T>;
+export function filterDefinition<T extends ClassInstance>(
+  definition: EnttDefinition<T> | Record<PropertyKey, EnttPropertyDefinition<T>> | EnttPropertyDefinition<T>,
   decoratorSymbol: symbol,
-): EnttDefinition | Record<PropertyKey, EnttPropertyDefinition> | EnttPropertyDefinition {
+): EnttDefinition<T> | Record<PropertyKey, EnttPropertyDefinition<T>> | EnttPropertyDefinition<T> {
   // Filter entity definition
   if (definition && definition instanceof EnttDefinition) {
-    const filteredDefinition = new EnttDefinition(definition.owner);
+    const filteredDefinition = new EnttDefinition<T>(definition.owner);
     // Filter decorators.all
     filteredDefinition.decorators.all = definition.decorators.all.filter(d => d.decoratorSymbol === decoratorSymbol);
     // Copy decorators.bySymbol
@@ -490,9 +501,9 @@ export function filterDefinition(
     definition instanceof Object &&
     Object.values(definition).reduce((valid, def) => valid && def instanceof EnttPropertyDefinition, true)
   ) {
-    const castDefinition = definition as Record<PropertyKey, EnttPropertyDefinition>;
-    const propertyDefinitions: Record<PropertyKey, EnttPropertyDefinition> = Object.keys(definition).reduce(
-      (filteredPropertyDefinitions: Record<PropertyKey, EnttPropertyDefinition>, key) => {
+    const castDefinition = definition as Record<PropertyKey, EnttPropertyDefinition<T>>;
+    const propertyDefinitions: Record<PropertyKey, EnttPropertyDefinition<T>> = Object.keys(definition).reduce(
+      (filteredPropertyDefinitions: Record<PropertyKey, EnttPropertyDefinition<T>>, key) => {
         const filteredPropertyDefinition = filterDefinition(castDefinition[key], decoratorSymbol);
         if (filteredPropertyDefinition.decorators.all.length) {
           filteredPropertyDefinitions[key] = filteredPropertyDefinition;
@@ -506,7 +517,7 @@ export function filterDefinition(
 
   // Filter entity property definition
   else if (definition instanceof EnttPropertyDefinition) {
-    const filteredPropertyDefinition = new EnttPropertyDefinition(definition.owner, definition.ownerPropertyKey);
+    const filteredPropertyDefinition = new EnttPropertyDefinition<T>(definition.owner, definition.ownerPropertyKey);
     // Filter decorators.all
     filteredPropertyDefinition.decorators.all = definition.decorators.all.filter(d => d.decoratorSymbol === decoratorSymbol);
     // Copy decorators.bySymbol
@@ -719,7 +730,7 @@ export function createClassCustomDecorator<TInstance extends ClassInstance, TPay
     }
 
     // Get decorator definition for the class
-    const definitions = registerDecoratedClassDecoratorDefinition(target, decoratorSymbol);
+    const definitions = registerDecoratedClassDecoratorDefinition<TInstance>(target, decoratorSymbol);
     const definition = definitions.at(-1);
     if (!definition) {
       throw new Error('Definition registration failed!');
