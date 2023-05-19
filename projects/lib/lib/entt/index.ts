@@ -6,6 +6,9 @@ import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import {
   EnttInstance,
   FullPathPropertyValue,
+  ICustomDecoratorImplementation,
+  OnPropertyInterceptionCallback,
+  OnPropertyTransformationCallback,
   CustomClassDecoratorImplementation,
   CustomStaticClassDecoratorConfiguration,
   CustomDynamicClassDecoratorConfiguration,
@@ -20,6 +23,7 @@ import {
 export {
   EnttInstance,
   FullPathPropertyValue,
+  ICustomDecoratorImplementation,
   CustomClassDecoratorImplementation,
   CustomStaticClassDecoratorConfiguration,
   CustomDynamicClassDecoratorConfiguration,
@@ -1041,44 +1045,51 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
       // Get property definition
       const propDefinition = registerDecoratedClassPropertyDefinition(target, key);
 
-      // Execute all register getter before hooks
-      // TODO: ...
-
-      // Process value through all registered getter hooks
-      for (const decoratorDefinition of [...classDefinition.decorators.all].reverse()) {
+      // Collect all relevang onPropertyGet callbacks
+      const onPropertyGetCallbacks = {
+        before: [] as Array<OnPropertyInterceptionCallback<T>>,
+        transform: [] as Array<OnPropertyTransformationCallback<T>>,
+        after: [] as Array<OnPropertyInterceptionCallback<T>>,
+      };
+      for (const decoratorDefinition of [...[...classDefinition.decorators.all].reverse(), ...[...propDefinition.decorators.all].reverse()]) {
         if (decoratorDefinition.implementation) {
-          const decoratorImplementation = decoratorDefinition.implementation as CustomClassDecoratorImplementation<T>;
+          const decoratorImplementation = decoratorDefinition.implementation as ICustomDecoratorImplementation<T>;
           if (decoratorImplementation.onPropertyGet) {
-            // Execute simple callback
+            // Register simple transform callback
             if (typeof decoratorImplementation.onPropertyGet === 'function') {
-              processed = decoratorImplementation.onPropertyGet({ target, key, value: processed });
+              onPropertyGetCallbacks.transform.push(decoratorImplementation.onPropertyGet);
             }
-            // Execute staged callback
-            else if (decoratorImplementation.onPropertyGet instanceof Object && decoratorImplementation.onPropertyGet.transform) {
-              processed = decoratorImplementation.onPropertyGet.transform({ target, key, value: processed });
-            }
-          }
-        }
-      }
-      // Process value through all registered getter hooks
-      for (const decoratorDefinition of [...propDefinition.decorators.all].reverse()) {
-        if (decoratorDefinition.implementation) {
-          const decoratorImplementation = decoratorDefinition.implementation as CustomPropertyDecoratorImplementation<T, any, any>;
-          if (decoratorImplementation.onPropertyGet) {
-            // Execute simple callback
-            if (typeof decoratorImplementation.onPropertyGet === 'function') {
-              processed = decoratorImplementation.onPropertyGet({ target, key, value: processed });
-            }
-            // Execute staged callback
-            else if (decoratorImplementation.onPropertyGet instanceof Object && decoratorImplementation.onPropertyGet.transform) {
-              processed = decoratorImplementation.onPropertyGet.transform({ target, key, value: processed });
+            // Register interception and staged callbacks
+            else if (decoratorImplementation.onPropertyGet instanceof Object) {
+              // Register staged callbacks: before
+              if ('before' in decoratorImplementation.onPropertyGet && decoratorImplementation.onPropertyGet.before) {
+                onPropertyGetCallbacks.before.push(decoratorImplementation.onPropertyGet.before);
+              }
+              // Register staged callbacks: transform
+              if ('transform' in decoratorImplementation.onPropertyGet && decoratorImplementation.onPropertyGet.transform) {
+                onPropertyGetCallbacks.transform.push(decoratorImplementation.onPropertyGet.transform);
+              }
+              // Register staged callbacks: after
+              if ('after' in decoratorImplementation.onPropertyGet && decoratorImplementation.onPropertyGet.after) {
+                onPropertyGetCallbacks.after.push(decoratorImplementation.onPropertyGet.after);
+              }
             }
           }
         }
       }
 
-      // Execute all register getter after hooks
-      // TODO: ...
+      // Execute all getter "before" hooks
+      for (const beforeCallbackFn of onPropertyGetCallbacks.before) {
+        beforeCallbackFn({ target, key, value: processed });
+      }
+      // Execute all getter "transform" hooks
+      for (const transformCallbackFn of onPropertyGetCallbacks.transform) {
+        processed = transformCallbackFn({ target, key, value: processed });
+      }
+      // Execute all getter "after" hooks
+      for (const afterCallbackFn of onPropertyGetCallbacks.after) {
+        afterCallbackFn({ target, key, value: processed });
+      }
 
       // Return processed value
       return processed;
@@ -1098,91 +1109,65 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
       // Get class definition
       const classDefinition = registerDecoratedClassDefinition(target);
 
-      // Initialize intercepted status
-      let intercepted = false;
-
-      // Check all decorators for interceptor callbacks, and execute interceptors instead of chainging transformations if found
-      for (const decoratorDefinition of [...propDefinition.decorators.all]) {
+      // Collect all relevang onPropertyGet callbacks
+      const onPropertySetCallbacks = {
+        intercept: [] as Array<OnPropertyInterceptionCallback<T>>,
+        before: [] as Array<OnPropertyInterceptionCallback<T>>,
+        transform: [] as Array<OnPropertyTransformationCallback<T>>,
+        after: [] as Array<OnPropertyInterceptionCallback<T>>,
+      };
+      for (const decoratorDefinition of [...propDefinition.decorators.all, ...classDefinition.decorators.all]) {
         if (decoratorDefinition.implementation) {
-          const decoratorImplementation = decoratorDefinition.implementation as CustomPropertyDecoratorImplementation<T, any, any>;
-          if (
-            decoratorImplementation.onPropertySet &&
-            decoratorImplementation.onPropertySet instanceof Object &&
-            'intercept' in decoratorImplementation.onPropertySet &&
-            decoratorImplementation.onPropertySet.intercept
-          ) {
-            // Register found interceptor and execute it
-            intercepted = true;
-            decoratorImplementation.onPropertySet.intercept({ target, key, value: processed });
-          }
-        }
-      }
-      // Check all decorators for interceptor callbacks, and execute interceptors instead of chainging transformations if found
-      for (const decoratorDefinition of [...classDefinition.decorators.all]) {
-        if (decoratorDefinition.implementation) {
-          const decoratorImplementation = decoratorDefinition.implementation as CustomClassDecoratorImplementation<T>;
-          if (
-            decoratorImplementation.onPropertySet &&
-            decoratorImplementation.onPropertySet instanceof Object &&
-            'intercept' in decoratorImplementation.onPropertySet &&
-            decoratorImplementation.onPropertySet.intercept
-          ) {
-            // Register found interceptor and execute it
-            intercepted = true;
-            decoratorImplementation.onPropertySet.intercept({ target, key, value: processed });
-          }
-        }
-      }
-
-      // If setter was intercepted, bypass all other callbacks (before, transform, after), and do not store the value
-      if (intercepted) return;
-
-      // Execute all register getter before hooks
-      // TODO: ...
-
-      // Process value through all registered setter hooks
-      for (const decoratorDefinition of [...propDefinition.decorators.all]) {
-        if (decoratorDefinition.implementation) {
-          const decoratorImplementation = decoratorDefinition.implementation as CustomPropertyDecoratorImplementation<T, any, any>;
+          const decoratorImplementation = decoratorDefinition.implementation as ICustomDecoratorImplementation<T>;
           if (decoratorImplementation.onPropertySet) {
-            // Execute simple callback
+            // Register simple transform callback
             if (typeof decoratorImplementation.onPropertySet === 'function') {
-              processed = decoratorImplementation.onPropertySet({ target, key, value: processed });
+              onPropertySetCallbacks.transform.push(decoratorImplementation.onPropertySet);
             }
-            // Execute staged callback
-            else if (
-              decoratorImplementation.onPropertySet instanceof Object &&
-              'transform' in decoratorImplementation.onPropertySet &&
-              decoratorImplementation.onPropertySet.transform
-            ) {
-              processed = decoratorImplementation.onPropertySet.transform({ target, key, value: processed });
-            }
-          }
-        }
-      }
-      // Process value through all registered setter hooks
-      for (const decoratorDefinition of [...classDefinition.decorators.all]) {
-        if (decoratorDefinition.implementation) {
-          const decoratorImplementation = decoratorDefinition.implementation as CustomClassDecoratorImplementation<T>;
-          if (decoratorImplementation.onPropertySet) {
-            // Execute simple callback
-            if (typeof decoratorImplementation.onPropertySet === 'function') {
-              processed = decoratorImplementation.onPropertySet({ target, key, value: processed });
-            }
-            // Execute staged callback
-            else if (
-              decoratorImplementation.onPropertySet instanceof Object &&
-              'transform' in decoratorImplementation.onPropertySet &&
-              decoratorImplementation.onPropertySet.transform
-            ) {
-              processed = decoratorImplementation.onPropertySet.transform({ target, key, value: processed });
+            // Register interception and staged callbacks
+            else if (decoratorImplementation.onPropertySet instanceof Object) {
+              // Register staged callbacks: intercept
+              if ('intercept' in decoratorImplementation.onPropertySet && decoratorImplementation.onPropertySet.intercept) {
+                onPropertySetCallbacks.intercept.push(decoratorImplementation.onPropertySet.intercept);
+              }
+              // Register staged callbacks: before
+              if ('before' in decoratorImplementation.onPropertySet && decoratorImplementation.onPropertySet.before) {
+                onPropertySetCallbacks.before.push(decoratorImplementation.onPropertySet.before);
+              }
+              // Register staged callbacks: transform
+              if ('transform' in decoratorImplementation.onPropertySet && decoratorImplementation.onPropertySet.transform) {
+                onPropertySetCallbacks.transform.push(decoratorImplementation.onPropertySet.transform);
+              }
+              // Register staged callbacks: after
+              if ('after' in decoratorImplementation.onPropertySet && decoratorImplementation.onPropertySet.after) {
+                onPropertySetCallbacks.after.push(decoratorImplementation.onPropertySet.after);
+              }
             }
           }
         }
       }
 
-      // Execute all register getter after hooks
-      // TODO: ...
+      // If any interceptor callback set execute interceptors only and don't set value
+      if (onPropertySetCallbacks.intercept.length) {
+        for (const interceptCallbackFn of onPropertySetCallbacks.intercept) {
+          interceptCallbackFn({ target, key, value: processed });
+        }
+        // Don't execute any other callbacks and don't set value
+        return;
+      }
+
+      // Execute all getter "before" hooks
+      for (const beforeCallbackFn of onPropertySetCallbacks.before) {
+        beforeCallbackFn({ target, key, value: processed });
+      }
+      // Execute all getter "transform" hooks
+      for (const transformCallbackFn of onPropertySetCallbacks.transform) {
+        processed = transformCallbackFn({ target, key, value: processed });
+      }
+      // Execute all getter "after" hooks
+      for (const afterCallbackFn of onPropertySetCallbacks.after) {
+        afterCallbackFn({ target, key, value: processed });
+      }
 
       // Set and return processed value
       return ((target as any)[key] = processed);

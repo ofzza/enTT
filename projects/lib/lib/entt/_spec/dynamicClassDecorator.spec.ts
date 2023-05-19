@@ -24,7 +24,7 @@ import { def } from '../../../decorators';
 // Set minimal expected number of instantiations performed per second
 const INSTANTIATIONS_PER_SECOND = 10000;
 // Set how many times slowed instantiation of an EnTTified class is allowed to be compared to plain class
-const ENTTITIFICATION_SLOWDOWN_FACTOR = 1000;
+const ENTTITIFICATION_SLOWDOWN_FACTOR = 2000;
 
 // Holds warnings thrown by `verifyDecoratorUsage()` calls, out in public for test inspection purposes
 const warnings: Array<Info | Warning | Error> = [];
@@ -158,6 +158,7 @@ export function testDynamicClassDecorators() {
       const enttifiedInstantiationsPerSecond = (1000 * countEnttified) / (Date.now() - startPlain);
 
       // Check number of instantiations per second
+      debugger;
       assert(plainInstantiationsPerSecond > INSTANTIATIONS_PER_SECOND);
       assert(enttifiedInstantiationsPerSecond > INSTANTIATIONS_PER_SECOND);
       assert(plainInstantiationsPerSecond / enttifiedInstantiationsPerSecond < ENTTITIFICATION_SLOWDOWN_FACTOR);

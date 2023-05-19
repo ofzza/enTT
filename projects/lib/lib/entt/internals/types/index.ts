@@ -34,18 +34,28 @@ export type FullPathPropertyValue<T extends ClassInstance, V> = {
 // #region EnTT types: Custom decorator types
 
 /**
- * Type definition for a callback function for enttified class instance onConstruct hook callback
+ * Type definition for a callback function for enttified class instance onConstruct hook
  */
 export type OnConstructorCallback<TInstance extends ClassInstance> = (instance: TInstance) => void;
+/**
+ * Type definition for a intercaption callback function for enttified class instance onPropertyGet/onPropertySet hook
+ */
+export type OnPropertyInterceptionCallback<TInstance extends ClassInstance, TVal = any> = (v: FullPathPropertyValue<TInstance, TVal>) => void;
+/**
+ * Type definition for a transformation callback function for enttified class instance onPropertyGet/onPropertySet hook
+ */
+export type OnPropertyTransformationCallback<TInstance extends ClassInstance, TValInput = any, TValOutput = any> = (
+  v: FullPathPropertyValue<TInstance, TValInput>,
+) => TValOutput;
 /**
  * Type definition for a callback function for enttified class instance onPropertyGet hook callback or a full staged callbacks configuration
  */
 export type OnPropertyGetCallback<TInstance extends ClassInstance, TValInner = any, TValOuter = any> =
   | ((v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter)
   | {
-      before?: (v: FullPathPropertyValue<TInstance, TValInner>) => void;
-      transform?: (v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter;
-      after?: (v: FullPathPropertyValue<TInstance, TValInner>) => void;
+      before?: OnPropertyInterceptionCallback<TInstance, TValInner>;
+      transform?: OnPropertyTransformationCallback<TInstance, TValInner, TValOuter>;
+      after?: OnPropertyInterceptionCallback<TInstance, TValInner>;
     };
 /**
  * Type definition for a callback function for enttified class instance onPropertySet hook callback, interceptor callback or a full staged callbacks configuration
@@ -53,22 +63,18 @@ export type OnPropertyGetCallback<TInstance extends ClassInstance, TValInner = a
 export type OnPropertySetCallback<TInstance extends ClassInstance, TValInner = any, TValOuter = any> =
   | ((v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner)
   | {
-      intercept: (v: FullPathPropertyValue<TInstance, TValOuter>) => void;
-      before: undefined;
-      transform: undefined;
-      after: undefined;
+      intercept: OnPropertyInterceptionCallback<TInstance, TValOuter>;
     }
   | {
-      intercept: undefined;
-      before?: (v: FullPathPropertyValue<TInstance, TValOuter>) => void;
-      transform?: (v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner;
-      after?: (v: FullPathPropertyValue<TInstance, TValOuter>) => void;
+      before?: OnPropertyInterceptionCallback<TInstance, TValOuter>;
+      transform?: OnPropertyTransformationCallback<TInstance, TValOuter, TValInner>;
+      after?: OnPropertyInterceptionCallback<TInstance, TValOuter>;
     };
 
 /**
  * Interface for a decorator definition, holding all its proxy hooks implementation
  */
-export interface ICustomDecoratorImplementation<TInstance extends ClassInstance, TValInner, TValOuter> {
+export interface ICustomDecoratorImplementation<TInstance extends ClassInstance, TValInner = any, TValOuter = any> {
   /**
    * Getter interception/transformation configuration can be expressed as:
    *
@@ -136,7 +142,7 @@ export interface ICustomPropertyDecoratorImplementation<TInstance extends ClassI
 /**
  * Interface for a class decorator definition, holding all its proxy hooks implementation
  */
-export interface ICustomClassDecoratorImplementation<TInstance extends ClassInstance> extends ICustomDecoratorImplementation<TInstance, any, any> {
+export interface ICustomClassDecoratorImplementation<TInstance extends ClassInstance> extends ICustomDecoratorImplementation<TInstance> {
   /**
    * Callback function called when an EnTTified instance of the decorated EnTTified class is being constructed. The callback is allowed to mutate the
    * EnTTified instance before it is returned as constructed.
@@ -188,7 +194,7 @@ export class CustomClassDecoratorImplementation<TInstance extends ClassInstance>
      *   }
      *   ```
      */
-    public onPropertyGet?: OnPropertyGetCallback<TInstance, any, any>,
+    public onPropertyGet?: OnPropertyGetCallback<TInstance>,
     /**
      * Setter interception/transformation configuration can be expressed as:
      *
@@ -219,7 +225,7 @@ export class CustomClassDecoratorImplementation<TInstance extends ClassInstance>
      *   }
      *   ```
      */
-    public onPropertySet?: OnPropertySetCallback<TInstance, any, any>,
+    public onPropertySet?: OnPropertySetCallback<TInstance>,
   ) {}
 }
 
@@ -270,7 +276,7 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance extends ClassInst
    *   }
    *   ```
    */
-  onPropertyGet?: OnPropertyGetCallback<TInstance, any, any>;
+  onPropertyGet?: OnPropertyGetCallback<TInstance>;
   /**
    * Setter interception/transformation configuration can be expressed as:
    *
@@ -301,7 +307,7 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance extends ClassInst
    *   }
    *   ```
    */
-  onPropertySet?: OnPropertySetCallback<TInstance, any, any>;
+  onPropertySet?: OnPropertySetCallback<TInstance>;
 };
 
 // #endregion
@@ -421,7 +427,7 @@ export type CustomDynamicPropertyDecoratorConfiguration<TInstance extends ClassI
    *   }
    *   ```
    */
-  onPropertyGet?: OnPropertyGetCallback<TInstance, any, any>;
+  onPropertyGet?: OnPropertyGetCallback<TInstance>;
   /**
    * Setter interception/transformation configuration can be expressed as:
    *
@@ -452,7 +458,7 @@ export type CustomDynamicPropertyDecoratorConfiguration<TInstance extends ClassI
    *   }
    *   ```
    */
-  onPropertySet?: OnPropertySetCallback<TInstance, any, any>;
+  onPropertySet?: OnPropertySetCallback<TInstance>;
 };
 
 // #endregion
@@ -532,7 +538,7 @@ export class EnttPropertyDecoratorDefinition {
   /**
    * Decorator hooks implementation (per decorator instance because a hook implementation can trap values from a decorator factory and thus be specific to the instance)
    */
-  implementation?: ICustomPropertyDecoratorImplementation<any, any, any>; // TODO: Replace with full proper generic typing
+  implementation?: ICustomPropertyDecoratorImplementation<any>; // TODO: Replace with full proper generic typing
   /**
    * Holds data the decorator was configured with
    */
