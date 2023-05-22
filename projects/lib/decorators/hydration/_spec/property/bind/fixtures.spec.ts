@@ -2,6 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
+import { enttify } from '../../../../../';
 import { def } from '../../../../def';
 import { bind } from '../../../';
 
@@ -50,6 +51,10 @@ export class TestBinding {
   // @cast({})
   public propertyF: string = '12345';
 }
+/**
+ * Enttified class decorated with Hydration decorators, used primarily to test the @bind class properties decorator
+ */
+export const EnttifiedTestBinding = enttify(TestBinding);
 
 // Compose a degydrated object to test rehydration
 export const dehydratedTestBindingExampleObj = {

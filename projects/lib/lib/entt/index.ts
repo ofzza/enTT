@@ -6,6 +6,9 @@ import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import {
   EnttInstance,
   FullPathPropertyValue,
+  Decorator,
+  ClassDecorator,
+  PropertyDecorator,
   ICustomDecoratorImplementation,
   OnPropertyInterceptionCallback,
   OnPropertyTransformationCallback,
@@ -23,7 +26,12 @@ import {
 export {
   EnttInstance,
   FullPathPropertyValue,
+  Decorator,
+  ClassDecorator,
+  PropertyDecorator,
   ICustomDecoratorImplementation,
+  OnPropertyInterceptionCallback,
+  OnPropertyTransformationCallback,
   CustomClassDecoratorImplementation,
   CustomStaticClassDecoratorConfiguration,
   CustomDynamicClassDecoratorConfiguration,
@@ -630,7 +638,7 @@ setTimeout(() => !isProduction() && verifyDecoratorUsage());
  *
  * @returns Static decorator
  */
-export function createClassCustomDecorator<TInstance extends ClassInstance>(): (target: Class<TInstance>) => void;
+export function createClassCustomDecorator<TInstance extends ClassInstance>(): ClassDecorator<TInstance>;
 /**
  * Helper function used to create a custom decoorator.
  *
@@ -650,10 +658,7 @@ export function createClassCustomDecorator<TInstance extends ClassInstance>(): (
  * @param decoratorSymbol (Optional) Unique symbol used to identity a particular decorator
  * @returns Static decorator
  */
-export function createClassCustomDecorator<TInstance extends ClassInstance>(
-  configuration: undefined,
-  decoratorSymbol: symbol,
-): (target: Class<TInstance>) => void;
+export function createClassCustomDecorator<TInstance extends ClassInstance>(configuration: undefined, decoratorSymbol: symbol): ClassDecorator<TInstance>;
 /**
  * Helper function used to create a custom decoorator.
  *
@@ -677,7 +682,7 @@ export function createClassCustomDecorator<TInstance extends ClassInstance>(
 export function createClassCustomDecorator<TInstance extends ClassInstance, TPayload>(
   configuration: CustomStaticClassDecoratorConfiguration<TPayload>,
   decoratorSymbol: symbol,
-): (target: Class<TInstance>) => void;
+): ClassDecorator<TInstance>;
 /**
  * Helper function used to create a custom decoorator.
  *
@@ -706,7 +711,7 @@ export function createClassCustomDecorator<TInstance extends ClassInstance, TPay
 export function createClassCustomDecorator<TInstance extends ClassInstance, TPayload>(
   configuration: CustomDynamicClassDecoratorConfiguration<TInstance, TPayload>,
   decoratorSymbol: symbol,
-): (target: Class<TInstance>) => void;
+): ClassDecorator<TInstance>;
 /**
  * Helper function used to create a custom decoorator.
  * @param configuration (Optional) Decorator configuration on form of:
@@ -720,7 +725,7 @@ export function createClassCustomDecorator<TInstance extends ClassInstance, TPay
 export function createClassCustomDecorator<TInstance extends ClassInstance, TPayload>(
   configuration?: CustomStaticClassDecoratorConfiguration<TPayload> | CustomDynamicClassDecoratorConfiguration<TInstance, TPayload>,
   decoratorSymbol: symbol = Symbol(),
-): (target: Class<TInstance>) => void {
+): ClassDecorator<TInstance> {
   return <TInstanceInternal extends TInstance>(target: Class<TInstanceInternal>) => {
     // Check if multiple usages of the same decorator and if permitted
     if (configuration && configuration instanceof Object) {
@@ -782,7 +787,7 @@ export function createClassCustomDecorator<TInstance extends ClassInstance, TPay
  *
  * @returns Static decorator
  */
-export function createPropertyCustomDecorator<TInstance extends ClassInstance>(): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+export function createPropertyCustomDecorator<TInstance extends ClassInstance>(): PropertyDecorator<TInstance>;
 /**
  * Helper function used to create a custom decoorator.
  *
@@ -807,7 +812,7 @@ export function createPropertyCustomDecorator<TInstance extends ClassInstance>()
 export function createPropertyCustomDecorator<TInstance extends ClassInstance>(
   configuration: undefined,
   decoratorSymbol?: symbol,
-): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+): PropertyDecorator<TInstance>;
 /**
  * Helper function used to create a custom decoorator.
  *
@@ -833,7 +838,7 @@ export function createPropertyCustomDecorator<TInstance extends ClassInstance>(
 export function createPropertyCustomDecorator<TInstance extends ClassInstance, TPayload>(
   configuration: CustomStaticPropertyDecoratorConfiguration<TPayload>,
   decoratorSymbol?: symbol,
-): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+): PropertyDecorator<TInstance>;
 /**
  * Helper function used to create a custom decoorator.
  *
@@ -864,12 +869,12 @@ export function createPropertyCustomDecorator<TInstance extends ClassInstance, T
 export function createPropertyCustomDecorator<TInstance extends ClassInstance, TPayload, TValInner = any, TValOuter = any>(
   configuration: CustomDynamicPropertyDecoratorConfiguration<TInstance, TPayload, TValInner, TValOuter>,
   decoratorSymbol?: symbol,
-): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+): PropertyDecorator<TInstance>;
 export function createPropertyCustomDecorator<TInstance extends ClassInstance, TPayload, TValInner = any, TValOuter = any>(
   configuration?: CustomStaticPropertyDecoratorConfiguration<TPayload> | CustomDynamicPropertyDecoratorConfiguration<TInstance, TPayload, TValInner, TValOuter>,
   decoratorSymbol: symbol = Symbol(),
-): (target: ClassInstance<TInstance>, key: PropertyKey, descriptor: PropertyDescriptor) => void {
-  return <TInstanceInternal extends TInstance>(target: ClassInstance<TInstanceInternal>, key: PropertyKey, _descriptor: PropertyDescriptor) => {
+): PropertyDecorator<TInstance> {
+  return <TInstanceInternal extends TInstance>(target: ClassInstance<TInstanceInternal>, key: PropertyKey, _descriptor?: PropertyDescriptor) => {
     // Check if multiple usages of the same decorator and if permitted
     if (configuration && configuration instanceof Object) {
       const propertyDefinitions = getDecoratedClassPropertyDecoratorDefinition(target, key, decoratorSymbol);

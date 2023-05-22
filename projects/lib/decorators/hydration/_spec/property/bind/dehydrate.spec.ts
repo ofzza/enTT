@@ -4,17 +4,45 @@
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { dehydrate, HydrationStrategy } from '../../../';
-import { HYDRATIONS_PER_SECOND, TestBinding } from './fixtures.spec';
+import { HYDRATIONS_PER_SECOND, TestBinding, EnttifiedTestBinding } from './fixtures.spec';
 
 // Test ...
 export function testHydrationBindPropertyDecoratorDehydrate() {
   // Instantiate a testing instance
   const instance = new TestBinding();
+  const enttifiedInstance = new EnttifiedTestBinding();
 
   // Check class isntance can dehydrate all its properties correctly
   describe('A class instance with properties using the @bind decorator can dehydrate', () => {
     // Dehydrate the testing instance, making sure to dehydrate all properties
     const dehydratedInstance = dehydrate(instance, HydrationStrategy.AllClassProperties);
+
+    // Check all dehydrated properties exist as expected with values as expected
+    it('All properties exist on dehydrated object', () => {
+      assert(Object.keys(dehydratedInstance).includes('propertyA'));
+      assert(dehydratedInstance['propertyA'] === 'Property A value');
+      assert(Object.keys(dehydratedInstance).includes('propertyB'));
+      assert(dehydratedInstance['propertyB'] === 'Property B value');
+      assert(Object.keys(dehydratedInstance).includes('propertyC'));
+      assert(dehydratedInstance['propertyC'] === 'Property C value');
+      assert(Object.keys(dehydratedInstance).includes('propD'));
+      assert(dehydratedInstance['propD'] === 'Property D value');
+      assert(Object.keys(dehydratedInstance).includes('propE'));
+      assert(dehydratedInstance['propE'] === 'Property E value');
+      assert(Object.keys(dehydratedInstance).includes('propF'));
+      assert(dehydratedInstance['propF'] === 12345);
+    });
+
+    // Check no extra properties exist on the dehydrated object
+    it('No extra properties exist on dehydrated object', () => {
+      assert(Object.keys(dehydratedInstance).filter(key => !['propertyA', 'propertyB', 'propertyC', 'propD', 'propE', 'propF'].includes(key)).length === 0);
+    });
+  });
+
+  // Check class isntance can dehydrate all its properties correctly
+  describe('An enttified class instance with properties using the @bind decorator can dehydrate', () => {
+    // Dehydrate the testing instance, making sure to dehydrate all properties
+    const dehydratedInstance = dehydrate(enttifiedInstance, HydrationStrategy.AllClassProperties);
 
     // Check all dehydrated properties exist as expected with values as expected
     it('All properties exist on dehydrated object', () => {

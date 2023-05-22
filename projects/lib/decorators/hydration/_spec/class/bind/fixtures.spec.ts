@@ -11,7 +11,8 @@ import { bind } from '../../../';
  */
 export class BoundDate extends Date {}
 
-// Decorate existing class (TODO: Try getting rid of the explicit generic and infer from class being decorated?!)
+// Decorate existing class
+// (TODO: Probably not possible, butry getting rid of the explicit generic and infer from class being decorated?!)
 bind<BoundDate>({
   conversion: {
     dehydrate: date => date.toISOString(),

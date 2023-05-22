@@ -4,7 +4,7 @@
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { rehydrate, HydrationStrategy } from '../../../';
-import { HYDRATIONS_PER_SECOND, TestBinding, dehydratedTestBindingExampleObj } from './fixtures.spec';
+import { HYDRATIONS_PER_SECOND, TestBinding, EnttifiedTestBinding, dehydratedTestBindingExampleObj } from './fixtures.spec';
 
 // Test ...
 export function testHydrationBindPropertyDecoratorRehydrate() {
@@ -13,6 +13,47 @@ export function testHydrationBindPropertyDecoratorRehydrate() {
     // Rehydrate the a testing instance, making sure to rehydrate all properties
     const rehydratedInstanceViaClassParameter = rehydrate(dehydratedTestBindingExampleObj, TestBinding, HydrationStrategy.AllClassProperties);
     const rehydratedInstanceViaDirectClassInstance = rehydrate(dehydratedTestBindingExampleObj, new TestBinding(), HydrationStrategy.AllClassProperties);
+
+    // Check rehydration returns same result when called with a Class or a Class instance as an argument
+    it('(Re)Hydration works the same when given a class or class instance as a target argument', () => {
+      assert(JSON.stringify(rehydratedInstanceViaClassParameter) === JSON.stringify(rehydratedInstanceViaDirectClassInstance));
+    });
+
+    // Check all rehydrated properties exist as expected with values as expected
+    const rehydratedInstance = rehydratedInstanceViaClassParameter;
+    it('All properties exist on (re)hydrated instance', () => {
+      assert(Object.keys(rehydratedInstance).includes('propertyA'));
+      assert(rehydratedInstance.propertyA === 'UPDATED Property A value');
+      assert(Object.keys(rehydratedInstance).includes('propertyB'));
+      assert(rehydratedInstance.propertyB === 'UPDATED Property B value');
+      assert(Object.keys(rehydratedInstance).includes('propertyC'));
+      assert(rehydratedInstance.propertyC === 'UPDATED Property C value');
+      assert(Object.keys(rehydratedInstance).includes('propertyD'));
+      assert(rehydratedInstance.propertyD === 'UPDATED Property D value');
+      assert(Object.keys(rehydratedInstance).includes('propertyE'));
+      assert(rehydratedInstance.propertyE === 'UPDATED Property E value');
+      assert(Object.keys(rehydratedInstance).includes('propertyF'));
+      assert(rehydratedInstance.propertyF === '67890');
+    });
+
+    // Check no extra properties exist on the rehydrated object
+    it('No extra properties exist on (re)hydrated instance', () => {
+      assert(
+        Object.keys(rehydratedInstance).filter(key => !['propertyA', 'propertyB', 'propertyC', 'propertyD', 'propertyE', 'propertyF'].includes(key)).length ===
+          0,
+      );
+    });
+  });
+
+  // Check class isntance can (re)hydrate all its properties correctly
+  describe('An enttified class instance with properties using the @bind decorator can (re)hydrate', () => {
+    // Rehydrate the a testing instance, making sure to rehydrate all properties
+    const rehydratedInstanceViaClassParameter = rehydrate(dehydratedTestBindingExampleObj, EnttifiedTestBinding, HydrationStrategy.AllClassProperties);
+    const rehydratedInstanceViaDirectClassInstance = rehydrate(
+      dehydratedTestBindingExampleObj,
+      new EnttifiedTestBinding(),
+      HydrationStrategy.AllClassProperties,
+    );
 
     // Check rehydration returns same result when called with a Class or a Class instance as an argument
     it('(Re)Hydration works the same when given a class or class instance as a target argument', () => {

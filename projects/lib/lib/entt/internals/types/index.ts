@@ -34,6 +34,19 @@ export type FullPathPropertyValue<T extends ClassInstance, V> = {
 // #region EnTT types: Custom decorator types
 
 /**
+ * Class or Property decorator function type
+ */
+export type Decorator<TInstance extends ClassInstance> = ClassDecorator<TInstance> | PropertyDecorator<TInstance>;
+/**
+ * Class decorator function type
+ */
+export type ClassDecorator<TInstance extends ClassInstance> = (target: Class<TInstance>) => void;
+/**
+ * Property decorator function type
+ */
+export type PropertyDecorator<TInstance extends ClassInstance> = (target: ClassInstance<TInstance>, key: PropertyKey, descriptor?: PropertyDescriptor) => void;
+
+/**
  * Type definition for a callback function for enttified class instance onConstruct hook
  */
 export type OnConstructorCallback<TInstance extends ClassInstance> = (instance: TInstance) => void;

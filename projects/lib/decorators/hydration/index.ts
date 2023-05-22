@@ -3,7 +3,7 @@
 
 // Import dependencies
 import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
-import { EnttPropertyDefinition } from '../../lib';
+import { EnttPropertyDefinition, Decorator, ClassDecorator, PropertyDecorator } from '../../lib';
 import { createClassCustomDecorator, createPropertyCustomDecorator, getDecoratedClassDefinition, filterDefinition } from '../../lib';
 import { deepCloneObject } from '../../utils';
 
@@ -26,20 +26,20 @@ export type DehydratedInstance<T> = Record<PropertyKey, any> | any;
  */
 export function bind<TInstance extends ClassInstance>(
   config: HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>,
-): (target: Class<TInstance>) => void;
+): ClassDecorator<TInstance>;
 /**
  * Bind class property decorator factory, creates a binding class property decorator, binding the property during the dehydration and (re)hydration process
  * to a target property of the same name
  * @returns Property decorator
  */
-export function bind<TInstance extends ClassInstance>(): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+export function bind<TInstance extends ClassInstance>(): PropertyDecorator<TInstance>;
 /**
  * Bind class property decorator factory, creates a binding class property decorator, binding the property during the dehydration and (re)hydration process
  * to a target property of a configured name
  * @param config Name of the target property to be used as binding target during the dehydration and (re)hydration process
  * @returns Property decorator
  */
-export function bind<TInstance extends ClassInstance>(config: string): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+export function bind<TInstance extends ClassInstance>(config: string): PropertyDecorator<TInstance>;
 /**
  * Bind class property decorator factory, creates a binding class property decorator, binding the property during the dehydration and (re)hydration process
  * to a target property of a configured name
@@ -50,7 +50,7 @@ export function bind<TInstance extends ClassInstance>(config: string): (target: 
  */
 export function bind<TInstance extends ClassInstance, TValRehydrated, TValDehydrated>(
   config: HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated>,
-): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+): PropertyDecorator<TInstance>;
 /**
  * Common decorator factory for both bindConstructorArguments and bindProperty, depending on condifuration provided
  * @param config Configuration object
@@ -61,7 +61,7 @@ export function bind<TInstance extends ClassInstance, TValRehydrated, TValDehydr
     | string
     | HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>
     | HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated>,
-): ((target: Class<TInstance>) => void) | ((target: ClassInstance<TInstance>, key: PropertyKey) => void) {
+): Decorator<TInstance> {
   // Cache decorators once created
   let bindConstructorArgumentsDecorator: ReturnType<typeof bindConstructorArguments<TInstance>>;
   let bindPropertyDecorator: ReturnType<typeof bindProperty<TInstance, TValRehydrated, TValDehydrated>>;
@@ -129,7 +129,7 @@ const hydrationBindingConstructorArgumentsDecoratorSymbol = Symbol('Hydration bi
  */
 function bindConstructorArguments<TInstance extends ClassInstance>(
   config: HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>,
-): (target: Class<TInstance>) => void {
+): ClassDecorator<TInstance> {
   return createClassCustomDecorator<TInstance, HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>>(
     () => config,
     hydrationBindingConstructorArgumentsDecoratorSymbol,
@@ -174,14 +174,14 @@ const hydrationBindingPropertyDecoratorSymbol = Symbol('Hydration binding proper
  * dehydrated/(re)hydrated from/to a propertyx of the same name without any value conversion.
  * @returns Property decorator
  */
-function bindProperty<TInstance extends ClassInstance>(): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+function bindProperty<TInstance extends ClassInstance>(): PropertyDecorator<TInstance>;
 /**
  * When dehydrating/rehydrating a class instance, this property decorator configures the target name of the dehydraeted property
  * this property needs to be dehydrated/(re)hydrated to/from without any value conversion.
  * @param config Name of the dehydrated property this property needs to be dehydrated/(re)hydrated to/from.
  * @returns Property decorator
  */
-function bindProperty<TInstance extends ClassInstance>(config: string): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+function bindProperty<TInstance extends ClassInstance>(config: string): PropertyDecorator<TInstance>;
 /**
  * When dehydrating/rehydrating a class instance, this property decorator configures the target name of the dehydraeted property
  * this property needs to be dehydrated/(re)hydrated to/from and defines callback functions handling data conversion in either direction.
@@ -191,10 +191,10 @@ function bindProperty<TInstance extends ClassInstance>(config: string): (target:
  */
 function bindProperty<TInstance extends ClassInstance, TValRehydrated, TValDehydrated>(
   config: HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated>,
-): (target: ClassInstance<TInstance>, key: PropertyKey) => void;
+): PropertyDecorator<TInstance>;
 function bindProperty<TInstance extends ClassInstance, TValRehydrated, TValDehydrated>(
   config?: string | HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated>,
-): (target: ClassInstance<TInstance>, key: PropertyKey) => void {
+): PropertyDecorator<TInstance> {
   // Conpose full configuration object
   let composedConfig: HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated>;
   // If full configuration provided, use as is
@@ -295,7 +295,7 @@ export function cast<THostInstance extends ClassInstance, TCastInstance extends 
   targetEnttType: Class<TCastInstance>,
   targetStructure: CastAs = CastAs.SingleInstance,
   options?: HydrationCastingConfigurationOptions,
-): (target: ClassInstance<THostInstance>, key: PropertyKey) => void {
+): PropertyDecorator<THostInstance> {
   // Create and return decorator
   return createPropertyCustomDecorator<THostInstance, HydrationCastingConfiguration<TCastInstance>>(
     () => ({ targetEnttType, targetStructure, options: { ...hydrationCastingConfigurationOptionsDefaults, ...options } }),
@@ -662,7 +662,7 @@ function recast<TValue extends object, TCast extends ClassInstance>(
   castDefinition: HydrationCastingConfiguration<TCast, CastAs.SingleInstance>,
   strategy?: HydrationStrategy,
   options?: HydrationCastingExecutionOptions,
-): undefined; // TODO: infer "undefined" handling and only then set return type as undefined
+): undefined;
 /**
  * Casting a value according to casting definition for a single instance cast will cast as a single instance
  * @param value Value to cast
@@ -672,7 +672,7 @@ function recast<TValue extends object, TCast extends ClassInstance>(
  * @returns Cast instances
  */
 function recast<TValue extends object, TCast extends ClassInstance>(
-  value: undefined | TValue,
+  value: TValue,
   castDefinition: HydrationCastingConfiguration<TCast, CastAs.SingleInstance>,
   strategy?: HydrationStrategy,
   options?: HydrationCastingExecutionOptions,
@@ -686,7 +686,7 @@ function recast<TValue extends object, TCast extends ClassInstance>(
  * @returns Attay of cast instances
  */
 function recast<TValue extends object, TValueArray extends Array<TValue>, TCast extends ClassInstance>(
-  value: undefined | TValueArray,
+  value: TValueArray,
   castDefinition: HydrationCastingConfiguration<TCast, CastAs.ArrayOfInstances>,
   strategy?: HydrationStrategy,
   options?: HydrationCastingExecutionOptions,
@@ -700,7 +700,7 @@ function recast<TValue extends object, TValueArray extends Array<TValue>, TCast 
  * @returns Hashmap of cast instances
  */
 function recast<TValue extends object, TValueRecord extends Record<PropertyKey, TValue>, TCast extends ClassInstance>(
-  value: undefined | TValueRecord,
+  value: TValueRecord,
   castDefinition: HydrationCastingConfiguration<TCast, CastAs.HashmapOfInstances>,
   strategy?: HydrationStrategy,
   options?: HydrationCastingExecutionOptions,
