@@ -14,6 +14,9 @@
     - [ ] Intercepting onSet property callbacks
 - [x] Genericize Decorator definition classes: `Entt____Definition`
 
+- [ ] Support for intercepting `Object.keys(), [object].hasOwnProperty(), in` and such on enttified instances to provide a custom property names array
+- [ ] Add support to dehydrate/(rehydrate) for adding explicit additional property names to participate in the process on top of the ones inferred by chosen strategy
+
 # Testing
 
 - [x] Import `@ofzza/ts-std` as dependency and use `assert`/`refute` as implemented there

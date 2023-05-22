@@ -8,15 +8,22 @@
 
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
+import { ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import {
   Info,
   Warning,
   createPropertyCustomDecorator,
   getDecoratedClassPropertyDecoratorDefinition,
+  EnttInstance,
+  OnPropertyInterceptionCallback,
+  OnPropertyTransformationCallback,
   enttify,
   getUnderlyingEnttifiedInstance,
   verifyDecoratorUsage,
 } from '../';
+import { def } from '../../../decorators';
+
+// #region Fixtures
 
 // Set minimal expected number of instantiations performed per second
 const INSTANTIATIONS_PER_SECOND = 10000;
@@ -25,6 +32,35 @@ const ENTTITIFICATION_SLOWDOWN_FACTOR = 100;
 
 // Holds warnings thrown by `verifyDecoratorUsage()` calls, out in public for test inspection purposes
 const warnings: Array<Info | Warning | Error> = [];
+
+// Unique identifier symbol identifying the TapProperty decorator
+const tapPropertyDecoratorSymbol = Symbol('Tap property decorator');
+// Taps a property hooks by piping all internal callbacks
+function TapProperty<TInstance extends EnttInstance<ClassInstance>, TValInner = any, TValOuter = any>(callbacks: {
+  beforeGet: OnPropertyInterceptionCallback<TInstance, TValInner>;
+  transformGet: OnPropertyTransformationCallback<TInstance, TValInner, TValOuter>;
+  afterGet: OnPropertyInterceptionCallback<TInstance, TValInner>;
+  beforeSet: OnPropertyInterceptionCallback<TInstance, TValInner>;
+  transformSet: OnPropertyTransformationCallback<TInstance, TValOuter, TValInner>;
+  afterSet: OnPropertyInterceptionCallback<TInstance, TValInner>;
+}) {
+  return createPropertyCustomDecorator<TInstance, any, any, any>(
+    {
+      composeDecoratorDefinitionPayload: () => callbacks,
+      onPropertyGet: {
+        before: v => callbacks.beforeGet(v),
+        transform: v => callbacks.transformGet(v),
+        after: v => callbacks.afterGet(v),
+      },
+      onPropertySet: {
+        before: v => callbacks.beforeSet(v),
+        transform: v => callbacks.transformSet(v),
+        after: v => callbacks.afterSet(v),
+      },
+    },
+    tapPropertyDecoratorSymbol,
+  );
+}
 
 // Unique identifier symbol identifying the NumericDateValue decorator
 const numericDateValueDecoratorSymbol = Symbol('Numeric date value property decorator');
@@ -95,6 +131,10 @@ function MultiplyValue(factor: number = 2) {
     multiplyValueDecoratorSymbol,
   );
 }
+
+// #endregion
+
+// #region Tests
 
 // Export tests
 export function testDynamicPropertyDecorators() {
@@ -298,6 +338,86 @@ export function testDynamicPropertyDecorators() {
       assert(typeof underlying!.modified === 'number');
     });
 
+    // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into staged property setters/getters
+    it('Dynamic decorators correctly hooking into staged property setters/getters', () => {
+      // Example class
+      class _Example {
+        @def
+        @TapProperty({
+          beforeGet: v => events.push({ event: 'get:before', target: v.target, data: { key: v.key, value: v.value } }),
+          transformGet: v => {
+            events.push({ event: 'get:transform', target: v.target, data: { key: v.key, value: v.value } });
+            return v.value;
+          },
+          afterGet: v => events.push({ event: 'get:after', target: v.target, data: { key: v.key, value: v.value } }),
+          beforeSet: v => events.push({ event: 'set:before', target: v.target, data: { key: v.key, value: v.value } }),
+          transformSet: v => {
+            events.push({ event: 'set:transform', target: v.target, data: { key: v.key, value: v.value } });
+            return v.value;
+          },
+          afterSet: v => events.push({ event: 'set:after', target: v.target, data: { key: v.key, value: v.value } }),
+        })
+        public value: string = 'testing';
+      }
+      // EnTTify parent class
+      const Example = enttify(_Example);
+
+      // Holds intercepted events from any instance of the Example class
+      const events: Array<{ event: string; target: EnttInstance<ClassInstance>; data?: any }> = [];
+
+      // Initialize EnTTified class instance
+      const example = new Example();
+      // Fetch underlying object instance
+      const underlying = getUnderlyingEnttifiedInstance(example);
+
+      // Verify initialization events were intercepted
+      assert(events.length === 3);
+      assert(events[0].event === 'set:before'); // Before setting initial value of the `.value` property
+      assert(events[0].target === underlying);
+      assert(events[0].data.key === 'value');
+      assert(events[0].data.value === 'testing');
+      assert(events[1].event === 'set:transform'); // Transformation while setting initial value of the `.value` property
+      assert(events[1].target === underlying);
+      assert(events[1].data.key === 'value');
+      assert(events[1].data.value === 'testing');
+      assert(events[2].event === 'set:after'); // After setting initial value of the `.value` property
+      assert(events[2].target === underlying);
+      assert(events[2].data.key === 'value');
+      assert(events[2].data.value === 'testing');
+
+      // Get value
+      example.value;
+      assert(events.length === 6);
+      assert(events[3].event === 'get:before'); // Before getting initial value of the `.value` property
+      assert(events[3].target === underlying);
+      assert(events[3].data.key === 'value');
+      assert(events[3].data.value === 'testing');
+      assert(events[4].event === 'get:transform'); // Transformation while getting initial value of the `.value` property
+      assert(events[4].target === underlying);
+      assert(events[4].data.key === 'value');
+      assert(events[4].data.value === 'testing');
+      assert(events[5].event === 'get:after'); // After getting initial value of the `.value` property
+      assert(events[5].target === underlying);
+      assert(events[5].data.key === 'value');
+      assert(events[5].data.value === 'testing');
+
+      // Set value
+      example.value = 'still testing';
+      assert(events.length === 9);
+      assert(events[6].event === 'set:before'); // Before setting initial value of the `.value` property
+      assert(events[6].target === underlying);
+      assert(events[6].data.key === 'value');
+      assert(events[6].data.value === 'still testing');
+      assert(events[7].event === 'set:transform'); // Transformation while setting initial value of the `.value` property
+      assert(events[7].target === underlying);
+      assert(events[7].data.key === 'value');
+      assert(events[7].data.value === 'still testing');
+      assert(events[8].event === 'set:after'); // After setting initial value of the `.value` property
+      assert(events[8].target === underlying);
+      assert(events[8].data.key === 'value');
+      assert(events[8].data.value === 'still testing');
+    });
+
     // Check dynamic decorators can be stacked and will intercept getters/setters in order they were added to the property in
     it('Dynamic decorators can be stacked and preserve definition order', () => {
       // EnTTify parent class
@@ -340,3 +460,5 @@ export function testDynamicPropertyDecorators() {
     });
   });
 }
+
+// #endregion

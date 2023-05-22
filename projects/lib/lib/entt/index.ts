@@ -5,8 +5,6 @@
 import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import {
   EnttInstance,
-  FullPathPropertyValue,
-  Decorator,
   ClassDecorator,
   PropertyDecorator,
   ICustomDecoratorImplementation,
@@ -22,27 +20,8 @@ import {
   EnttClassDecoratorDefinition,
   EnttPropertyDefinition,
   EnttPropertyDecoratorDefinition,
-} from './internals';
-export {
-  EnttInstance,
-  FullPathPropertyValue,
-  Decorator,
-  ClassDecorator,
-  PropertyDecorator,
-  ICustomDecoratorImplementation,
-  OnPropertyInterceptionCallback,
-  OnPropertyTransformationCallback,
-  CustomClassDecoratorImplementation,
-  CustomStaticClassDecoratorConfiguration,
-  CustomDynamicClassDecoratorConfiguration,
-  CustomPropertyDecoratorImplementation,
-  CustomStaticPropertyDecoratorConfiguration,
-  CustomDynamicPropertyDecoratorConfiguration,
-  EnttDefinition,
-  EnttClassDecoratorDefinition,
-  EnttPropertyDefinition,
-  EnttPropertyDecoratorDefinition,
-};
+} from './internals/types';
+export * from './internals/types';
 // Import and (re)export production mode functionality
 import { isProduction, setProduction } from './internals';
 export { isProduction, setProduction };

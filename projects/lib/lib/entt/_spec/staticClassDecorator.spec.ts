@@ -6,6 +6,8 @@ import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import { createClassCustomDecorator, getDecoratedClassDefinition, filterDefinition, EnttDefinition } from '../';
 
+// #region Fixtures
+
 // Unique identifier symbol identifying the FromString decorator
 const fromStringDecoratorSymbol = Symbol('From string class decorator');
 /**
@@ -54,6 +56,10 @@ function convertInstanceToText<T extends ClassInstance>(target: ClassInstance<T>
   const instanceToStringFn = definition.decorators.bySymbol[asStringDecoratorSymbol][0].data as (target: Record<PropertyKey, string>) => string;
   return instanceToStringFn(target as Record<PropertyKey, string>);
 }
+
+// #endregion
+
+// #region Tests
 
 // Export tests
 export function testStaticClassDecorators() {
@@ -218,3 +224,5 @@ export function testStaticClassDecorators() {
     assert(text === 'WHO did a WHAT in WHERE');
   });
 }
+
+// #endregion

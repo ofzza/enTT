@@ -6,6 +6,8 @@ import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import { createPropertyCustomDecorator, getDecoratedClassDefinition, getDecoratedClassPropertyDefinition, filterDefinition, EnttPropertyDefinition } from '../';
 
+// #region Fixtures
+
 // Unique identifier symbol identifying the DefaultValue decorator
 const defaultValueDecoratorSymbol = Symbol('Default value property decorator');
 /**
@@ -53,6 +55,10 @@ function checkDefaultValues<T extends ClassInstance>(target: T): Record<Property
     return check;
   }, {});
 }
+
+// #endregion
+
+// #region Tests
 
 // Export tests
 export function testStaticPropertyDecorators() {
@@ -349,3 +355,5 @@ export function testStaticPropertyDecorators() {
     assert(check['priv'] === true);
   });
 }
+
+// #endregion

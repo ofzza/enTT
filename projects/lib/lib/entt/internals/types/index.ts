@@ -9,7 +9,7 @@ import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 /**
  * A transparent proxy to the underlying class instance with dynamic EnTT functionality attached
  */
-export type EnttInstance<T extends ClassInstance> = T & {};
+export type EnttInstance<T extends ClassInstance> = T;
 
 /**
  * Describes a property value and all the information needed to get/set that value
@@ -49,21 +49,21 @@ export type PropertyDecorator<TInstance extends ClassInstance> = (target: ClassI
 /**
  * Type definition for a callback function for enttified class instance onConstruct hook
  */
-export type OnConstructorCallback<TInstance extends ClassInstance> = (instance: TInstance) => void;
+export type OnConstructorCallback<TInstance extends EnttInstance<ClassInstance>> = (instance: TInstance) => void;
 /**
  * Type definition for a intercaption callback function for enttified class instance onPropertyGet/onPropertySet hook
  */
-export type OnPropertyInterceptionCallback<TInstance extends ClassInstance, TVal = any> = (v: FullPathPropertyValue<TInstance, TVal>) => void;
+export type OnPropertyInterceptionCallback<TInstance extends EnttInstance<ClassInstance>, TVal = any> = (v: FullPathPropertyValue<TInstance, TVal>) => void;
 /**
  * Type definition for a transformation callback function for enttified class instance onPropertyGet/onPropertySet hook
  */
-export type OnPropertyTransformationCallback<TInstance extends ClassInstance, TValInput = any, TValOutput = any> = (
+export type OnPropertyTransformationCallback<TInstance extends EnttInstance<ClassInstance>, TValInput = any, TValOutput = any> = (
   v: FullPathPropertyValue<TInstance, TValInput>,
 ) => TValOutput;
 /**
  * Type definition for a callback function for enttified class instance onPropertyGet hook callback or a full staged callbacks configuration
  */
-export type OnPropertyGetCallback<TInstance extends ClassInstance, TValInner = any, TValOuter = any> =
+export type OnPropertyGetCallback<TInstance extends EnttInstance<ClassInstance>, TValInner = any, TValOuter = any> =
   | ((v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter)
   | {
       before?: OnPropertyInterceptionCallback<TInstance, TValInner>;
@@ -73,10 +73,10 @@ export type OnPropertyGetCallback<TInstance extends ClassInstance, TValInner = a
 /**
  * Type definition for a callback function for enttified class instance onPropertySet hook callback, interceptor callback or a full staged callbacks configuration
  */
-export type OnPropertySetCallback<TInstance extends ClassInstance, TValInner = any, TValOuter = any> =
+export type OnPropertySetCallback<TInstance extends EnttInstance<ClassInstance>, TValInner = any, TValOuter = any> =
   | ((v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner)
   | {
-      intercept: OnPropertyInterceptionCallback<TInstance, TValOuter>;
+      intercept: OnPropertyInterceptionCallback<TInstance, TValOuter>; // TODO: Consider dropping `intercept` in favor of `transform = () => undefined`?!
     }
   | {
       before?: OnPropertyInterceptionCallback<TInstance, TValOuter>;
@@ -264,7 +264,7 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance extends ClassInst
    * EnTTified instance before it is returned as constructed.
    *
    */
-  onConstruct?: (instance: TInstance) => void;
+  onConstruct?: OnConstructorCallback<TInstance>;
   /**
    * Getter interception/transformation configuration can be expressed as:
    *
