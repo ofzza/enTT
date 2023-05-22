@@ -88,9 +88,9 @@ export function testHydrationBindPropertyDecoratorRehydrate() {
 
   // Check (re)hydration service respects selected hydration strategy
   describe('(Re)Hydrating a class instance respects the selected hydration strategy', () => {
-    // Dehydrate the testing instance, making sure to dehydrate all properties
+    // (Re)hydrate the testing instance, making sure to rehydrate all properties
     const rehydratedInstanceWithAllProperties = rehydrate(dehydratedTestBindingExampleObj, TestBinding, HydrationStrategy.AllClassProperties);
-    // Check all properties were dehydrated
+    // Check all properties were rehydrated
     it('Correct properties (re)hydrated when using HydrationStrategy.AllClassProperties strategy', () => {
       assert(rehydratedInstanceWithAllProperties.propertyA === 'UPDATED Property A value');
       assert(rehydratedInstanceWithAllProperties.propertyB === 'UPDATED Property B value');
@@ -100,13 +100,32 @@ export function testHydrationBindPropertyDecoratorRehydrate() {
       assert(rehydratedInstanceWithAllProperties.propertyF === '67890');
     });
 
-    // Dehydrate the testing instance, making sure to dehydrate all decorated class properties
+    // (Re)hydrate the testing instance, making sure to rehydrate all explicitly named properties
+    const rehydratedInstanceWithAllAllExplicitProperties = rehydrate(dehydratedTestBindingExampleObj, TestBinding, [
+      'propertyA',
+      'propertyB',
+      'propertyC',
+      'propertyD',
+      'propertyE',
+      'propertyF',
+    ]);
+    // Check all properties were rehydrated
+    it('Correct properties (re)hydrated when using explicity named all properties', () => {
+      assert(rehydratedInstanceWithAllAllExplicitProperties.propertyA === 'UPDATED Property A value');
+      assert(rehydratedInstanceWithAllAllExplicitProperties.propertyB === 'UPDATED Property B value');
+      assert(rehydratedInstanceWithAllAllExplicitProperties.propertyC === 'UPDATED Property C value');
+      assert(rehydratedInstanceWithAllAllExplicitProperties.propertyD === 'UPDATED Property D value');
+      assert(rehydratedInstanceWithAllAllExplicitProperties.propertyE === 'UPDATED Property E value');
+      assert(rehydratedInstanceWithAllAllExplicitProperties.propertyF === '67890');
+    });
+
+    // (Re)hydrate the testing instance, making sure to rehydrate all decorated class properties
     const rehydratedInstanceWithAllDecoratedClassProperties = rehydrate(
       dehydratedTestBindingExampleObj,
       TestBinding,
       HydrationStrategy.AllDecoratedClassProperties,
     );
-    // Check all properties were dehydrated
+    // Check all properties were rehydrated
     it('Correct properties (re)hydrated when using HydrationStrategy.AllDecoratedClassProperties strategy', () => {
       assert(rehydratedInstanceWithAllDecoratedClassProperties.propertyA === 'Property A value');
       assert(rehydratedInstanceWithAllDecoratedClassProperties.propertyB === 'UPDATED Property B value');
@@ -116,9 +135,24 @@ export function testHydrationBindPropertyDecoratorRehydrate() {
       assert(rehydratedInstanceWithAllDecoratedClassProperties.propertyF === '67890');
     });
 
-    // Dehydrate the testing instance, making sure to dehydrate only bound class properties
+    // (Re)hydrate the testing instance, making sure to rehydrate all decorated class properties and some additionally explicitly named properties
+    const rehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties = rehydrate(dehydratedTestBindingExampleObj, TestBinding, [
+      HydrationStrategy.AllDecoratedClassProperties,
+      'propertyA',
+    ]);
+    // Check all properties were rehydrated
+    it('Correct properties (re)hydrated when using HydrationStrategy.AllDecoratedClassProperties strategy combined with explicitly named properties', () => {
+      assert(rehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties.propertyA === 'UPDATED Property A value');
+      assert(rehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties.propertyB === 'UPDATED Property B value');
+      assert(rehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties.propertyC === 'UPDATED Property C value');
+      assert(rehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties.propertyD === 'UPDATED Property D value');
+      assert(rehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties.propertyE === 'UPDATED Property E value');
+      assert(rehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties.propertyF === '67890');
+    });
+
+    // (Re)hydrate the testing instance, making sure to rehydrate only bound class properties
     const rehydratedInstanceWithOnlyBoundClassProperties = rehydrate(dehydratedTestBindingExampleObj, TestBinding, HydrationStrategy.OnlyBoundClassProperties);
-    // Check all properties were dehydrated
+    // Check all properties were rehydrated
     it('Correct properties (re)hydrated when using HydrationStrategy.OnlyBoundClassProperties strategy', () => {
       assert(rehydratedInstanceWithOnlyBoundClassProperties.propertyA === 'Property A value');
       assert(rehydratedInstanceWithOnlyBoundClassProperties.propertyB === 'Property B value');
@@ -126,6 +160,20 @@ export function testHydrationBindPropertyDecoratorRehydrate() {
       assert(rehydratedInstanceWithOnlyBoundClassProperties.propertyD === 'UPDATED Property D value');
       assert(rehydratedInstanceWithOnlyBoundClassProperties.propertyE === 'UPDATED Property E value');
       assert(rehydratedInstanceWithOnlyBoundClassProperties.propertyF === '67890');
+    });
+    // (Re)hydrate the testing instance, making sure to rehydrate only bound class properties and some additionally explicitly named properties
+    const rehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties = rehydrate(dehydratedTestBindingExampleObj, TestBinding, [
+      HydrationStrategy.OnlyBoundClassProperties,
+      'propertyA',
+    ]);
+    // Check all properties were rehydrated
+    it('Correct properties (re)hydrated when using HydrationStrategy.OnlyBoundClassProperties strategy combined with explicitly named properties', () => {
+      assert(rehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties.propertyA === 'UPDATED Property A value');
+      assert(rehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties.propertyB === 'Property B value');
+      assert(rehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties.propertyC === 'UPDATED Property C value');
+      assert(rehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties.propertyD === 'UPDATED Property D value');
+      assert(rehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties.propertyE === 'UPDATED Property E value');
+      assert(rehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties.propertyF === '67890');
     });
   });
 

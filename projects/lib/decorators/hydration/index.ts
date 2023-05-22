@@ -310,30 +310,30 @@ export function cast<THostInstance extends ClassInstance, TCastInstance extends 
 /**
  * Dehydrates an instance of a class taking into account configuration provided via @bind and @cast decorators
  * @param instance Instance of an EnTT class to be dehydrated
- * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns A dehydrated objet
  */
 export function dehydrate<TInstance extends ClassInstance>(
   instance: ClassInstance<TInstance>,
-  strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
+  props: HydrationProperties = HydrationStrategy.OnlyBoundClassProperties,
   options?: HydrationCastingExecutionOptions,
 ): DehydratedInstance<TInstance> {
-  return dehydrateAsInstanceOfClass(instance, instance, strategy, appendHydrationCastingExecutionOptionsDefaults(options));
+  return dehydrateAsInstanceOfClass(instance, instance, props, appendHydrationCastingExecutionOptionsDefaults(options));
 }
 
 /**
  * Dehydrates an object treating it as an instance of a class taking into account configuration provided via @bind and @cast decorators
  * @param value Object to be dehydrated
  * @param instance Instance of a class or class decorated with @bind and @cast decorators, used to dehydrate the provided object
- * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns A dehydrated objet
  */
 function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends ClassInstance>(
   value: TValue,
   instance: ClassInstance<TInstance>,
-  strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
+  props: HydrationProperties = HydrationStrategy.OnlyBoundClassProperties,
   options?: HydrationCastingExecutionOptions,
 ): DehydratedInstance<TInstance> {
   // Check if instance belongs to a class decorated with @bind decorator
@@ -346,7 +346,7 @@ function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends Cla
   const dehydrated: DehydratedInstance<TInstance> = dehydratedViaClassBindingConfiguration || {};
 
   // Collect property names to use for dehydration
-  const hydratingPropertiesDefinitions = collectHydratingPropertyDecoratorDefinitions(instance, strategy);
+  const hydratingPropertiesDefinitions = collectHydratingPropertyDecoratorDefinitions(instance, props);
 
   // Copy (and process if needed) all values for all the properties being dehydrated
   for (const key of Object.keys(hydratingPropertiesDefinitions) as Array<keyof TInstance>) {
@@ -389,7 +389,7 @@ function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends Cla
         uncastValue =
           propertyValue === undefined
             ? undefined
-            : uncast(propertyValue as any, castingDefinition, strategy, appendHydrationCastingExecutionOptionsDefaults(options));
+            : uncast(propertyValue as any, castingDefinition, props, appendHydrationCastingExecutionOptionsDefaults(options));
       }
 
       // If no custom binding, use unprocessed value
@@ -421,63 +421,63 @@ function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends Cla
  * Uncasting an undefined value will use behavior defined by the "undefined" option
  * @param value Value to uncast
  * @param castDefinition Casting definition to apply when uncasting
- * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns Uncast value
  */
 function uncast<TValue extends ClassInstance, TUncast extends ClassInstance>(
   value: undefined,
   castDefinition: HydrationCastingConfiguration<TUncast, CastAs>,
-  strategy?: HydrationStrategy,
+  props?: HydrationProperties,
   options?: HydrationCastingExecutionOptions,
 ): undefined;
 /**
  * Uncasting a value according to casting definition for a single instance cast will uncast as a single object
  * @param value Value to uncast
  * @param castDefinition Casting definition to apply when uncasting
- * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns Uncast value
  */
 function uncast<TValue extends ClassInstance, TUncast extends ClassInstance>(
   value: TValue,
   castDefinition: HydrationCastingConfiguration<TUncast, CastAs.SingleInstance>,
-  strategy?: HydrationStrategy,
+  props?: HydrationProperties,
   options?: HydrationCastingExecutionOptions,
 ): TUncast;
 /**
  * Uncasting a value according to casting definition for a instance array cast will uncast as an array of objects
  * @param value Array of instances to uncast
  * @param castDefinition Casting definition to apply when uncasting
- * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns Attay of uncast values
  */
 function uncast<TValue extends ClassInstance, TValueArray extends Array<TValue>, TUncast extends ClassInstance>(
   value: TValueArray,
   castDefinition: HydrationCastingConfiguration<TUncast, CastAs.ArrayOfInstances>,
-  strategy?: HydrationStrategy,
+  props?: HydrationProperties,
   options?: HydrationCastingExecutionOptions,
 ): Array<TUncast>;
 /**
  * Uncasting a value according to casting definition for a instance hashmap cast will uncast as a hashmap of objects
  * @param value Hashmap of instances to uncast
  * @param castDefinition Casting definition to apply when uncasting
- * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns Hashmap of uncast values
  */
 function uncast<TValue extends ClassInstance, TValueRecord extends Record<PropertyKey, TValue>, TUncast extends ClassInstance>(
   value: TValueRecord,
   castDefinition: HydrationCastingConfiguration<TUncast, CastAs.HashmapOfInstances>,
-  strategy?: HydrationStrategy,
+  props?: HydrationProperties,
   options?: HydrationCastingExecutionOptions,
 ): Record<keyof TValueRecord, TUncast>;
 /**
  * Uncasting a value according to casting definition
  * @param value Instance, array of instances or a hashmap of instances to uncast
  * @param castDefinition Casting definition to apply when uncasting
- * @param strategy Hydration strategy to use when choosing which properties to dehydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns Uncast instance, array of instances of hashmap of instances
  */
@@ -489,7 +489,7 @@ function uncast<
 >(
   value: undefined | TValue | TValueArray | TValueRecord,
   castDefinition: HydrationCastingConfiguration<TUncast>,
-  strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
+  props: HydrationProperties = HydrationStrategy.OnlyBoundClassProperties,
   options?: HydrationCastingExecutionOptions,
 ): undefined | TUncast | Array<TUncast> | Record<keyof TValueRecord, TUncast> {
   // If cast defined as a cast to single instance
@@ -497,7 +497,7 @@ function uncast<
     // If value being cast is compatible with the cast
     if (value instanceof castDefinition.targetEnttType) {
       // Uncast by dehydrating an instance of expected class
-      return dehydrateAsInstanceOfClass(value, castDefinition.targetEnttType, strategy, appendHydrationCastingExecutionOptionsDefaults(options));
+      return dehydrateAsInstanceOfClass(value, castDefinition.targetEnttType, props, appendHydrationCastingExecutionOptionsDefaults(options));
     }
     // If value being cast is incompatible
     else {
@@ -514,7 +514,7 @@ function uncast<
       const filteredValues = value.filter(value => value !== undefined);
       // Uncast each member of the array
       return filteredValues.map(value =>
-        uncast(value, { ...castDefinition, targetStructure: CastAs.SingleInstance }, strategy, appendHydrationCastingExecutionOptionsDefaults(options)),
+        uncast(value, { ...castDefinition, targetStructure: CastAs.SingleInstance }, props, appendHydrationCastingExecutionOptionsDefaults(options)),
       );
     }
     // If value being cast is incompatible
@@ -536,7 +536,7 @@ function uncast<
         result[key] = uncast(
           (value as TValueRecord)[key],
           { ...castDefinition, targetStructure: CastAs.SingleInstance },
-          strategy,
+          props,
           appendHydrationCastingExecutionOptionsDefaults(options),
         ) as TUncast;
         // Return reduced result
@@ -562,14 +562,14 @@ function uncast<
  * (Re)Hydrates an instance of a class taking into account configuration provided via @bind and @cast decorators
  * @param value An object to (re)hydrate data from
  * @param instance EnTT class or class instance to hydrate with provided data
- * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns Hydrated EnTT class instance hydrated from provided data
  */
 export function rehydrate<TInstance extends ClassInstance>(
   value: DehydratedInstance<TInstance>,
   instance: Class<TInstance> | ClassInstance<TInstance>,
-  strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
+  props: HydrationProperties = HydrationStrategy.OnlyBoundClassProperties,
   options?: HydrationCastingExecutionOptions,
 ): TInstance {
   // Check if instance belongs to a class decorated with @bind decorator
@@ -583,7 +583,7 @@ export function rehydrate<TInstance extends ClassInstance>(
     typeof instance === 'function' ? rehydratedViaClassBindingConfiguration || new (instance as Class<TInstance>)() : instance;
 
   // Collect property names to use for (re)hydration
-  const hydratingPropertiesDefinitions = collectHydratingPropertyDecoratorDefinitions(rehydrated, strategy);
+  const hydratingPropertiesDefinitions = collectHydratingPropertyDecoratorDefinitions(rehydrated, props);
 
   // Copy (and process if needed) all values for all the properties being dehydrated
   for (const key of Object.keys(hydratingPropertiesDefinitions) as Array<keyof TInstance>) {
@@ -637,7 +637,7 @@ export function rehydrate<TInstance extends ClassInstance>(
       }
       // Recast value
       else {
-        castValue = recast(processedValue as any, castingDefinition, strategy, appendHydrationCastingExecutionOptionsDefaults(options));
+        castValue = recast(processedValue as any, castingDefinition, props, appendHydrationCastingExecutionOptionsDefaults(options));
       }
 
       // Store cast value
@@ -653,76 +653,76 @@ export function rehydrate<TInstance extends ClassInstance>(
  * Recasting an undefined value will use behavior defined by the "undefined" option
  * @param value Value to cast
  * @param castDefinition Casting definition to apply when casting
- * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns Cast instances
  */
 function recast<TValue extends object, TCast extends ClassInstance>(
   value: undefined,
   castDefinition: HydrationCastingConfiguration<TCast, CastAs.SingleInstance>,
-  strategy?: HydrationStrategy,
+  props?: HydrationProperties,
   options?: HydrationCastingExecutionOptions,
 ): undefined;
 /**
  * Casting a value according to casting definition for a single instance cast will cast as a single instance
  * @param value Value to cast
  * @param castDefinition Casting definition to apply when casting
- * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns Cast instances
  */
 function recast<TValue extends object, TCast extends ClassInstance>(
   value: TValue,
   castDefinition: HydrationCastingConfiguration<TCast, CastAs.SingleInstance>,
-  strategy?: HydrationStrategy,
+  props?: HydrationProperties,
   options?: HydrationCastingExecutionOptions,
 ): TCast;
 /**
  * Casting a value according to casting definition for a instance array cast will cast as an array of instances
  * @param value Object to cast
  * @param castDefinition Casting definition to apply when casting
- * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns Attay of cast instances
  */
 function recast<TValue extends object, TValueArray extends Array<TValue>, TCast extends ClassInstance>(
   value: TValueArray,
   castDefinition: HydrationCastingConfiguration<TCast, CastAs.ArrayOfInstances>,
-  strategy?: HydrationStrategy,
+  props?: HydrationProperties,
   options?: HydrationCastingExecutionOptions,
 ): Array<TCast>;
 /**
  * Casting a value according to casting definition for a instance hashmap cast will cast as a hashmap of instances
  * @param value Array of objects to cast
  * @param castDefinition Casting definition to apply when casting
- * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns Hashmap of cast instances
  */
 function recast<TValue extends object, TValueRecord extends Record<PropertyKey, TValue>, TCast extends ClassInstance>(
   value: TValueRecord,
   castDefinition: HydrationCastingConfiguration<TCast, CastAs.HashmapOfInstances>,
-  strategy?: HydrationStrategy,
+  props?: HydrationProperties,
   options?: HydrationCastingExecutionOptions,
 ): Record<keyof TValueRecord, TCast>;
 /**
  * Casting a value according to casting definition
  * @param value Object, array of objects or hashmap of objects to cast
  * @param castDefinition Casting definition to apply when casting
- * @param strategy Hydration strategy to use when choosing which properties to (re)hydrate
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @param options Hydration options controling fine tuning of the hydration process
  * @returns Cast instance, array of instances or hashmap of instances
  */
 function recast<TValue extends object, TValueArray extends Array<TValue>, TValueRecord extends Record<PropertyKey, TValue>, TCast extends ClassInstance>(
   value: undefined | TValue | TValueArray | TValueRecord,
   castDefinition: HydrationCastingConfiguration<TCast>,
-  strategy: HydrationStrategy = HydrationStrategy.OnlyBoundClassProperties,
+  props: HydrationProperties = HydrationStrategy.OnlyBoundClassProperties,
   options?: HydrationCastingExecutionOptions,
 ): undefined | TCast | Array<TCast> | Record<keyof TValueRecord, TCast> {
   // If cast defined as a cast to single instance
   if (castDefinition.targetStructure === CastAs.SingleInstance) {
     // Cast by dehydrating an instance of expected class
-    return rehydrate(value, castDefinition.targetEnttType, strategy, appendHydrationCastingExecutionOptionsDefaults(options));
+    return rehydrate(value, castDefinition.targetEnttType, props, appendHydrationCastingExecutionOptionsDefaults(options));
   }
 
   // If cast defined as a cast to array of instances
@@ -732,7 +732,7 @@ function recast<TValue extends object, TValueArray extends Array<TValue>, TValue
       const filteredValues = value.filter(value => value !== undefined);
       // Cast each member of the array
       return filteredValues.map(value =>
-        recast(value, { ...castDefinition, targetStructure: CastAs.SingleInstance }, strategy, appendHydrationCastingExecutionOptionsDefaults(options)),
+        recast(value, { ...castDefinition, targetStructure: CastAs.SingleInstance }, props, appendHydrationCastingExecutionOptionsDefaults(options)),
       ) as Array<TCast>;
     }
     // If value being cast is incompatible
@@ -752,7 +752,7 @@ function recast<TValue extends object, TValueArray extends Array<TValue>, TValue
         result[key] = recast(
           (value as TValueRecord)[key],
           { ...castDefinition, targetStructure: CastAs.SingleInstance },
-          strategy,
+          props,
           appendHydrationCastingExecutionOptionsDefaults(options),
         ) as TCast;
         // Return reduced result
@@ -791,17 +791,21 @@ export enum HydrationStrategy {
    */
   AllClassProperties = 'AllClassProperties',
 }
+/**
+ * Type describing an expression for determining hydration properties either via a strategy, direct property names, or a combination of both
+ */
+export type HydrationProperties = HydrationStrategy | Array<PropertyKey | HydrationStrategy>;
 
 /**
  * Collects property names for properties which should be dehydrated/(re)hydrated based on the source and target of hydration
  * and the strategy chosed
  * @param instance (Re)Hydrated class instance
- * @param strategy Strategy to use when selecting properties to participate in hydration
+ * @param props Expression for determining hydration properties either via a strategy, direct property names, or a combination of both
  * @returns Array of property names that should participate in the hydration process
  */
 function collectHydratingPropertyDecoratorDefinitions<TInstance extends ClassInstance>(
   instance: ClassInstance<TInstance>,
-  strategy: HydrationStrategy,
+  props: HydrationProperties,
 ): Record<keyof TInstance, false | EnttPropertyDefinition<TInstance>> {
   // Get instance's class's decorator definitions
   const allDecoratedPropertiesDefinitions = getDecoratedClassDefinition(instance);
@@ -810,17 +814,40 @@ function collectHydratingPropertyDecoratorDefinitions<TInstance extends ClassIns
 
   // Collect property definitions depending on the selected strategy
   const properties: Record<PropertyKey, false | EnttPropertyDefinition<TInstance>> = {};
-  if (strategy === HydrationStrategy.AllClassProperties) {
-    for (const key of allPropertiesKeys) {
-      properties[key] = allDecoratedPropertiesDefinitions.properties[key];
+  for (const prop of props instanceof Array ? props : [props]) {
+    // Get properties via "AllClassProperties" strategy
+    if (prop === HydrationStrategy.AllClassProperties) {
+      for (const key of allPropertiesKeys) {
+        if (!properties[key]) {
+          properties[key] = allDecoratedPropertiesDefinitions.properties[key];
+        }
+      }
     }
-  } else if (strategy === HydrationStrategy.AllDecoratedClassProperties) {
-    for (const key of Object.keys(allDecoratedPropertiesDefinitions.properties)) {
-      properties[key] = allDecoratedPropertiesDefinitions.properties[key];
+    // Get properties via "AllDecoratedClassProperties" strategy
+    else if (prop === HydrationStrategy.AllDecoratedClassProperties) {
+      for (const key of Object.keys(allDecoratedPropertiesDefinitions.properties)) {
+        if (!properties[key]) {
+          properties[key] = allDecoratedPropertiesDefinitions.properties[key];
+        }
+      }
     }
-  } else if (strategy === HydrationStrategy.OnlyBoundClassProperties) {
-    for (const key of Object.keys(onlyBoundPropertiesDefinitions.properties)) {
-      properties[key] = allDecoratedPropertiesDefinitions.properties[key];
+    // Get properties via "OnlyBoundClassProperties" strategy
+    else if (prop === HydrationStrategy.OnlyBoundClassProperties) {
+      for (const key of Object.keys(onlyBoundPropertiesDefinitions.properties)) {
+        if (!properties[key]) {
+          properties[key] = allDecoratedPropertiesDefinitions.properties[key];
+        }
+      }
+    }
+    // Get properties via "OnlyBoundClassProperties" strategy
+    else if (typeof prop === 'string') {
+      if (!properties[prop]) {
+        properties[prop] = allDecoratedPropertiesDefinitions.properties[prop];
+      }
+    }
+    // Unsupported property expression
+    else {
+      throw new Error(`"${prop.toString()}" is not a supported property expression! Only HydrationStrategy members or explicit property names are allowed.`);
     }
   }
 

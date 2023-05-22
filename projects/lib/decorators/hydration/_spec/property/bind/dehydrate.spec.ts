@@ -79,6 +79,17 @@ export function testHydrationBindPropertyDecoratorDehydrate() {
       assert(dehydratedInstanceWithAllProperties['propF'] === 12345);
     });
 
+    // Dehydrate the testing instance, making sure to dehydrate all explicitly named properties
+    const dehydratedInstanceWithAllExplicitProperties = dehydrate(instance, ['propertyA', 'propertyB', 'propertyC', 'propertyD', 'propertyE', 'propertyF']);
+    it('Correct properties dehydrated when using explicity named all properties', () => {
+      assert(dehydratedInstanceWithAllExplicitProperties['propertyA'] === 'Property A value');
+      assert(dehydratedInstanceWithAllExplicitProperties['propertyB'] === 'Property B value');
+      assert(dehydratedInstanceWithAllExplicitProperties['propertyC'] === 'Property C value');
+      assert(dehydratedInstanceWithAllExplicitProperties['propD'] === 'Property D value');
+      assert(dehydratedInstanceWithAllExplicitProperties['propE'] === 'Property E value');
+      assert(dehydratedInstanceWithAllExplicitProperties['propF'] === 12345);
+    });
+
     // Dehydrate the testing instance, making sure to dehydrate all decorated class properties
     const dehydratedInstanceWithAllDecoratedClassProperties = dehydrate(instance, HydrationStrategy.AllDecoratedClassProperties);
     it('Correct properties dehydrated when using HydrationStrategy.AllDecoratedClassProperties strategy', () => {
@@ -90,6 +101,20 @@ export function testHydrationBindPropertyDecoratorDehydrate() {
       assert(dehydratedInstanceWithAllDecoratedClassProperties['propF'] === 12345);
     });
 
+    // Dehydrate the testing instance, making sure to dehydrate all decorated class properties and some additionally explicitly named properties
+    const dehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties = dehydrate(instance, [
+      HydrationStrategy.AllDecoratedClassProperties,
+      'propertyA',
+    ]);
+    it('Correct properties dehydrated when using HydrationStrategy.AllDecoratedClassProperties strategy combined with explicitly named properties', () => {
+      assert(dehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties['propertyA'] === 'Property A value');
+      assert(dehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties['propertyB'] === 'Property B value');
+      assert(dehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties['propertyC'] === 'Property C value');
+      assert(dehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties['propD'] === 'Property D value');
+      assert(dehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties['propE'] === 'Property E value');
+      assert(dehydratedInstanceWithAllDecoratedClassPropertiesAndExplicitProperties['propF'] === 12345);
+    });
+
     // Dehydrate the testing instance, making sure to dehydrate only bound class properties
     const dehydratedInstanceWithOnlyBoundClassProperties = dehydrate(instance, HydrationStrategy.OnlyBoundClassProperties);
     it('Correct properties dehydrated when using HydrationStrategy.OnlyBoundClassProperties strategy', () => {
@@ -99,6 +124,17 @@ export function testHydrationBindPropertyDecoratorDehydrate() {
       assert(dehydratedInstanceWithOnlyBoundClassProperties['propD'] === 'Property D value');
       assert(dehydratedInstanceWithOnlyBoundClassProperties['propE'] === 'Property E value');
       assert(dehydratedInstanceWithOnlyBoundClassProperties['propF'] === 12345);
+    });
+
+    // Dehydrate the testing instance, making sure to dehydrate only bound class properties and some additionally explicitly named properties
+    const dehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties = dehydrate(instance, [HydrationStrategy.OnlyBoundClassProperties, 'propertyA']);
+    it('Correct properties dehydrated when using HydrationStrategy.OnlyBoundClassProperties strategy combined with explicitly named properties', () => {
+      assert(dehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties['propertyA'] === 'Property A value');
+      assert(dehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties['propertyB'] === undefined);
+      assert(dehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties['propertyC'] === 'Property C value');
+      assert(dehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties['propD'] === 'Property D value');
+      assert(dehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties['propE'] === 'Property E value');
+      assert(dehydratedInstanceWithOnlyBoundClassPropertiesAndExplicitProperties['propF'] === 12345);
     });
   });
 
