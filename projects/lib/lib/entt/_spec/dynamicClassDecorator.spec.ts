@@ -1,11 +1,8 @@
 // Dynamic class decorators creation and usage TESTS
 // ----------------------------------------------------------------------------
 
-// TODO:
-// - [ ] Write tests for onPropertyKeys
-
 // Import dependencies
-import { assert } from '@ofzza/ts-std/types/utility/assertion';
+import { assert, refute } from '@ofzza/ts-std/types/utility/assertion';
 import { ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import {
   Info,
@@ -33,10 +30,10 @@ const ENTTITIFICATION_SLOWDOWN_FACTOR = 2000;
 // Holds warnings thrown by `verifyDecoratorUsage()` calls, out in public for test inspection purposes
 const warnings: Array<Info | Warning | Error> = [];
 
-// Unique identifier symbol identifying the TapClass decorator
-const tapClassDecoratorSymbol = Symbol('Tap class decorator');
-// Taps a property hooks by piping all internal callbacks
-function TapClass<TInstance extends ClassInstance, TValInner = any, TValOuter = any>(callbacks: {
+// Unique identifier symbol identifying the TapClassConstructorAndProperties decorator
+const tapClassConstructorAndPropertiesDecoratorSymbol = Symbol('Tap class constructor and properties decorator');
+// Taps a property hooks by piping constructor and property getter/setter callbacks
+function TapClassConstructorAndProperties<TInstance extends ClassInstance, TValInner = any, TValOuter = any>(callbacks: {
   construct: OnConstructorCallback<EnttInstance<TInstance>>;
   beforeGet: OnPropertyInterceptionCallback<EnttInstance<TInstance>, TValInner>;
   transformGet: OnPropertyTransformationCallback<EnttInstance<TInstance>, TValInner, TValOuter>;
@@ -60,7 +57,26 @@ function TapClass<TInstance extends ClassInstance, TValInner = any, TValOuter = 
         after: v => callbacks.afterSet(v),
       },
     },
-    tapClassDecoratorSymbol,
+    tapClassConstructorAndPropertiesDecoratorSymbol,
+  );
+}
+
+// Unique identifier symbol identifying the TapClassPropertyQuerying decorator
+const tapClassPropertyQueryingDecoratorSymbol = Symbol('Tap class property querying decorator');
+// Taps a property hooks by piping property querying callbacks
+function TapClassPropertyQuerying<TInstance extends ClassInstance>(callbacks: {
+  has: (instance: TInstance, key: PropertyKey) => boolean;
+  ownKeys: (instance: TInstance) => Array<string | symbol>;
+}) {
+  return createClassCustomDecorator<TInstance, any>(
+    {
+      composeDecoratorDefinitionPayload: () => callbacks,
+      onPropertyKeys: {
+        has: (instance: TInstance, key: PropertyKey) => callbacks.has(instance, key),
+        ownKeys: (instance: TInstance) => callbacks.ownKeys(instance),
+      },
+    },
+    tapClassPropertyQueryingDecoratorSymbol,
   );
 }
 
@@ -330,7 +346,7 @@ export function testDynamicClassDecorators() {
     // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property staged setters/getters
     it('Dynamic decorators correctly hooking into staged property setters/getters', () => {
       // Example class
-      @TapClass({
+      @TapClassConstructorAndProperties({
         construct: instance => events.push({ event: 'constructed', target: instance }),
         beforeGet: v => events.push({ event: 'get:before', target: v.target, data: { key: v.key, value: v.value } }),
         transformGet: v => {
@@ -433,6 +449,45 @@ export function testDynamicClassDecorators() {
       underlying!.quote = `I can't promise I'll try, but I'll try to try.`;
       assert(quotes.quote === `Mr. Burns says: Moe says: Homer says: Apu says: I can't promise I'll try, but I'll try to try.`);
       assert(underlying!.quote === `I can't promise I'll try, but I'll try to try.`);
+    });
+
+    // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property queries;
+    it('Dynamic decorators correctly hooking into custom property querying', () => {
+      // Example class
+      @TapClassPropertyQuerying({
+        has: (instance, key) => key in instance && !key.toString().startsWith('suppressed'),
+        ownKeys: instance => Reflect.ownKeys(instance).filter(k => k.toString().startsWith('own')),
+      })
+      class _Example {
+        @def public ownPropertyA: string = 'A';
+        @def public ownPropertyB: string = 'B';
+        @def public ownPropertyC: string = 'C';
+        @def public suppressedPropertyA: string = 'A!';
+        @def public suppressedPropertyB: string = 'B!';
+        @def public suppressedPropertyC: string = 'C!';
+      }
+      // EnTTify parent class
+      const Example = enttify(_Example);
+
+      // Initialize EnTTified class instance
+      const example = new Example();
+
+      // Verify listed properties
+      assert('ownPropertyA' in example);
+      assert('ownPropertyB' in example);
+      assert('ownPropertyC' in example);
+      refute('suppressedPropertyA' in example);
+      refute('suppressedPropertyB' in example);
+      refute('suppressedPropertyC' in example);
+
+      // Verify owned properties
+      assert(Object.keys(example).length === 3);
+      assert(Object.keys(example).includes('ownPropertyA'));
+      assert(Object.keys(example).includes('ownPropertyB'));
+      assert(Object.keys(example).includes('ownPropertyC'));
+      refute(Object.keys(example).includes('suppressedPropertyA'));
+      refute(Object.keys(example).includes('suppressedPropertyB'));
+      refute(Object.keys(example).includes('suppressedPropertyC'));
     });
   });
 }

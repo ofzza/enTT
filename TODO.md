@@ -1,21 +1,6 @@
 # Bugs and optimizations
 
-- [x] EnTTified class won't access constructor property: `(new (enttify(_MyClass))()).constructor`
-- [x] EntTTified instances call dedcorated onPropertyGet callbacks when accessing what is supposed to be their hidden ID property: `EnttClassProxySymbol = Symbol('Property key used to identify class Proxies')`
-- [/] Need a mechanism for `onPropertyGet` and `onPropertySet` callbacks not to cacsade between multiple decorators, but instead to provide a definitive action. (For example, setters should not end up setting a property on underlying instance!)
-  - [x] Implement interception mechanism
-  - [x] Implement staged callbacks: `before`, `transform`, `after`
-  - [ ] Write tests for
-    - [ ] Staged onGet class callbacks
-    - [ ] Staged onGet property callbacks
-    - [ ] Staged onSet class callbacks
-    - [ ] Staged onSet property callbacks
-    - [ ] Intercepting onSet class callbacks
-    - [ ] Intercepting onSet property callbacks
-- [x] Genericize Decorator definition classes: `Entt____Definition`
-
-- [ ] Support for intercepting `Object.keys(), [object].hasOwnProperty(), in` and such on enttified instances to provide a custom property names array
-- [ ] Add support to dehydrate/(rehydrate) for adding explicit additional property names to participate in the process on top of the ones inferred by chosen strategy
+...
 
 # Testing
 
