@@ -83,9 +83,6 @@ export type OnPropertyGetCallback<TInstance extends EnttInstance<ClassInstance>,
 export type OnPropertySetCallback<TInstance extends EnttInstance<ClassInstance>, TValInner = any, TValOuter = any> =
   | ((v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner)
   | {
-      intercept: OnPropertyInterceptionCallback<TInstance, TValOuter>; // TODO: Consider dropping `intercept` in favor of `transform = () => undefined`?!
-    }
-  | {
       before?: OnPropertyInterceptionCallback<TInstance, TValOuter>;
       transform?: OnPropertyTransformationCallback<TInstance, TValOuter, TValInner>;
       after?: OnPropertyInterceptionCallback<TInstance, TValOuter>;

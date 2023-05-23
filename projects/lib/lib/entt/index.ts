@@ -1176,10 +1176,6 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
             }
             // Register interception and staged callbacks
             else if (decoratorImplementation.onPropertySet instanceof Object) {
-              // Register staged callbacks: intercept
-              if ('intercept' in decoratorImplementation.onPropertySet && decoratorImplementation.onPropertySet.intercept) {
-                onPropertySetCallbacks.intercept.push(decoratorImplementation.onPropertySet.intercept);
-              }
               // Register staged callbacks: before
               if ('before' in decoratorImplementation.onPropertySet && decoratorImplementation.onPropertySet.before) {
                 onPropertySetCallbacks.before.push(decoratorImplementation.onPropertySet.before);
@@ -1197,31 +1193,21 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
         }
       }
 
-      // If any interceptor callback found execute interceptors only and don't set value
-      if (onPropertySetCallbacks.intercept.length) {
-        for (const interceptCallbackFn of onPropertySetCallbacks.intercept) {
-          interceptCallbackFn({ target, key, value: processed });
-        }
+      // Execute all getter "before" hooks
+      for (const beforeCallbackFn of onPropertySetCallbacks.before) {
+        beforeCallbackFn({ target, key, value: processed });
+      }
+      // Execute all getter "transform" hooks
+      for (const transformCallbackFn of onPropertySetCallbacks.transform) {
+        processed = transformCallbackFn({ target, key, value: processed });
+      }
+      // Execute all getter "after" hooks
+      for (const afterCallbackFn of onPropertySetCallbacks.after) {
+        afterCallbackFn({ target, key, value: processed });
       }
 
-      // If no interceptor callback found, execute staged callbacks
-      else {
-        // Execute all getter "before" hooks
-        for (const beforeCallbackFn of onPropertySetCallbacks.before) {
-          beforeCallbackFn({ target, key, value: processed });
-        }
-        // Execute all getter "transform" hooks
-        for (const transformCallbackFn of onPropertySetCallbacks.transform) {
-          processed = transformCallbackFn({ target, key, value: processed });
-        }
-        // Execute all getter "after" hooks
-        for (const afterCallbackFn of onPropertySetCallbacks.after) {
-          afterCallbackFn({ target, key, value: processed });
-        }
-
-        // Set value
-        (target as any)[key] = processed;
-      }
+      // Set value
+      (target as any)[key] = processed;
 
       // Return successful set operation
       return true;
