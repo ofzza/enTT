@@ -51,6 +51,13 @@ export type PropertyDecorator<TInstance extends ClassInstance> = (target: ClassI
  */
 export type OnConstructorCallback<TInstance extends EnttInstance<ClassInstance>> = (instance: TInstance) => void;
 /**
+ * Type definition for a callback function for enttified class instance hook providing all available property keys
+ */
+export type OnPropertyKeysCallback<TInstance extends EnttInstance<ClassInstance>> = {
+  has: (instance: TInstance, key: PropertyKey) => boolean;
+  ownKeys: (instance: TInstance) => Array<string | symbol>;
+};
+/**
  * Type definition for a intercaption callback function for enttified class instance onPropertyGet/onPropertySet hook
  */
 export type OnPropertyInterceptionCallback<TInstance extends EnttInstance<ClassInstance>, TVal = any> = (v: FullPathPropertyValue<TInstance, TVal>) => void;
@@ -161,6 +168,16 @@ export interface ICustomClassDecoratorImplementation<TInstance extends ClassInst
    * EnTTified instance before it is returned as constructed.
    */
   onConstruct?: OnConstructorCallback<TInstance>;
+  /**
+   * Callback function called when an EnTTified instance of the decorated EnTTified class is being queries for its properties. The callback is required
+   * to return an object containing 2 callback functions:
+   * - has: `(instance: TInstance, key: PropertyKey) => boolean`
+   *   A callback required to return if a property name is available on the instance (as when using the `in` operator: `key in target`)
+   * - ownKeys: `(instance: TInstance) => Array<PropertyKey>`
+   *   A callback required to return an array of properties directly owned by the instance
+   *   (as when calling `Reflect.ownKeys(target)` or `target.hasOwnProperty(key)`)
+   */
+  onPropertyKeys?: OnPropertyKeysCallback<TInstance>;
 }
 
 // #endregion
@@ -183,6 +200,16 @@ export class CustomClassDecoratorImplementation<TInstance extends ClassInstance>
      * EnTTified instance before it is returned as constructed.
      */
     public onConstruct?: OnConstructorCallback<TInstance>,
+    /**
+     * Callback function called when an EnTTified instance of the decorated EnTTified class is being queries for its properties. The callback is required
+     * to return an object containing 2 callback functions:
+     * - has: `(instance: TInstance, key: PropertyKey) => boolean`
+     *   A callback required to return if a property name is available on the instance (as when using the `in` operator: `key in target`)
+     * - ownKeys: `(instance: TInstance) => Array<PropertyKey>`
+     *   A callback required to return an array of properties directly owned by the instance
+     *   (as when calling `Reflect.ownKeys(target)` or `target.hasOwnProperty(key)`)
+     */
+    public onPropertyKeys?: OnPropertyKeysCallback<TInstance>,
     /**
      * Getter interception/transformation configuration can be expressed as:
      *
@@ -265,6 +292,16 @@ export type CustomDynamicClassDecoratorConfiguration<TInstance extends ClassInst
    *
    */
   onConstruct?: OnConstructorCallback<TInstance>;
+  /**
+   * Callback function called when an EnTTified instance of the decorated EnTTified class is being queries for its properties. The callback is required
+   * to return an object containing 2 callback functions:
+   * - has: `(instance: TInstance, key: PropertyKey) => boolean`
+   *   A callback required to return if a property name is available on the instance (as when using the `in` operator: `key in target`)
+   * - ownKeys: `(instance: TInstance) => Array<PropertyKey>`
+   *   A callback required to return an array of properties directly owned by the instance
+   *   (as when calling `Reflect.ownKeys(target)` or `target.hasOwnProperty(key)`)
+   */
+  onPropertyKeys?: OnPropertyKeysCallback<TInstance>;
   /**
    * Getter interception/transformation configuration can be expressed as:
    *

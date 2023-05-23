@@ -736,6 +736,7 @@ export function createClassCustomDecorator<TInstance extends ClassInstance, TPay
       // Register decorator definition
       definition.implementation = new CustomClassDecoratorImplementation<TInstance>(
         configuration?.onConstruct,
+        configuration?.onPropertyKeys,
         configuration?.onPropertyGet,
         configuration?.onPropertySet,
       );
@@ -1019,8 +1020,59 @@ export function getUnderlyingEnttifiedInstance<T extends ClassInstance>(proxy: E
 function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): ProxyHandler<ClassInstance<T>> {
   return {
     /**
+     * Intercepts queries for available property keys of the instance, such as when executing the `in` operator
+     * @param _ Underlying object baing proxied
+     * @param key Key of the property being queried
+     * @returns If property is found
+     */
+    has: (_: ClassInstance<T>, key: PropertyKey) => {
+      // Get class definition
+      const classDefinition = registerDecoratedClassDefinition(target);
+      // Check all relevang onPropertyKeys callbacks, any if any doesn't agree property doesn't exist, return property doesn'r exist
+      let onPropertyKeysHas = false;
+      for (const decoratorDefinition of [...classDefinition.decorators.all].reverse()) {
+        if (decoratorDefinition.implementation) {
+          const decoratorImplementation = decoratorDefinition.implementation;
+          if (decoratorImplementation.onPropertyKeys) {
+            onPropertyKeysHas = true;
+            if (decoratorImplementation.onPropertyKeys.has(target, key)) {
+              return true;
+            }
+          }
+        }
+      }
+      // Check if property was processed by onPropertyKeys.has(...) callback, or if not check if it exists directly
+      return onPropertyKeysHas ? false : key in target;
+    },
+    /**
+     * Intercepts queries for available and owned property keys of the instance, such as when executing `Object.keys()`, `Reflect.ownKeys()`, etc.
+     * @param _ Underlying object baing proxied
+     * @returns Array of owned property keys
+     */
+    ownKeys: (_: ClassInstance<T>) => {
+      // Get class definition
+      const classDefinition = registerDecoratedClassDefinition(target);
+      // Check all relevang onPropertyKeys callbacks, any if any doesn't agree property doesn't exist, return property doesn'r exist
+      let onPropertyKeysOwnKeys = false;
+      let onPropertyKeysOwnKeysCommonPropertyKeys = new Set<string | symbol>();
+      for (const decoratorDefinition of [...classDefinition.decorators.all].reverse()) {
+        if (decoratorDefinition.implementation) {
+          const decoratorImplementation = decoratorDefinition.implementation;
+          if (decoratorImplementation.onPropertyKeys) {
+            onPropertyKeysOwnKeys = true;
+            const propertyKeys = decoratorImplementation.onPropertyKeys.ownKeys(target);
+            for (const propertyKey of propertyKeys) {
+              onPropertyKeysOwnKeysCommonPropertyKeys.add(propertyKey);
+            }
+          }
+        }
+      }
+      // Check if property was processed by onPropertyKeys.ownKeys(...) callback, or if not check for owned properties directly
+      return onPropertyKeysOwnKeys ? [...onPropertyKeysOwnKeysCommonPropertyKeys] : Reflect.ownKeys(target);
+    },
+    /**
      * Intercepts get access to the underlyng object property
-     * @param target Underlying object baing proxied
+     * @param _ Underlying object baing proxied
      * @param key Key of the property being accessed
      * @returns Value to be returned from the getter, having been intercepted.
      * (If checking "hidden" property intended to identify Enttified class instances' Proxies, return original proxyied class to confirm self as proxy)
@@ -1094,7 +1146,7 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
     },
     /**
      * Intercepts set access to the underlyng object property
-     * @param target Underlying object baing proxied
+     * @param _ Underlying object baing proxied
      * @param key Key of the property being accessed
      * @returns Value that was set, having intercepted it and set it to the underlying proxied object
      */

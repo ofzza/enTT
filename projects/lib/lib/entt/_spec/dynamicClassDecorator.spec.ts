@@ -2,9 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // TODO:
-// - Write tests for onGet staged configuration
-// - Write tests for onSet staged configuration
-// - Write tests for onSet interceptor configuration
+// - [ ] Write tests for onPropertyKeys
 
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
