@@ -2,6 +2,7 @@
 // ----------------------------------------------------------------------------
 
 // Import tests
+import { testInternals } from './internals/index.spec';
 import { testStaticClassDecorators } from './_spec/staticClassDecorator.spec';
 import { testDynamicClassDecorators } from './_spec/dynamicClassDecorator.spec';
 import { testStaticPropertyDecorators } from './_spec/staticPropertyDecorator.spec';
@@ -10,6 +11,11 @@ import { testInheritabilityOfDecorators } from './_spec/inheritabilityOfDecorato
 
 // Test ...
 describe('Libraray core', () => {
+  // Tests internals
+  describe('Internals', () => {
+    testInternals();
+  });
+
   // Tests static custom class decorators cration and implementation
   describe('Can implement a custom, static class decorator', () => {
     testStaticClassDecorators();

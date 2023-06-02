@@ -35,12 +35,12 @@ function Label(label: string) {
  * @param target The class to be initialized
  * @returns Instance with values set as configured
  */
-function initializeWithDefaultValues<T extends ClassInstance>(target: Class<T>): T {
+function initializeWithDefaultValues<T extends ClassInstance>(target: Class<T>): ClassInstance<T> {
   const definition = getDecoratedClassDefinition(target);
   return Object.keys(definition.properties).reduce((instance, key) => {
-    (instance as any)[key] = definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0]?.data;
+    instance[key as keyof typeof instance] = definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0]?.data;
     return instance;
-  }, new target());
+  }, new target() as ClassInstance<T>);
 }
 
 /**
@@ -48,7 +48,7 @@ function initializeWithDefaultValues<T extends ClassInstance>(target: Class<T>):
  * @param target The class instance to verify
  * @returns A record of property value verification
  */
-function checkDefaultValues<T extends ClassInstance>(target: T): Record<PropertyKey, boolean> {
+function checkDefaultValues<T extends ClassInstance>(target: ClassInstance<T>): Record<PropertyKey, boolean> {
   const definition = getDecoratedClassDefinition(target);
   return Object.keys(definition.properties).reduce((check, key) => {
     (check as any)[key] = (target as any)[key] === definition.properties[key].decorators.bySymbol[defaultValueDecoratorSymbol][0]?.data;

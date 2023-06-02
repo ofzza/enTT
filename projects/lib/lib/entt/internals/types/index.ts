@@ -7,18 +7,27 @@ import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 // #region EnTT types: Helper types
 
 /**
+ * A transparent proxy to the underlying class with dynamic EnTT functionality attached
+ */
+export type EnttClass<T extends object = object> = T extends object ? Class<T> : Class<T>;
+//          ^?
+
+/**
  * A transparent proxy to the underlying class instance with dynamic EnTT functionality attached
  */
-export type EnttInstance<T extends ClassInstance> = T;
+export type EnttClassInstance<T extends object = object> = T extends object ? ClassInstance<T> : ClassInstance<T>;
+//          ^?
 
 /**
  * Describes a property value and all the information needed to get/set that value
  */
 export type FullPathPropertyValue<T extends ClassInstance, V> = {
+  //        ^?
+
   /**
    * Parent instance containing the property containing the value
    */
-  target: ClassInstance<T>;
+  target: EnttClassInstance<T>;
   /**
    * Name of the property containing the value
    */
@@ -49,28 +58,28 @@ export type PropertyDecorator<TInstance extends ClassInstance> = (target: ClassI
 /**
  * Type definition for a callback function for enttified class instance onConstruct hook
  */
-export type OnConstructorCallback<TInstance extends EnttInstance<ClassInstance>> = (instance: TInstance) => void;
+export type OnConstructorCallback<TInstance extends ClassInstance> = (instance: EnttClassInstance<TInstance>) => void;
 /**
  * Type definition for a callback function for enttified class instance hook providing all available property keys
  */
-export type OnPropertyKeysCallback<TInstance extends EnttInstance<ClassInstance>> = {
-  has: (instance: TInstance, key: PropertyKey) => boolean;
-  ownKeys: (instance: TInstance) => Array<string | symbol>;
+export type OnPropertyKeysCallback<TInstance extends ClassInstance> = {
+  has: (instance: EnttClassInstance<TInstance>, key: PropertyKey) => boolean;
+  ownKeys: (instance: EnttClassInstance<TInstance>) => Array<string | symbol>;
 };
 /**
  * Type definition for a intercaption callback function for enttified class instance onPropertyGet/onPropertySet hook
  */
-export type OnPropertyInterceptionCallback<TInstance extends EnttInstance<ClassInstance>, TVal = any> = (v: FullPathPropertyValue<TInstance, TVal>) => void;
+export type OnPropertyInterceptionCallback<TInstance extends ClassInstance, TVal = any> = (v: FullPathPropertyValue<TInstance, TVal>) => void;
 /**
  * Type definition for a transformation callback function for enttified class instance onPropertyGet/onPropertySet hook
  */
-export type OnPropertyTransformationCallback<TInstance extends EnttInstance<ClassInstance>, TValInput = any, TValOutput = any> = (
+export type OnPropertyTransformationCallback<TInstance extends ClassInstance, TValInput = any, TValOutput = any> = (
   v: FullPathPropertyValue<TInstance, TValInput>,
 ) => TValOutput;
 /**
  * Type definition for a callback function for enttified class instance onPropertyGet hook callback or a full staged callbacks configuration
  */
-export type OnPropertyGetCallback<TInstance extends EnttInstance<ClassInstance>, TValInner = any, TValOuter = any> =
+export type OnPropertyGetCallback<TInstance extends ClassInstance, TValInner = any, TValOuter = any> =
   | ((v: FullPathPropertyValue<TInstance, TValInner>) => TValOuter)
   | {
       before?: OnPropertyInterceptionCallback<TInstance, TValInner>;
@@ -80,7 +89,7 @@ export type OnPropertyGetCallback<TInstance extends EnttInstance<ClassInstance>,
 /**
  * Type definition for a callback function for enttified class instance onPropertySet hook callback, interceptor callback or a full staged callbacks configuration
  */
-export type OnPropertySetCallback<TInstance extends EnttInstance<ClassInstance>, TValInner = any, TValOuter = any> =
+export type OnPropertySetCallback<TInstance extends ClassInstance, TValInner = any, TValOuter = any> =
   | ((v: FullPathPropertyValue<TInstance, TValOuter>) => TValInner)
   | {
       before?: OnPropertyInterceptionCallback<TInstance, TValOuter>;
@@ -474,7 +483,7 @@ export type CustomDynamicPropertyDecoratorConfiguration<TInstance extends ClassI
    *   }
    *   ```
    */
-  onPropertyGet?: OnPropertyGetCallback<TInstance>;
+  onPropertyGet?: OnPropertyGetCallback<TInstance, TValInner, TValOuter>;
   /**
    * Setter interception/transformation configuration can be expressed as:
    *
@@ -505,7 +514,7 @@ export type CustomDynamicPropertyDecoratorConfiguration<TInstance extends ClassI
    *   }
    *   ```
    */
-  onPropertySet?: OnPropertySetCallback<TInstance>;
+  onPropertySet?: OnPropertySetCallback<TInstance, TValInner, TValOuter>;
 };
 
 // #endregion
@@ -520,7 +529,7 @@ export class EnttDefinition<T extends ClassInstance> {
    * Constructor
    * @param owner Stores the parent class this definition refers to
    */
-  constructor(public readonly owner: Class<object>) {}
+  constructor(public readonly owner: Class) {}
   /**
    * Holds class decorator definitions for decorators applied to this class
    */
@@ -543,7 +552,7 @@ export class EnttClassDecoratorDefinition<T extends ClassInstance> {
    * @param owner Stores the parent class this definition refers to
    * @param ownerPropertyKey Name of the property this definition refers to
    */
-  constructor(public readonly decoratorSymbol: symbol, public readonly owner: Class<object>) {}
+  constructor(public readonly decoratorSymbol: symbol, public readonly owner: Class) {}
   /**
    * Decorator hooks implementation (per decorator instance because a hook implementation can trap values from a decorator factory and thus be specific to the instance)
    */
@@ -562,7 +571,7 @@ export class EnttPropertyDefinition<T extends ClassInstance> {
    * @param owner Stores the parent class this definition refers to
    * @param ownerPropertyKey Name of the property this definition refers to
    */
-  constructor(public readonly owner: Class<object>, public readonly ownerPropertyKey: PropertyKey) {}
+  constructor(public readonly owner: Class, public readonly ownerPropertyKey: PropertyKey) {}
   /**
    * Holds property decorator definitions for decorators applied to this property
    */
@@ -581,7 +590,7 @@ export class EnttPropertyDecoratorDefinition<T extends ClassInstance> {
    * @param owner Stores the parent class this definition refers to
    * @param ownerPropertyKey Name of the property this definition refers to
    */
-  constructor(public readonly decoratorSymbol: symbol, public readonly owner: Class<object>, public readonly ownerPropertyKey?: PropertyKey) {}
+  constructor(public readonly decoratorSymbol: symbol, public readonly owner: Class, public readonly ownerPropertyKey?: PropertyKey) {}
   /**
    * Decorator hooks implementation (per decorator instance because a hook implementation can trap values from a decorator factory and thus be specific to the instance)
    */

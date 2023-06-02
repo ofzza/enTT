@@ -14,7 +14,7 @@ import {
   Warning,
   createPropertyCustomDecorator,
   getDecoratedClassPropertyDecoratorDefinition,
-  EnttInstance,
+  EnttClassInstance,
   OnPropertyInterceptionCallback,
   OnPropertyTransformationCallback,
   enttify,
@@ -36,7 +36,7 @@ const warnings: Array<Info | Warning | Error> = [];
 // Unique identifier symbol identifying the TapProperty decorator
 const tapPropertyDecoratorSymbol = Symbol('Tap property decorator');
 // Taps a property hooks by piping all internal callbacks
-function TapProperty<TInstance extends EnttInstance<ClassInstance>, TValInner = any, TValOuter = any>(callbacks: {
+function TapProperty<TInstance extends EnttClassInstance<ClassInstance>, TValInner = any, TValOuter = any>(callbacks: {
   beforeGet: OnPropertyInterceptionCallback<TInstance, TValInner>;
   transformGet: OnPropertyTransformationCallback<TInstance, TValInner, TValOuter>;
   afterGet: OnPropertyInterceptionCallback<TInstance, TValInner>;
@@ -363,7 +363,7 @@ export function testDynamicPropertyDecorators() {
       const Example = enttify(_Example);
 
       // Holds intercepted events from any instance of the Example class
-      const events: Array<{ event: string; target: EnttInstance<ClassInstance>; data?: any }> = [];
+      const events: Array<{ event: string; target: EnttClassInstance<ClassInstance>; data?: any }> = [];
 
       // Initialize EnTTified class instance
       const example = new Example();

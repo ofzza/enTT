@@ -1,6 +1,7 @@
 # Bugs and optimizations
 
-...
+- [ ] Verify exports and exporting paths for lib internals
+- [ ] Allow usage of decorator function or decorator factory function in place of symbol when accessing decorator related data
 
 # Testing
 

@@ -9,7 +9,7 @@ import {
   Warning,
   createClassCustomDecorator,
   getDecoratedClassDecoratorDefinition,
-  EnttInstance,
+  EnttClassInstance,
   FullPathPropertyValue,
   OnConstructorCallback,
   OnPropertyInterceptionCallback,
@@ -34,13 +34,13 @@ const warnings: Array<Info | Warning | Error> = [];
 const tapClassConstructorAndPropertiesDecoratorSymbol = Symbol('Tap class constructor and properties decorator');
 // Taps a property hooks by piping constructor and property getter/setter callbacks
 function TapClassConstructorAndProperties<TInstance extends ClassInstance, TValInner = any, TValOuter = any>(callbacks: {
-  construct: OnConstructorCallback<EnttInstance<TInstance>>;
-  beforeGet: OnPropertyInterceptionCallback<EnttInstance<TInstance>, TValInner>;
-  transformGet: OnPropertyTransformationCallback<EnttInstance<TInstance>, TValInner, TValOuter>;
-  afterGet: OnPropertyInterceptionCallback<EnttInstance<TInstance>, TValInner>;
-  beforeSet: OnPropertyInterceptionCallback<EnttInstance<TInstance>, TValInner>;
-  transformSet: OnPropertyTransformationCallback<EnttInstance<TInstance>, TValOuter, TValInner>;
-  afterSet: OnPropertyInterceptionCallback<EnttInstance<TInstance>, TValInner>;
+  construct: OnConstructorCallback<TInstance>;
+  beforeGet: OnPropertyInterceptionCallback<TInstance, TValInner>;
+  transformGet: OnPropertyTransformationCallback<TInstance, TValInner, TValOuter>;
+  afterGet: OnPropertyInterceptionCallback<TInstance, TValInner>;
+  beforeSet: OnPropertyInterceptionCallback<TInstance, TValInner>;
+  transformSet: OnPropertyTransformationCallback<TInstance, TValOuter, TValInner>;
+  afterSet: OnPropertyInterceptionCallback<TInstance, TValInner>;
 }) {
   return createClassCustomDecorator<TInstance, any>(
     {
@@ -65,15 +65,15 @@ function TapClassConstructorAndProperties<TInstance extends ClassInstance, TValI
 const tapClassPropertyQueryingDecoratorSymbol = Symbol('Tap class property querying decorator');
 // Taps a property hooks by piping property querying callbacks
 function TapClassPropertyQuerying<TInstance extends ClassInstance>(callbacks: {
-  has: (instance: TInstance, key: PropertyKey) => boolean;
-  ownKeys: (instance: TInstance) => Array<string | symbol>;
+  has: (instance: EnttClassInstance<TInstance>, key: PropertyKey) => boolean;
+  ownKeys: (instance: EnttClassInstance<TInstance>) => Array<string | symbol>;
 }) {
   return createClassCustomDecorator<TInstance, any>(
     {
       composeDecoratorDefinitionPayload: () => callbacks,
       onPropertyKeys: {
-        has: (instance: TInstance, key: PropertyKey) => callbacks.has(instance, key),
-        ownKeys: (instance: TInstance) => callbacks.ownKeys(instance),
+        has: (instance: EnttClassInstance<TInstance>, key: PropertyKey) => callbacks.has(instance, key),
+        ownKeys: (instance: EnttClassInstance<TInstance>) => callbacks.ownKeys(instance),
       },
     },
     tapClassPropertyQueryingDecoratorSymbol,
@@ -346,7 +346,7 @@ export function testDynamicClassDecorators() {
     // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property staged setters/getters
     it('Dynamic decorators correctly hooking into staged property setters/getters', () => {
       // Example class
-      @TapClassConstructorAndProperties({
+      @TapClassConstructorAndProperties<typeof _Example>({
         construct: instance => events.push({ event: 'constructed', target: instance }),
         beforeGet: v => events.push({ event: 'get:before', target: v.target, data: { key: v.key, value: v.value } }),
         transformGet: v => {
@@ -368,7 +368,7 @@ export function testDynamicClassDecorators() {
       const Example = enttify(_Example);
 
       // Holds intercepted events from any instance of the Example class
-      const events: Array<{ event: string; target: EnttInstance<ClassInstance>; data?: any }> = [];
+      const events: Array<{ event: string; target: EnttClassInstance<ClassInstance>; data?: any }> = [];
 
       // Initialize EnTTified class instance
       const example = new Example();
@@ -454,7 +454,7 @@ export function testDynamicClassDecorators() {
     // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property queries;
     it('Dynamic decorators correctly hooking into custom property querying', () => {
       // Example class
-      @TapClassPropertyQuerying({
+      @TapClassPropertyQuerying<typeof _Example>({
         has: (instance, key) => key in instance && !key.toString().startsWith('suppressed'),
         ownKeys: instance => Reflect.ownKeys(instance).filter(k => k.toString().startsWith('own')),
       })

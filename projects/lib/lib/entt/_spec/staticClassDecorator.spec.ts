@@ -36,13 +36,13 @@ function AsString(data: (target: Record<PropertyKey, string>) => string) {
  * @param text String representation
  * @returns Created instance of the decorated class
  */
-function createInstanceFromText<T extends ClassInstance>(target: Class<T>, text: string) {
+function createInstanceFromText<T extends ClassInstance>(target: Class<T>, text: string): ClassInstance<T> {
   const definition = getDecoratedClassDefinition(target);
   const valuesFromStringFn = definition.decorators.bySymbol[fromStringDecoratorSymbol][0].data as (serialized: string) => Record<PropertyKey, string>;
-  const valuesFromString = valuesFromStringFn(text) as T;
-  const instance = new target();
+  const valuesFromString = valuesFromStringFn(text) as ClassInstance<T>;
+  const instance = new target() as ClassInstance<T>;
   for (const key of Object.keys(valuesFromString)) {
-    instance[key as keyof T] = valuesFromString[key as keyof T];
+    instance[key as keyof typeof instance] = valuesFromString[key as keyof typeof valuesFromString];
   }
   return instance;
 }

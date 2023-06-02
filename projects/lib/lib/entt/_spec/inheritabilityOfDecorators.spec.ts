@@ -3,6 +3,7 @@
 
 // Import dependencies
 import { assert } from '@ofzza/ts-std/types/utility/assertion';
+import { ClassInstance } from '@ofzza/ts-std/types/corejs';
 import {
   createClassCustomDecorator,
   getDecoratedClassDefinition,
@@ -157,7 +158,7 @@ export function testInheritabilityOfDecorators() {
   const extendedEnttifiedPolo = new ExtendedEnttifiedPoloClass();
 
   // Tests Marco (based) class's class decorators
-  function testMarcoClassDecorators<T extends MarcoClass>(instance: T) {
+  function testMarcoClassDecorators<T extends MarcoClass>(instance: ClassInstance<T>) {
     // Get full class definition for the base class
     const definition = getDecoratedClassDefinition(instance);
     const defAll = definition.decorators.all;
@@ -176,7 +177,7 @@ export function testInheritabilityOfDecorators() {
     assert(marcoClassDecoratorDefinition.filter(def => def.decoratorSymbol === decoClassDecoratorSymbol).length === 1);
   }
   // Tests Marco (based) class's class property decorators
-  function testMarcoClassPropertyDecorators<T extends MarcoClass>(instance: T) {
+  function testMarcoClassPropertyDecorators<T extends MarcoClass>(instance: ClassInstance<T>) {
     // Get full class definition for the base class
     const definition = getDecoratedClassPropertyDefinition(instance, 'prop');
     const defAll = definition.decorators.all;
@@ -195,7 +196,7 @@ export function testInheritabilityOfDecorators() {
     assert(marcoPropertyDecoratorDefinition.filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol).length === 1);
   }
   // Tests Polo (based) class's class decorators
-  function testPoloClassDecorators<T extends PoloClass>(instance: T) {
+  function testPoloClassDecorators<T extends PoloClass>(instance: ClassInstance<T>) {
     // Get full class definition for the extended class
     const definition = getDecoratedClassDefinition(instance);
     const defAll = definition.decorators.all;
@@ -221,7 +222,7 @@ export function testInheritabilityOfDecorators() {
     assert(poloClassDecoratorDefinition.filter(def => def.decoratorSymbol === decoClassDecoratorSymbol).length === 2);
   }
   // Tests Polo (based) class's class property decorators
-  function testPoloClassPropertyDecorators<T extends PoloClass>(instance: T) {
+  function testPoloClassPropertyDecorators<T extends PoloClass>(instance: ClassInstance<T>) {
     // Get full class definition for the extended class
     const definition = getDecoratedClassPropertyDefinition(instance, 'prop');
     const defAll = definition.decorators.all;

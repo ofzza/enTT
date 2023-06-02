@@ -4,7 +4,7 @@
 // Import and (re)export types
 import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import {
-  EnttInstance,
+  EnttClassInstance,
   ClassDecorator,
   PropertyDecorator,
   ICustomDecoratorImplementation,
@@ -34,7 +34,7 @@ export { Logger, Warning, Info, log, setLogging };
 /**
  * All classes carrying properties decorated with EnTT functionality
  */
-const decoratedClasses: WeakMap<Class<Object>, EnttDefinition<ClassInstance>> = new WeakMap();
+const decoratedClasses: WeakMap<Class, EnttDefinition<ClassInstance>> = new WeakMap();
 
 /**
  * Gets (and first registers if necesarry) definitions for a class decorated by or carrying properties decorated with EnTT functionality
@@ -43,6 +43,7 @@ const decoratedClasses: WeakMap<Class<Object>, EnttDefinition<ClassInstance>> = 
  */
 export function getDecoratedClassDefinition<T extends ClassInstance>(target: ClassInstance<T>): EnttDefinition<T>;
 export function getDecoratedClassDefinition<T extends ClassInstance>(target: Class<T>): EnttDefinition<T>;
+export function getDecoratedClassDefinition<T extends ClassInstance>(target: Class<T> | ClassInstance<T>): EnttDefinition<T>;
 export function getDecoratedClassDefinition<T extends ClassInstance>(target: Class<T> | ClassInstance<T>): EnttDefinition<T> {
   // Check if proxy of a class
   if (target && (target as unknown as any)[EnttClassProxySymbol]) {
@@ -59,7 +60,7 @@ export function getDecoratedClassDefinition<T extends ClassInstance>(target: Cla
 
   // If target is not a class, return empty definition
   if (typeof target !== 'function') {
-    return new EnttDefinition(target as Class<T>);
+    return new EnttDefinition(target as unknown as Class<T>);
   }
 
   // Initialize definitions
@@ -120,7 +121,7 @@ function registerDecoratedClassDefinition<T extends ClassInstance>(
 
   // If target is not a class, return empty definition
   if (typeof target !== 'function') {
-    return new EnttDefinition(target as Class<T>);
+    return new EnttDefinition(target as unknown as Class<T>);
   }
 
   // Get definition
@@ -259,7 +260,7 @@ export function getDecoratedClassPropertyDefinition<T extends ClassInstance>(
 
   // If target is not a class, return empty definition
   if (typeof target !== 'function') {
-    return new EnttPropertyDefinition(target as Class<T>, propertyKey);
+    return new EnttPropertyDefinition(target as unknown as Class<T>, propertyKey);
   }
 
   // Initialize definitions
@@ -316,7 +317,7 @@ function registerDecoratedClassPropertyDefinition<T extends ClassInstance>(
 
   // If target is not a class, return empty definition
   if (typeof target !== 'function') {
-    return new EnttPropertyDefinition(target as Class<T>, propertyKey);
+    return new EnttPropertyDefinition(target as unknown as Class<T>, propertyKey);
   }
 
   // Get definition for target class
@@ -535,7 +536,7 @@ export function filterDefinition<T extends ClassInstance>(
 /**
  * Array of classes requiring enttification, queued for verification if they were EnTTified
  */
-const validationQueueForClassesRequiringEnttification: Array<{ target: Class<object>; message: Info | Warning | Error }> = [];
+const validationQueueForClassesRequiringEnttification: Array<{ target: Class; message: Info | Warning | Error }> = [];
 
 /**
  * Registers a target decorated (with class or property decorators) class for verification to make sure any class using EnTT-ification dependent decorators was EnTTified
@@ -913,15 +914,15 @@ const EnttClassInstanceProxySymbol = Symbol('Property key used to identify class
 /**
  * Holds references to all classes that were EnTTified
  */
-const enttifiedClassesByUnderlyingClass: WeakMap<Class<object>, Class<EnttInstance<ClassInstance>>> = new WeakMap();
+const enttifiedClassesByUnderlyingClass: WeakMap<Class, Class<EnttClassInstance<ClassInstance>>> = new WeakMap();
 /**
  * Holds references to all classes that were EnTTified
  */
-const underlyingClassesByEnttifiedClass: WeakMap<Class<EnttInstance<ClassInstance>>, Class<ClassInstance>> = new WeakMap();
+const underlyingClassesByEnttifiedClass: WeakMap<Class<EnttClassInstance<ClassInstance>>, Class> = new WeakMap();
 /**
  * Holds references to all instances that were EnTTified
  */
-const underlyingInstancesByEnttifiedInstance: WeakMap<EnttInstance<ClassInstance>, ClassInstance> = new WeakMap();
+const underlyingInstancesByEnttifiedInstance: WeakMap<EnttClassInstance<ClassInstance>, ClassInstance> = new WeakMap();
 
 /**
  * Wraps a class into a proxy which will hook into the constructor and replace the constructed instance with a proxy to
@@ -929,12 +930,12 @@ const underlyingInstancesByEnttifiedInstance: WeakMap<EnttInstance<ClassInstance
  * @param TargetClass The class being wrapped
  * @returns A proxy to the class
  */
-export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<EnttInstance<T>> {
+export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<EnttClassInstance<T>> {
   // Wrap a class into a proxy which will hook into the constructor and replace the constructed instance with a proxy to
   // the instance implementing the dynamic EnTT functionality
   const alreadyEnTTified = enttifiedClassesByUnderlyingClass.has(TargetClass);
   const ProxyClass = alreadyEnTTified
-    ? (enttifiedClassesByUnderlyingClass.get(TargetClass) as Class<EnttInstance<T>>)
+    ? (enttifiedClassesByUnderlyingClass.get(TargetClass) as Class<EnttClassInstance<T>>)
     : (new Proxy(TargetClass, {
         /**
          * Intercept constructng an instance
@@ -942,15 +943,15 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
          * @param args
          * @returns
          */
-        construct: (_TargetClass: Class<T>, args: Array<any>): EnttInstance<T> => {
+        construct: (_TargetClass: Class<T>, args: Array<any>): EnttClassInstance<T> => {
           // Get class definition
           const classDefinition = registerDecoratedClassDefinition(_TargetClass);
           // Run original constructor and get original instance of the class
-          const target = new _TargetClass(...args);
+          const target = new _TargetClass(...args) as ClassInstance<Class<T>>;
           const handler = createProxyhandlerForEnttInstance(target);
 
           // Compose a proxy to the original instance, implementing dynamic EnTT functionality
-          const proxy = new Proxy(target, handler) as EnttInstance<T>;
+          const proxy = new Proxy(target, handler) as unknown as EnttClassInstance<T>;
           // Register original instance by the proxy
           underlyingInstancesByEnttifiedInstance.set(proxy, target);
 
@@ -984,7 +985,7 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
           // If checking "hidden" property intended to identify Enttified classes' Proxies, return original proxyied class to confirm self as proxy
           return key === EnttClassProxySymbol ? _TargetClass : (_TargetClass as unknown as any)[key];
         },
-      }) as Class<EnttInstance<T>>);
+      }) as Class<EnttClassInstance<T>>);
   // Register original class by the proxy
   if (!alreadyEnTTified) {
     enttifiedClassesByUnderlyingClass.set(TargetClass.prototype.constructor, ProxyClass);
@@ -999,7 +1000,7 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
  * @param TargetClass EnTTified class
  * @returns Underlying class that was EnTTified
  */
-export function getUnderlyingEnttifiedClass<T extends ClassInstance>(TargetClass: Class<EnttInstance<T>>): Class<T> | undefined {
+export function getUnderlyingEnttifiedClass<T extends ClassInstance>(TargetClass: Class<EnttClassInstance<T>>): Class<T> | undefined {
   return underlyingClassesByEnttifiedClass.get(TargetClass) as Class<T> | undefined;
 }
 
@@ -1008,7 +1009,7 @@ export function getUnderlyingEnttifiedClass<T extends ClassInstance>(TargetClass
  * @param proxy EnTTified object instance
  * @returns Underlying object instance that was EnTTified
  */
-export function getUnderlyingEnttifiedInstance<T extends ClassInstance>(proxy: EnttInstance<T>): ClassInstance<T> | undefined {
+export function getUnderlyingEnttifiedInstance<T extends ClassInstance>(proxy: EnttClassInstance<T>): ClassInstance<T> | undefined {
   return underlyingInstancesByEnttifiedInstance.get(proxy) as ClassInstance<T> | undefined;
 }
 
@@ -1017,7 +1018,7 @@ export function getUnderlyingEnttifiedInstance<T extends ClassInstance>(proxy: E
  * @param target Newly constructed, original instance being wrapped by the proxy
  * @returns Proxy handler definition
  */
-function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): ProxyHandler<ClassInstance<T>> {
+function createProxyhandlerForEnttInstance<T extends ClassInstance>(_: ClassInstance<T>): ProxyHandler<ClassInstance<T>> {
   return {
     /**
      * Intercepts queries for available property keys of the instance, such as when executing the `in` operator
@@ -1025,9 +1026,9 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
      * @param key Key of the property being queried
      * @returns If property is found
      */
-    has: (_: ClassInstance<T>, key: PropertyKey) => {
+    has: (target: EnttClassInstance<T>, key: PropertyKey) => {
       // Get class definition
-      const classDefinition = registerDecoratedClassDefinition(target);
+      const classDefinition = registerDecoratedClassDefinition<T>(target);
       // Check all relevang onPropertyKeys callbacks, any if any doesn't agree property doesn't exist, return property doesn'r exist
       let onPropertyKeysHas = false;
       for (const decoratorDefinition of [...classDefinition.decorators.all].reverse()) {
@@ -1049,7 +1050,7 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
      * @param _ Underlying object baing proxied
      * @returns Array of owned property keys
      */
-    ownKeys: (_: ClassInstance<T>) => {
+    ownKeys: (target: EnttClassInstance<T>) => {
       // Get class definition
       const classDefinition = registerDecoratedClassDefinition(target);
       // Check all relevang onPropertyKeys callbacks, any if any doesn't agree property doesn't exist, return property doesn'r exist
@@ -1077,7 +1078,7 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
      * @returns Value to be returned from the getter, having been intercepted.
      * (If checking "hidden" property intended to identify Enttified class instances' Proxies, return original proxyied class to confirm self as proxy)
      */
-    get: (_: ClassInstance<T>, key: PropertyKey) => {
+    get: (target: EnttClassInstance<T>, key: PropertyKey) => {
       // If checking "hidden" property intended to identify Enttified classes return undefined
       if (key === EnttClassProxySymbol) {
         return undefined;
@@ -1107,7 +1108,7 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
           if (decoratorImplementation.onPropertyGet) {
             // Register simple transform callback
             if (typeof decoratorImplementation.onPropertyGet === 'function') {
-              onPropertyGetCallbacks.transform.push(decoratorImplementation.onPropertyGet);
+              onPropertyGetCallbacks.transform.push(decoratorImplementation.onPropertyGet as OnPropertyTransformationCallback<T>);
             }
             // Register interception and staged callbacks
             else if (decoratorImplementation.onPropertyGet instanceof Object) {
@@ -1150,7 +1151,7 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
      * @param key Key of the property being accessed
      * @returns Value that was set, having intercepted it and set it to the underlying proxied object
      */
-    set: (_: ClassInstance<T>, key: PropertyKey, value: any) => {
+    set: (target: EnttClassInstance<T>, key: PropertyKey, value: any) => {
       // Initialize setting value
       let processed = value;
 
@@ -1172,7 +1173,7 @@ function createProxyhandlerForEnttInstance<T extends ClassInstance>(target: T): 
           if (decoratorImplementation.onPropertySet) {
             // Register simple transform callback
             if (typeof decoratorImplementation.onPropertySet === 'function') {
-              onPropertySetCallbacks.transform.push(decoratorImplementation.onPropertySet);
+              onPropertySetCallbacks.transform.push(decoratorImplementation.onPropertySet as OnPropertyTransformationCallback<T>);
             }
             // Register interception and staged callbacks
             else if (decoratorImplementation.onPropertySet instanceof Object) {
