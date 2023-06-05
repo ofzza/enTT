@@ -87,7 +87,7 @@ export function testStaticPropertyDecorators() {
         (typeof target === 'function' ? target?.name : false) || JSON.stringify(target)
       }, ${propertyKey}) returns a valid empty definition`, () => {
         // Get definition
-        const def = getDecoratedClassPropertyDefinition(target as unknown as Class<Test>, propertyKey);
+        const def = getDecoratedClassPropertyDefinition(target as unknown as Class<typeof Test>, propertyKey);
         // Check definition
         assert(!!def);
         assert(def instanceof Object);

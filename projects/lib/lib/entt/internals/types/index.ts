@@ -2,20 +2,20 @@
 // ----------------------------------------------------------------------------
 
 // Import dependencies
-import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
+import { Class, ClassInstance, _ClassAbstractConstructor, _ClassConstructor } from '@ofzza/ts-std/types/corejs/class';
 
 // #region EnTT types: Helper types
 
 /**
  * A transparent proxy to the underlying class with dynamic EnTT functionality attached
  */
-export type EnttClass<T extends object = object> = T extends object ? Class<T> : Class<T>;
+export type EnttClass<T extends InstanceType<_ClassAbstractConstructor<object>> = InstanceType<_ClassAbstractConstructor<object>>> = Class<T>;
 //          ^?
 
 /**
  * A transparent proxy to the underlying class instance with dynamic EnTT functionality attached
  */
-export type EnttClassInstance<T extends object = object> = T extends object ? ClassInstance<T> : ClassInstance<T>;
+export type EnttClassInstance<T extends object = object> = ClassInstance<T>;
 //          ^?
 
 /**

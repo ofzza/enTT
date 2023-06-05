@@ -1,5 +1,6 @@
 # Bugs and optimizations
 
+- [ ] Drop extra comments on top of `describe(...)` and `it(...)` blocks
 - [ ] Verify exports and exporting paths for lib internals
 - [ ] Allow usage of decorator function or decorator factory function in place of symbol when accessing decorator related data
 

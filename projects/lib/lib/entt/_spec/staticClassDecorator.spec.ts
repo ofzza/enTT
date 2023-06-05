@@ -84,7 +84,7 @@ export function testStaticClassDecorators() {
         (typeof target === 'function' ? target?.name : false) || JSON.stringify(target)
       }) returns a valid empty definition`, () => {
         // Get definition
-        const def = getDecoratedClassDefinition(target as unknown as Class<Test>);
+        const def = getDecoratedClassDefinition(target as unknown as Class<typeof Test>);
         // Check definition
         assert(!!def);
         assert(def instanceof Object);
