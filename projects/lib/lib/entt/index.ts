@@ -1000,7 +1000,7 @@ export function enttify<T extends ClassInstance>(TargetClass: Class<T>): Class<E
  * @param TargetClass EnTTified class
  * @returns Underlying class that was EnTTified
  */
-export function getUnderlyingEnttifiedClass<T extends ClassInstance>(TargetClass: Class<EnttClassInstance<T>>): Class<T> | undefined {
+export function getUnderlyingEnttifiedClass<T extends EnttClassInstance>(TargetClass: Class<T>): Class<T> | undefined {
   return underlyingClassesByEnttifiedClass.get(TargetClass) as Class<T> | undefined;
 }
 
@@ -1009,7 +1009,7 @@ export function getUnderlyingEnttifiedClass<T extends ClassInstance>(TargetClass
  * @param proxy EnTTified object instance
  * @returns Underlying object instance that was EnTTified
  */
-export function getUnderlyingEnttifiedInstance<T extends ClassInstance>(proxy: EnttClassInstance<T>): ClassInstance<T> | undefined {
+export function getUnderlyingEnttifiedInstance<T extends EnttClassInstance>(proxy: EnttClassInstance<T>): ClassInstance<T> | undefined {
   return underlyingInstancesByEnttifiedInstance.get(proxy) as ClassInstance<T> | undefined;
 }
 
@@ -1018,7 +1018,7 @@ export function getUnderlyingEnttifiedInstance<T extends ClassInstance>(proxy: E
  * @param target Newly constructed, original instance being wrapped by the proxy
  * @returns Proxy handler definition
  */
-function createProxyhandlerForEnttInstance<T extends ClassInstance>(_: ClassInstance<T>): ProxyHandler<ClassInstance<T>> {
+function createProxyhandlerForEnttInstance<T extends EnttClassInstance>(_: ClassInstance<T>): ProxyHandler<ClassInstance<T>> {
   return {
     /**
      * Intercepts queries for available property keys of the instance, such as when executing the `in` operator
