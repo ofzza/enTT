@@ -119,7 +119,7 @@ export type HydrationBindingConstructorArgumentsConfiguration<TInstance, TValReh
 };
 
 // Unique identifier symbol identifying the Hydratable binding decorator
-const hydrationBindingConstructorArgumentsDecoratorSymbol = Symbol('Hydration binding constructor arguments decorator');
+const bindClassSymbol = Symbol('@bind(class) symbol');
 
 /**
  * When dehydrating/rehydrating a class instance, this property decorator configures explicit conversion methods to be used to convert
@@ -130,10 +130,7 @@ const hydrationBindingConstructorArgumentsDecoratorSymbol = Symbol('Hydration bi
 function bindConstructorArguments<TInstance extends ClassInstance>(
   config: HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>,
 ): ClassDecorator<TInstance> {
-  return createClassCustomDecorator<TInstance, HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>>(
-    () => config,
-    hydrationBindingConstructorArgumentsDecoratorSymbol,
-  );
+  return createClassCustomDecorator<TInstance, HydrationBindingConstructorArgumentsConfiguration<TInstance, TInstance, any>>(() => config, bindClassSymbol);
 }
 
 // #endregion
@@ -168,7 +165,7 @@ export type HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated
 };
 
 // Unique identifier symbol identifying the Hydratable binding decorator
-const hydrationBindingPropertyDecoratorSymbol = Symbol('Hydration binding property decorator');
+const bindPropertySymbol = Symbol('@bind(property) symbol');
 /**
  * When dehydrating/rehydrating a class instance, this property decorator configures the property as needing to be
  * dehydrated/(re)hydrated from/to a propertyx of the same name without any value conversion.
@@ -213,7 +210,7 @@ function bindProperty<TInstance extends ClassInstance, TValRehydrated, TValDehyd
   // Create and return decorator
   return createPropertyCustomDecorator<TInstance, HydrationBindingPropertyConfiguration<TValRehydrated, TValDehydrated>>(
     () => composedConfig,
-    hydrationBindingPropertyDecoratorSymbol,
+    bindPropertySymbol,
   );
 }
 
@@ -283,7 +280,7 @@ function appendHydrationCastingExecutionOptionsDefaults(options?: HydrationCasti
 }
 
 // Unique identifier symbol identifying the Hydratable casting decorator
-const hydrationCastingDecoratorSymbol = Symbol('Hydration casting property decorator');
+const castSymbol = Symbol('@cast symbol');
 /**
  * When rehydrating a class instance, this property decorator configures how the property value will be cast before storing it
  * @param targetEnttType Class to be cast into when hydrating
@@ -299,7 +296,7 @@ export function cast<THostInstance extends ClassInstance, TCastInstance extends 
   // Create and return decorator
   return createPropertyCustomDecorator<THostInstance, HydrationCastingConfiguration<TCastInstance>>(
     () => ({ targetEnttType, targetStructure, options: { ...hydrationCastingConfigurationOptionsDefaults, ...options } }),
-    hydrationCastingDecoratorSymbol,
+    castSymbol,
   );
 }
 
@@ -340,7 +337,7 @@ function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends Cla
   target;
   // ^?
   const decoratedClassDefinition = getDecoratedClassDefinition(target);
-  const classBindingDecoratorConfigurations = decoratedClassDefinition.decorators.bySymbol[hydrationBindingConstructorArgumentsDecoratorSymbol];
+  const classBindingDecoratorConfigurations = decoratedClassDefinition.decorators.bySymbol[bindClassSymbol];
   const dehydratedViaClassBindingConfiguration =
     classBindingDecoratorConfigurations?.length > 0 ? classBindingDecoratorConfigurations[0].data.conversion.dehydrate(value) : undefined;
 
@@ -367,13 +364,12 @@ function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends Cla
     else {
       // Resolve bound property name on the dehydrated target object
       const targetPropertyName =
-        (definition.decorators.bySymbol[hydrationBindingPropertyDecoratorSymbol]?.[0]?.data as HydrationBindingPropertyConfiguration<unknown, unknown>)
-          ?.propertyName || key;
+        (definition.decorators.bySymbol[bindPropertySymbol]?.[0]?.data as HydrationBindingPropertyConfiguration<unknown, unknown>)?.propertyName || key;
       // Get value to be dehydrated
       let propertyValue = (value as unknown as TInstance)[key];
 
       // Get casting definition
-      const castingDefinition = definition.decorators.bySymbol[hydrationCastingDecoratorSymbol]?.[0]?.data;
+      const castingDefinition = definition.decorators.bySymbol[castSymbol]?.[0]?.data;
 
       // Uncast the value to be dehydrated
       let uncastValue;
@@ -383,7 +379,7 @@ function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends Cla
         uncastValue = propertyValue;
       }
       // If undefined, skip setting property
-      else if (propertyValue === undefined && !definition.decorators.bySymbol[hydrationBindingPropertyDecoratorSymbol]?.[0]?.data?.conversion?.dehydrate) {
+      else if (propertyValue === undefined && !definition.decorators.bySymbol[bindPropertySymbol]?.[0]?.data?.conversion?.dehydrate) {
         continue;
       }
       // Uncast value
@@ -395,15 +391,14 @@ function dehydrateAsInstanceOfClass<TValue extends object, TInstance extends Cla
       }
 
       // If no custom binding, use unprocessed value
-      if (!definition.decorators.bySymbol[hydrationBindingPropertyDecoratorSymbol]?.[0]?.data?.conversion?.dehydrate) {
+      if (!definition.decorators.bySymbol[bindPropertySymbol]?.[0]?.data?.conversion?.dehydrate) {
         // Set unprocessed property value
         dehydrated[targetPropertyName] = uncastValue;
       }
       // ... or process value via provided custom, dehydration callback
       else {
         try {
-          dehydrated[targetPropertyName] =
-            definition.decorators.bySymbol[hydrationBindingPropertyDecoratorSymbol]?.[0]?.data?.conversion?.dehydrate(uncastValue);
+          dehydrated[targetPropertyName] = definition.decorators.bySymbol[bindPropertySymbol]?.[0]?.data?.conversion?.dehydrate(uncastValue);
         } catch (err: any) {
           throw new Error(
             `Error thrown while calling the provided @bind(conversion.dehydrate) callback function on Class ${
@@ -576,7 +571,7 @@ export function rehydrate<TInstance extends ClassInstance>(
 ): ClassInstance<TInstance> {
   // Check if instance belongs to a class decorated with @bind decorator
   const decoratedClassDefinition = getDecoratedClassDefinition(instance);
-  const classBindingDecoratorConfigurations = decoratedClassDefinition.decorators.bySymbol[hydrationBindingConstructorArgumentsDecoratorSymbol];
+  const classBindingDecoratorConfigurations = decoratedClassDefinition.decorators.bySymbol[bindClassSymbol];
   const rehydratedViaClassBindingConfiguration =
     classBindingDecoratorConfigurations?.length > 0 ? classBindingDecoratorConfigurations[0].data.conversion.rehydrate(value) : undefined;
 
@@ -599,22 +594,21 @@ export function rehydrate<TInstance extends ClassInstance>(
     else {
       // Resolve bound property name on the (re)hydrated target object
       const targetPropertyName =
-        (definition.decorators.bySymbol[hydrationBindingPropertyDecoratorSymbol]?.[0]?.data as HydrationBindingPropertyConfiguration<unknown, unknown>)
-          ?.propertyName || key;
+        (definition.decorators.bySymbol[bindPropertySymbol]?.[0]?.data as HydrationBindingPropertyConfiguration<unknown, unknown>)?.propertyName || key;
       // Get value to be (re)hydrated
       const propertyValue = value instanceof Object ? (value as unknown as TInstance)[targetPropertyName as keyof TInstance] : undefined;
 
       // Process value if needed
       let processedValue: undefined | TInstance[keyof TInstance];
       // Use unprocessed value
-      if (!definition.decorators.bySymbol[hydrationBindingPropertyDecoratorSymbol]?.[0]?.data?.conversion?.rehydrate) {
+      if (!definition.decorators.bySymbol[bindPropertySymbol]?.[0]?.data?.conversion?.rehydrate) {
         // Store unprocessed property value
         processedValue = propertyValue;
       }
       // ... or process value via provided custom, (re)hydration callback
       else {
         try {
-          processedValue = definition.decorators.bySymbol[hydrationBindingPropertyDecoratorSymbol]?.[0]?.data?.conversion?.rehydrate(propertyValue);
+          processedValue = definition.decorators.bySymbol[bindPropertySymbol]?.[0]?.data?.conversion?.rehydrate(propertyValue);
         } catch (err: any) {
           throw new Error(
             `Error thrown while calling the provided @bind(conversion.rehydrate) callback function on Class ${
@@ -625,7 +619,7 @@ export function rehydrate<TInstance extends ClassInstance>(
       }
 
       // Get casting definition
-      const castingDefinition = definition.decorators.bySymbol[hydrationCastingDecoratorSymbol]?.[0]?.data;
+      const castingDefinition = definition.decorators.bySymbol[castSymbol]?.[0]?.data;
 
       // Cast the value to be (re)hydrated
       let castValue;
@@ -811,7 +805,7 @@ function collectHydratingPropertyDecoratorDefinitions<TInstance extends ClassIns
 ): Record<keyof TInstance, false | EnttPropertyDefinition<TInstance>> {
   // Get instance's class's decorator definitions
   const allDecoratedPropertiesDefinitions = getDecoratedClassDefinition(instance);
-  const onlyBoundPropertiesDefinitions = filterDefinition(allDecoratedPropertiesDefinitions, hydrationBindingPropertyDecoratorSymbol);
+  const onlyBoundPropertiesDefinitions = filterDefinition(allDecoratedPropertiesDefinitions, bindPropertySymbol);
   const allPropertiesKeys = [...new Set([...Object.keys(allDecoratedPropertiesDefinitions.properties), ...Object.keys(instance)])];
 
   // Collect property definitions depending on the selected strategy

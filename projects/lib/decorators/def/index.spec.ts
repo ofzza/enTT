@@ -31,41 +31,34 @@ class Test<T> {
   @def private privUndefinedValue?: string = 'private';
 }
 
-// Test ...
 export function testDefDecorator() {
   describe('@def decorator', () => {
     const definition = getDecoratedClassDefinition(Test);
 
-    // Can import from library root
     describe('Decorator and related services can be imported from "./"', () => {
-      // Decorator
       it('Can import decorator', () => {
         assert(!!root.def);
       });
     });
 
-    // Check explicitly not set properties with differing access levels
     it('Properties of different access levels, having explicitly typed value not set, registered', () => {
       assert(!!definition.properties['pub']);
       assert(!!definition.properties['prot']);
       assert(!!definition.properties['priv']);
     });
 
-    // Check properties with implicit undefined values with differing access levels
     it('Properties of different access levels, having optionally typed value not set, registered', () => {
       assert(!!definition.properties['pubUndefined']);
       assert(!!definition.properties['protUndefined']);
       assert(!!definition.properties['privUndefined']);
     });
 
-    // Check properties with explicit undefined values with differing access levels
     it('Properties of different access levels, having undefined set as explicit value, registered', () => {
       assert(!!definition.properties['pubUndefinedExplicit']);
       assert(!!definition.properties['protUndefinedExplicit']);
       assert(!!definition.properties['privUndefinedExplicit']);
     });
 
-    // Check properties withset values with differing access levels
     it('Properties of different access levels, having value set, registered', () => {
       assert(!!definition.properties['pubUndefinedValue']);
       assert(!!definition.properties['protUndefinedValue']);

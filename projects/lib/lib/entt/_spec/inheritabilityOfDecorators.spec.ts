@@ -250,34 +250,22 @@ export function testInheritabilityOfDecorators() {
     assert(polooPropertyDecoratorDefinition.filter(def => def.decoratorSymbol === decoPropertyDecoratorSymbol).length === 2);
   }
 
-  // Class decorators are present on base class
   it('Class decorators are present on base class', () => testMarcoClassDecorators(marco));
-  // Class property decorators are present on base class
   it('Class property decorators are present on base class', () => testMarcoClassPropertyDecorators(marco));
 
-  // Class decorators are inherited when extending a class
   it('Class decorators are inherited when extending a class', () => testPoloClassDecorators(polo));
-  // Class property decorators are inherited when extending a class
   it('Class property decorators are inherited when extending a class', () => testPoloClassPropertyDecorators(polo));
 
-  // Class decorators are inherited when enttifying a class
   it('Class decorators are inherited when enttifying a class', () => testMarcoClassDecorators(enttifiedMarco));
-  // Class property decorators are inherited when enttifying a class
   it('Class property decorators are inherited when enttifying a class', () => testMarcoClassPropertyDecorators(enttifiedMarco));
 
-  // Class decorators are inherited when enttifying an extended class
   it('Class decorators are inherited when enttifying an extended class', () => testPoloClassDecorators(enttifiedPolo));
-  // Class property decorators are inherited when enttifying an extended class
   it('Class property decorators are inherited when enttifying an extended class', () => testPoloClassPropertyDecorators(enttifiedPolo));
 
-  // Class decorators are inherited when extending an enttified class
   it('Class decorators are inherited when extending an enttified class', () => testMarcoClassDecorators(extendedEnttifiedMarco));
-  // Class property decorators are inherited when extending an enttified class
   it('Class property decorators are inherited when extending an enttified class', () => testMarcoClassPropertyDecorators(extendedEnttifiedMarco));
 
-  // Class decorators are inherited when extending an enttified, previously extended class
   it('Class decorators are inherited when extending an enttified, previously extended class', () => testPoloClassDecorators(extendedEnttifiedPolo));
-  // Class property decorators are inherited when extending an enttified, previously extended class
   it('Class property decorators are inherited when extending an enttified, previously extended class', () =>
     testPoloClassPropertyDecorators(extendedEnttifiedPolo));
 }

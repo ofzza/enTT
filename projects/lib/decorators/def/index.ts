@@ -7,9 +7,9 @@ import { createPropertyCustomDecorator } from '../../lib';
 /**
  * Property definition decorator symbol
  */
-export const enttPropertyDecoratorSymbol = Symbol('EnTT property decorator');
+const defSymbol = Symbol('@def symbol');
 
 /**
  * Property definition decorator. Has no functionality apart from making sure the decorated property is registered to the parent class
  */
-export const def = createPropertyCustomDecorator({}, enttPropertyDecoratorSymbol);
+export const def = createPropertyCustomDecorator({}, defSymbol);

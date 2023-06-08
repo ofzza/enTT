@@ -11,11 +11,8 @@ import * as root from '../../../';
 import { testHydrationBindPropertyDecoratorDehydrate } from './dehydrate.spec';
 import { testHydrationBindPropertyDecoratorRehydrate } from './rehydrate.spec';
 
-// Test ...
 export function testHydrationBindPropertyDecoratorAndCompanionServices() {
-  // Can import from library root
   describe('Decorator and related services can be imported from "./"', () => {
-    // Decorator
     it('Can import decorator', () => {
       assert(!!root.bind);
     });

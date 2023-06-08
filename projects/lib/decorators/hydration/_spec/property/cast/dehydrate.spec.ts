@@ -6,43 +6,38 @@ import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { dehydrate, HydrationStrategy } from '../../../';
 import { TestCast, createTestClassInstance } from './fixtures.spec';
 
-// Test ...
 export function testHydrationCastDecoratorDehydrate() {
-  // Check class instance can dehydrate all its properties correctly
   describe('A class instance with properties using the @cast decorator can dehydrate', () => {
     // Dehydrate the testing instance, making sure to dehydrate all properties
     const dehydratedInstance = dehydrate(createTestClassInstance(), HydrationStrategy.OnlyBoundClassProperties);
 
-    // Check all dehydrated direct value properties exist as expected with values as expected
     it('Non casting properties with raw values can dehydrate', () => {
       assert(dehydratedInstance['propA'] === 'A');
       assert(dehydratedInstance['propB'] === 'B');
       assert(dehydratedInstance['propC'] === 'C');
     });
-    // Check all dehydrated direct value properties exist on a non-cast embeddded instance as expected with values as expected
+
     it('Non casting properties containing class instances can dehydrate', () => {
       assert(!!dehydratedInstance['propRaw']);
       assert(dehydratedInstance['propRaw']['propertyA'] === 'A');
       assert(dehydratedInstance['propRaw']['propertyB'] === 'B');
       assert(dehydratedInstance['propRaw']['propertyC'] === 'C');
     });
-    // Check all dehydrated direct value properties exist on a cast embeddded instance as expected with values as expected,
-    // respecting bindings from the cast class
+
     it('Casting property with a single class instance value can dehydrate', () => {
       assert(!!dehydratedInstance['propSingle']);
       assert(dehydratedInstance['propSingle']['propA'] === 'A');
       assert(dehydratedInstance['propSingle']['propB'] === 'B');
       assert(dehydratedInstance['propSingle']['propC'] === 'C');
     });
-    // ... and respecting custom bindings
+
     it('Casting property with a single class instance value can dehydrate while respecting custom binding', () => {
       assert(!!dehydratedInstance['propCustomSingle']);
       assert(dehydratedInstance['propCustomSingle']?.data['propA'] === 'A');
       assert(dehydratedInstance['propCustomSingle']?.data['propB'] === 'B');
       assert(dehydratedInstance['propCustomSingle']?.data['propC'] === 'C');
     });
-    // Check all dehydrated direct value properties exist on a cast embeddded array of instances as expected with values as expected,
-    // respecting bindings from the cast class
+
     it('Casting property with an array of class instance value can dehydrate', () => {
       assert(!!dehydratedInstance['propArray']);
       assert(dehydratedInstance['propArray'].length === 3);
@@ -52,7 +47,7 @@ export function testHydrationCastDecoratorDehydrate() {
         assert(dehydratedArrayMemberInstance['propC'] === 'C');
       }
     });
-    // ... and respecting custom bindings
+
     it('Casting property with an array of class instance value can dehydrate while respecting custom binding', () => {
       assert(!!dehydratedInstance['propCustomArray']);
       assert(dehydratedInstance['propCustomArray'].length === 3);
@@ -62,8 +57,7 @@ export function testHydrationCastDecoratorDehydrate() {
         assert(dehydratedArrayMemberInstance?.data['propC'] === 'C');
       }
     });
-    // Check all dehydrated direct value properties exist on a cast embeddded hashmap of instances as expected with values as expected,
-    // respecting bindings from the cast class
+
     it('Casting property with a hashmap of class instance value can dehydrate', () => {
       assert(!!dehydratedInstance['propHashmap']);
       assert(Object.keys(dehydratedInstance['propHashmap']).length === 3);
@@ -74,7 +68,7 @@ export function testHydrationCastDecoratorDehydrate() {
         assert(dehydratedHashmapMemberInstance['propC'] === 'C');
       }
     });
-    // ... and respecting custom bindings
+
     it('Casting property with a hashmap of class instance value can dehydrate while respecting custom binding', () => {
       assert(!!dehydratedInstance['propCustomHashmap']);
       assert(Object.keys(dehydratedInstance['propCustomHashmap']).length === 3);
@@ -87,7 +81,6 @@ export function testHydrationCastDecoratorDehydrate() {
     });
   });
 
-  // Check casting undefined while dehydrating preserves undefined
   describe('Casting undefined while dehydrating preserves undefined', () => {
     // Compose a testing instance with undefined property values
     const instance = createTestClassInstance();
@@ -98,7 +91,6 @@ export function testHydrationCastDecoratorDehydrate() {
     instance.propertyHashmap!['b'] = undefined as unknown as TestCast;
     instance.propertyCustomHashmap = undefined;
 
-    // Verify dehydrating properties with undefined values
     it('Dehydrating properties with undefined values', () => {
       // Dehydrate the testing instance containing undefined property values
       const dehydratedInstance = dehydrate(instance, HydrationStrategy.OnlyBoundClassProperties);
@@ -128,23 +120,19 @@ export function testHydrationCastDecoratorDehydrate() {
     });
   });
 
-  // Check dehydrating a class instance respects expects instances only to be uncast
   describe('Dehydrating a non-class-instance value throws in all cases', () => {
-    // Throw when dehydrating a non-class-instance value
     const instanceTestingSingle = createTestClassInstance();
     instanceTestingSingle.propertySingle = { ...instanceTestingSingle.propertySingle } as TestCast;
     it(`Single not castable value throws`, () => {
       expect(() => dehydrate(instanceTestingSingle, HydrationStrategy.AllClassProperties)).toThrow();
     });
 
-    // Throw when dehydrating a non-class-instance containing array
     const instanceTestingArray = createTestClassInstance();
     instanceTestingArray.propertyArray![1] = { ...instanceTestingArray.propertyArray![1] } as TestCast;
     it(`Array containing a not castable value throws`, () => {
       expect(() => dehydrate(instanceTestingArray, HydrationStrategy.AllClassProperties)).toThrow();
     });
 
-    // Throw when dehydrating a non-class-instance containing hashmap
     const instanceTestingHashmap = createTestClassInstance();
     instanceTestingHashmap.propertyHashmap!['b'] = { ...instanceTestingHashmap.propertyHashmap!['b'] } as TestCast;
     it(`Hashmap containing a not castable value throws`, () => {
@@ -152,7 +140,6 @@ export function testHydrationCastDecoratorDehydrate() {
     });
   });
 
-  // Check dehydrating a class instance is resiliant to circular and shared references
   describe('Dehydrating a class instance is resiliant to circular and shared references', () => {
     // TODO: ...
     it('Test not implemented!', () =>

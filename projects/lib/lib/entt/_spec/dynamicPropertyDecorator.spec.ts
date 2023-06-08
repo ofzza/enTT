@@ -136,7 +136,6 @@ function MultiplyValue(factor: number = 2) {
 
 // #region Tests
 
-// Export tests
 export function testDynamicPropertyDecorators() {
   // Define a class for testing property dynamic decorator
   class _Timestamped {
@@ -187,14 +186,12 @@ export function testDynamicPropertyDecorators() {
     verifyDecoratorUsage((msg: any) => warnings.push(msg));
     noTimestampedWarnings = warnings.filter(w => w.message.includes('_Timestamped'));
 
-    // Check if dynamic decorators throwing warnings when parent class not EnTTified
     it('Dynamic decorators are registered as such and will report if parent class is not EnTTified', () => {
       assert(timestampedWarnings.length === 2);
       assert(timestampedWarnings[0] !== timestampedWarnings[1]);
       assert(noTimestampedWarnings.length === 0);
     });
 
-    // Check if using EnTTified classes is performant
     describe('Enttitified class with dynamic decorators is performant', () => {
       // Perform as many instantiations as possible in 100ms
       let countPlain = 0;
@@ -232,7 +229,6 @@ export function testDynamicPropertyDecorators() {
       });
     });
 
-    // Check if decorator definitions are set correctly
     it('Definitions are set correctly', () => {
       // Check if decorator definitions set properly for @StringDateValue()
       const strDefinition = getDecoratedClassPropertyDecoratorDefinition(_Timestamped, 'created', stringDateValueDecoratorSymbol);
@@ -251,7 +247,7 @@ export function testDynamicPropertyDecorators() {
       assert(numDefinition[0].decoratorSymbol === numericDateValueDecoratorSymbol);
       assert(numDefinition[0].data === true);
     });
-    // Check if decorator definitions are set correctly
+
     it('Definitions are set correctly and can be reached via enttified class', () => {
       // EnTTify parent class
       const Timestamped = enttify(_Timestamped);
@@ -273,7 +269,7 @@ export function testDynamicPropertyDecorators() {
       assert(numDefinition[0].decoratorSymbol === numericDateValueDecoratorSymbol);
       assert(numDefinition[0].data === true);
     });
-    // Check if decorator definitions are set correctly
+
     it('Definitions are set correctly and can be reached via enttified class instance', () => {
       // EnTTify parent class
       const Timestamped = enttify(_Timestamped);
@@ -297,7 +293,6 @@ export function testDynamicPropertyDecorators() {
       assert(numDefinition[0].data === true);
     });
 
-    // Check if decorator definitions can be used multiple times only if explicitly permitted
     it('Dynamic decorators can only be used multiple times on the same target when explicitly permitted', () => {
       // Test if forbidden multiple usages of not permitted decorator on same property
       expect(() => {
@@ -317,7 +312,6 @@ export function testDynamicPropertyDecorators() {
       }).not.toThrow();
     });
 
-    // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property setters/getters
     it('Dynamic decorators correctly hooking into property setters/getters', () => {
       // EnTTify parent class
       const Timestamped = enttify(_Timestamped);
@@ -350,7 +344,6 @@ export function testDynamicPropertyDecorators() {
       assert(typeof underlying!.modified === 'number');
     });
 
-    // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into staged property setters/getters
     it('Dynamic decorators correctly hooking into staged property setters/getters', () => {
       // Example class
       class _Example {
@@ -430,7 +423,6 @@ export function testDynamicPropertyDecorators() {
       assert(events[8].data.value === 'still testing');
     });
 
-    // Check dynamic decorators can be stacked and will intercept getters/setters in order they were added to the property in
     it('Dynamic decorators can be stacked and preserve definition order', () => {
       // EnTTify parent class
       const Numerics = enttify(_Numerics);

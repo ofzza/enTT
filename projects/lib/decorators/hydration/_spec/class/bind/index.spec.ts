@@ -10,11 +10,8 @@ import * as root from '../../../';
 // Import tests
 import { testHydrationBindClassDecoratorHydration } from './hydration.spec';
 
-// Test ...
 export function testHydrationBindClassDecoratorAndCompanionServices() {
-  // Can import from library root
   describe('Decorator and related services can be imported from "./"', () => {
-    // Decorator
     it('Can import decorator', () => {
       assert(!!root.bind);
     });

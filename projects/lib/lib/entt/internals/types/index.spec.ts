@@ -6,7 +6,6 @@ import { assert, refute } from '@ofzza/ts-std/types/utility/assertion';
 import { Class, ClassInstance } from '@ofzza/ts-std/types/corejs/class';
 import { EnttClass, EnttClassInstance } from './';
 
-// Export tests
 export function testInternalsTypes() {
   it('Class and EnttClass are interchangable', () => {
     <T extends ClassInstance>(BaseClass: Class<T>, EnttClass: EnttClass<T>) => {

@@ -61,7 +61,6 @@ function convertInstanceToText<T extends ClassInstance>(target: ClassInstance<T>
 
 // #region Tests
 
-// Export tests
 export function testStaticClassDecorators() {
   // Define a class for testing class decorators
   @AsString(target => `${target['who']} did a ${target['what']} in ${target['where']}`)
@@ -76,7 +75,6 @@ export function testStaticClassDecorators() {
     public where!: string;
   }
 
-  // Check if, given a non-existent class, definitions will still be returned well formed
   describe('Accessing definitions for a non-existent class will still returns a well formed definitions object', () => {
     // Validation of an empty EnTT definition
     function validateEmptyDefinition(target: any) {
@@ -107,17 +105,15 @@ export function testStaticClassDecorators() {
     validateEmptyDefinition(Date);
   });
 
-  // Check if, given a class, class can be found as having been decorated
   describe('Definitions are set correctly and can be reached via class', () => {
     // Get definitions via class
     const definition = getDecoratedClassDefinition(Test);
 
-    // Entity definition exists and fetched and has correct owner info set
     it('Definitions are set correctly and can be reached via class', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
-    // Entity decorator definitions exists and fetched, have correct owner info set and have decorator information correctly set
+
     it('Definitions are set correctly, can be reached via class and contain decorator definitions and data', () => {
       // FromString decorator has stored data into its definitions
       assert(!!definition.decorators.bySymbol[fromStringDecoratorSymbol]);
@@ -132,17 +128,15 @@ export function testStaticClassDecorators() {
     });
   });
 
-  // Check if, given a class, entity definition can be filtered for only a particular decorator
   describe('Filtering of entity definition by decorator, given a class, works', () => {
     // Get definitions via class
     const definition = filterDefinition(getDecoratedClassDefinition(Test), asStringDecoratorSymbol);
 
-    // Entity definition exists and fetched and has correct owner info set
     it('Filtered definitions are set correctly and can be reached via class', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
-    // Check if filtering works
+
     it('Filtering of definitions by decorator, given a class, works', () => {
       // FromString decorator has beein filtered out
       assert(!definition.decorators.bySymbol[fromStringDecoratorSymbol]);
@@ -154,7 +148,6 @@ export function testStaticClassDecorators() {
     });
   });
 
-  // Given a class, use decorated class configuration
   it('Decorated class can be used within real featured functionality via class', () => {
     // Instantiate Test from a string and check if all properties are set correctly
     const test = createInstanceFromText(Test, 'WHO did a WHAT in WHERE');
@@ -164,17 +157,15 @@ export function testStaticClassDecorators() {
     assert(test['where'] === 'WHERE');
   });
 
-  // Check if, given a class instance, class can be found as having been decorated
   describe('Definitions are set correctly and can be reached via class instance', () => {
     // Get definitions via class
     const definition = getDecoratedClassDefinition(new Test());
 
-    // Entity definition exists and fetched and has correct owner info set
     it('Definitions are set correctly and can be reached via class', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
-    // Entity decorator definitions exists and fetched, have correct owner info set and have decorator information correctly set
+
     it('Definitions are set correctly, can be reached via class and contain decorator definitions and data', () => {
       // FromString decorator has stored data into its definitions
       assert(!!definition.decorators.bySymbol[fromStringDecoratorSymbol]);
@@ -189,17 +180,15 @@ export function testStaticClassDecorators() {
     });
   });
 
-  // Check if, given a class instance, entity definition can be filtered for only a particular decorator
   describe('Filtering of entity definition by decorator, given a class instance, works', () => {
     // Get definitions via class
     const definition = filterDefinition(getDecoratedClassDefinition(new Test()), asStringDecoratorSymbol);
 
-    // Entity definition exists and fetched and has correct owner info set
     it('Filtered definitions are set correctly and can be reached via class', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
-    // Check if filtering works
+
     it('Filtering of definitions by decorator, given a class, works', () => {
       // FromString decorator has beein filtered out
       assert(!definition.decorators.bySymbol[fromStringDecoratorSymbol]);
@@ -211,7 +200,6 @@ export function testStaticClassDecorators() {
     });
   });
 
-  // Given a class instance, use decorated class configuration
   it('Decorated class can be used within real featured functionality via class instance', () => {
     // Instantiate Test and set properties
     const test = new Test();

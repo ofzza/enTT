@@ -6,22 +6,18 @@ import { assert } from '@ofzza/ts-std/types/utility/assertion';
 import { dehydrate, rehydrate } from '../../../';
 import { DateCast, BoundDate, staticDateIsoString2000, staticDateIsoString2010, staticDateIsoString2020 } from './fixtures.spec';
 
-// Test ...
 export function testHydrationCastDecoratorHydration() {
-  // Check decorated class instance can dehydrate using custom dehydration conversion and can cast properties to decorated classes
   describe('Decorated class can be dehydrated using custom dehydration conversion and can cast properties to decorated classes ', () => {
     // Instantiate test class
     const instance = new DateCast(staticDateIsoString2000);
     // Dehydrate date
     const dehydrated = dehydrate(instance);
 
-    // Check dehydrated value is generated using custom dehydration conversion callbacks defined via @bind class decorator
     it('Decorated class can dehydrate using custom dehydration conversion', () => {
       assert(dehydrated instanceof Object);
       assert(dehydrated._constructor === 'DateCast');
     });
 
-    // Check dehydrated value has cast all properties using their cast target's custom dehydration conversion callbacks defined via @bind class decorator
     it("Decorated class can cast all properties using their cast target's custom dehydration conversion callbacks", () => {
       // Assert properly cast single instance
       assert(!!dehydrated.propDate);
@@ -37,7 +33,6 @@ export function testHydrationCastDecoratorHydration() {
     });
   });
 
-  // Check decorated class instance can (re)hydrate using custom dehydration conversion and can cast properties to decorated classes
   describe('Decorated class can be (re)hydrated using custom dehydration conversion and can cast properties to decorated classes ', () => {
     // Instantiate test class
     const instance = new DateCast(staticDateIsoString2010);
@@ -48,14 +43,12 @@ export function testHydrationCastDecoratorHydration() {
     const rehydratedFromString = rehydrate(staticDateIsoString2020, DateCast);
     const rehydratedFromUndefined = rehydrate(undefined, DateCast);
 
-    // Check (re)hydrated instance is generated using custom (re)hydration conversion callbacks defined via @bind class decorator
     it('ISO string can (re)hydrate as Date', () => {
       assert(rehydratedFromObject instanceof DateCast);
       assert(rehydratedFromString instanceof DateCast);
       assert(rehydratedFromUndefined instanceof DateCast);
     });
 
-    // Check (re)hydrated value has cast all properties using their cast target's custom (re)hydration conversion callbacks defined via @bind class decorator
     it("Decorated class can cast all properties using their cast target's custom (re)hydration conversion callbacks", () => {
       // Assert properly cast single instance from dehydrated object
       assert(rehydratedFromObject.propDate instanceof BoundDate);

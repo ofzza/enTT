@@ -150,7 +150,6 @@ function SimonSays(name: string) {
 
 // #region Tests
 
-// Export tests
 export function testDynamicClassDecorators() {
   @RegisterInstance()
   @StringTitleCase()
@@ -186,13 +185,11 @@ export function testDynamicClassDecorators() {
     verifyDecoratorUsage((msg: any) => warnings.push(msg));
     noFamilyWarnings = warnings.filter(w => w.message.includes('_Family'));
 
-    // Check if dynamic decorators throwing warnings when parent class not EnTTified
     it('Dynamic decorators are registered as such and will report if parent class is not EnTTified', () => {
       assert(familyWarnings.length === 2);
       assert(noFamilyWarnings.length === 0);
     });
 
-    // Check if using EnTTified classes is performant
     describe('Enttitified class with dynamic decorators is performant', () => {
       // Perform as many instantiations as possible in 100ms
       let countPlain = 0;
@@ -218,7 +215,6 @@ export function testDynamicClassDecorators() {
       // Claculate slowdown factor
       const slowdown = plainInstantiationsPerSecond / enttifiedInstantiationsPerSecond;
 
-      // Check number of instantiations per second
       it(`Can perform >${INSTANTIATIONS_PER_SECOND} non-enttified instantiations/sec (${Math.round(plainInstantiationsPerSecond)})`, () => {
         assert(plainInstantiationsPerSecond > INSTANTIATIONS_PER_SECOND);
       });
@@ -230,7 +226,6 @@ export function testDynamicClassDecorators() {
       });
     });
 
-    // Check if decorator definitions are set correctly
     it('Definitions are set correctly', () => {
       // Check if decorator definitions set properly for @RegisterInstance()
       const definitionA = getDecoratedClassDecoratorDefinition(_Family, registerInstanceDecoratorSymbol);
@@ -247,7 +242,7 @@ export function testDynamicClassDecorators() {
       assert(definitionB[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
       assert(definitionB[0].data === true);
     });
-    // Check if decorator definitions are set correctly
+
     it('Definitions are set correctly and can be reached via enttified class', () => {
       // EnTTify parent class
       const Family = enttify(_Family);
@@ -267,7 +262,7 @@ export function testDynamicClassDecorators() {
       assert(definitionB[0].decoratorSymbol === stringTitleCaseDecoratorSymbol);
       assert(definitionB[0].data === true);
     });
-    // Check if decorator definitions are set correctly
+
     it('Definitions are set correctly and can be reached via enttified class instance', () => {
       // EnTTify parent class
       const Family = enttify(_Family);
@@ -289,7 +284,6 @@ export function testDynamicClassDecorators() {
       assert(definitionB[0].data === true);
     });
 
-    // Check if decorator definitions can be used multiple times only if explicitly permitted
     it('Dynamic decorators can only be used multiple times on the same target when explicitly permitted', () => {
       // Test if forbidden multiple usages of not permitted decorator on same class
       expect(() => {
@@ -305,7 +299,6 @@ export function testDynamicClassDecorators() {
       }).not.toThrow();
     });
 
-    // Check dynamic decorators correctly hooking into constructor
     it('Dynamic decorators correctly hooking into constructor', () => {
       // EnTTify parent class
       const Family = enttify(_Family);
@@ -325,7 +318,6 @@ export function testDynamicClassDecorators() {
       assert(registeredInstances[2] === instanceC);
     });
 
-    // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property setters/getters
     it('Dynamic decorators correctly hooking into property setters/getters', () => {
       // EnTTify parent class
       const Family = enttify(_Family);
@@ -355,7 +347,6 @@ export function testDynamicClassDecorators() {
       assert(underlying!.child === 'homer j simpson');
     });
 
-    // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property staged setters/getters
     it('Dynamic decorators correctly hooking into staged property setters/getters', () => {
       // Example class
       @TapClassConstructorAndProperties<typeof _Example>({
@@ -437,7 +428,6 @@ export function testDynamicClassDecorators() {
       assert(events[9].data.value === 'still testing');
     });
 
-    // Check dynamic decorators can be stacked and will intercept getters/setters in order they were added to the property in
     it('Dynamic decorators can be stacked and preserve definition order', () => {
       // EnTTify parent class
       const Quotes = enttify(_Quotes);
@@ -463,7 +453,6 @@ export function testDynamicClassDecorators() {
       assert(underlying!.quote === `I can't promise I'll try, but I'll try to try.`);
     });
 
-    // Check underlying instance of EnTTified object accessible and dynamic decorators correctly hooking into property queries;
     it('Dynamic decorators correctly hooking into custom property querying', () => {
       // Example class
       @TapClassPropertyQuerying<typeof _Example>({

@@ -60,7 +60,6 @@ function checkDefaultValues<T extends ClassInstance>(target: ClassInstance<T>): 
 
 // #region Tests
 
-// Export tests
 export function testStaticPropertyDecorators() {
   // Set valid data to be used by the decorators
   const defaults = { pub: true, prot: 1, priv: 'abc' };
@@ -79,7 +78,6 @@ export function testStaticPropertyDecorators() {
     private priv!: string;
   }
 
-  // Check if, given a non-existent class property, definitions will still be returned well formed
   describe('Accessing definitions for a non registered, but existing class property will still returns a well formed definitions object', () => {
     // Validation of an empty EnTT definition
     function validateEmptyPropertyDefinition(target: any, propertyKey: any) {
@@ -108,12 +106,10 @@ export function testStaticPropertyDecorators() {
     validateEmptyPropertyDefinition(Test, 'toString');
   });
 
-  // Check if, given a class, properties can be found as having been decorated
   describe('Definitions are set correctly and can be reached via class', () => {
     // Get definitions via class
     const definition = getDecoratedClassDefinition(Test);
 
-    // Entity definition exists and fetched and has correct owner info set
     it('Definitions are set correctly and can be reached via class', () => {
       assert(!!definition);
       assert(definition.owner === Test);
@@ -135,18 +131,15 @@ export function testStaticPropertyDecorators() {
     }
   });
 
-  // Check if, given a class, entity definition can be filtered for only a particular decorator
   describe('Filtering of entity definition by decorator, given a class, works', () => {
     // Get definitions via class
     const definition = filterDefinition(getDecoratedClassDefinition(Test), labelDecoratorSymbol);
 
-    // Entity definition exists and fetched and has correct owner info set
     it('Filtered definitions are set correctly and can be reached via class', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
 
-    // Entity properties' definitions exists and fetched, have correct owner info set and have decorator information correctly set
     it(`Filtered definitions are set correctly and can be reached via class for properties`, () => {
       assert(!!definition.properties['pub']);
       assert(definition.properties['pub'].owner === Test);
@@ -159,7 +152,6 @@ export function testStaticPropertyDecorators() {
       assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].data === publicPropertyLabel);
     });
 
-    // Check if filtering works
     it('Filtering of definitions by decorator, given a class, works', () => {
       // Filtered definition exists
       assert(!!definition);
@@ -173,18 +165,15 @@ export function testStaticPropertyDecorators() {
     });
   });
 
-  // Check if, given a class, entity property definition can be filtered for only a particular decorator
   describe('Filtering of entity property definitions by decorator, given a class, works', () => {
     // Get definitions via class
     const definition = filterDefinition(getDecoratedClassDefinition(Test).properties['pub'], labelDecoratorSymbol);
 
-    // Entity definition exists and fetched and has correct owner info set
     it('Filtered definitions are set correctly and can be reached via class', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
 
-    // Entity properties' definitions exists and fetched, have correct owner info set and have decorator information correctly set
     it(`Filtered definitions are set correctly and can be reached via class for properties`, () => {
       assert(!!definition.decorators.bySymbol[labelDecoratorSymbol]);
       assert(definition.decorators.bySymbol[labelDecoratorSymbol].length === 1);
@@ -194,7 +183,6 @@ export function testStaticPropertyDecorators() {
       assert(definition.decorators.bySymbol[labelDecoratorSymbol][0].data === publicPropertyLabel);
     });
 
-    // Check if filtering works
     it('Filtering of definitions by decorator, given a class, works', () => {
       // Filtered definition exists
       assert(!!definition);
@@ -205,7 +193,6 @@ export function testStaticPropertyDecorators() {
     });
   });
 
-  // Given a class, use decorated properties configuration
   it('Decorated properties can be used within real featured functionality via class', () => {
     // Instantiate Test with default values set by the decorator
     const test = initializeWithDefaultValues(Test);
@@ -215,16 +202,15 @@ export function testStaticPropertyDecorators() {
     assert((test as any)['priv'] === defaults['priv']); // Cheating to get access to protected property
   });
 
-  // Check if, given a class instance, properties can be found as having been decorated
   describe('Definitions are set correctly and can be reached via class instance', () => {
     // Get definitions via class instance
     const definition = getDecoratedClassDefinition(new Test());
 
-    // Entity definition exists and fetched and has correct owner info set
     it('Definitions are set and can be reached via class instance', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
+
     // Entity properties' definitions exists and fetched, have correct owner info set and have decorator information correctly set
     for (const key of Object.keys(defaults)) {
       const access = { pub: 'public', prot: 'protected', priv: 'private' }[key];
@@ -242,18 +228,15 @@ export function testStaticPropertyDecorators() {
     }
   });
 
-  // Check if, given a class instance, entity definition can be filtered for only a particular decorator
   describe('Filtering of entity definition by decorator, given a class instance, works', () => {
     // Get definitions via class instance
     const definition = filterDefinition(getDecoratedClassDefinition(new Test()), labelDecoratorSymbol);
 
-    // Entity definition exists and fetched and has correct owner info set
     it('Filtered definitions are set and can be reached via class instance', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
 
-    // Entity properties' definitions exists and fetched, have correct owner info set and have decorator information correctly set
     it(`Filtered definitions are set correctly and can be reached via class for properties`, () => {
       assert(!!definition.properties['pub']);
       assert(definition.properties['pub'].owner === Test);
@@ -266,7 +249,6 @@ export function testStaticPropertyDecorators() {
       assert(definition.properties['pub'].decorators.bySymbol[labelDecoratorSymbol][0].data === publicPropertyLabel);
     });
 
-    // Check if filtering works
     it('Filtering of definitions by decorator, given a class instance, works', () => {
       // Filtered definition exists
       assert(!!definition);
@@ -280,18 +262,15 @@ export function testStaticPropertyDecorators() {
     });
   });
 
-  // Check if, given a class instance, entity property definition can be filtered for only a particular decorator
   describe('Filtering of entity property definitions by decorator, given a class instance, works', () => {
     // Get definitions via class instance
     const definition = filterDefinition(getDecoratedClassDefinition(Test).properties['pub'], labelDecoratorSymbol);
 
-    // Entity definition exists and fetched and has correct owner info set
     it('Filtered definitions are set and can be reached via class instance', () => {
       assert(!!definition);
       assert(definition.owner === Test);
     });
 
-    // Entity properties' definitions exists and fetched, have correct owner info set and have decorator information correctly set
     it(`Filtered definitions are set correctly and can be reached via class for properties`, () => {
       assert(!!definition.decorators.bySymbol[labelDecoratorSymbol]);
       assert(definition.decorators.bySymbol[labelDecoratorSymbol].length === 1);
@@ -301,7 +280,6 @@ export function testStaticPropertyDecorators() {
       assert(definition.decorators.bySymbol[labelDecoratorSymbol][0].data === publicPropertyLabel);
     });
 
-    // Check if filtering works
     it('Filtering of definitions by decorator, given a class instance, works', () => {
       // Filtered definition exists
       assert(!!definition);
@@ -312,7 +290,6 @@ export function testStaticPropertyDecorators() {
     });
   });
 
-  // Given a class instance, use decorated properties configuration
   it('Decorated properties can be used within real featured functionality via class instance', () => {
     // Check values of a Test instance against defaults set by the decorator
     const test = new Test();
