@@ -643,7 +643,7 @@ export function rehydrate<TInstance extends ClassInstance>(
       }
 
       // Store cast value
-      rehydrated[key as keyof typeof rehydrated] = castValue as unknown as (typeof rehydrated)[keyof typeof rehydrated];
+      rehydrated[key as keyof typeof rehydrated] = castValue as unknown as typeof rehydrated[keyof typeof rehydrated];
     }
   }
 

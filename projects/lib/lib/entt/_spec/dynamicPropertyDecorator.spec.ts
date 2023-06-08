@@ -170,54 +170,66 @@ export function testDynamicPropertyDecorators() {
   }
 
   describe('EnTTification', () => {
+    // Initialze warnings output
+    let timestampedWarnings: Array<Error | Warning | Info> = [];
+    let noTimestampedWarnings: Array<Error | Warning | Info> = [];
+
+    // Check dynamic decorators throwing warnings when parent class not EnTTified
+    warnings.splice(0, warnings.length);
+    verifyDecoratorUsage((msg: any) => warnings.push(msg));
+    timestampedWarnings = warnings.filter(w => w.message.includes('_Timestamped'));
+
+    // EnTTify parent class
+    const Timestamped = enttify(_Timestamped);
+
+    // Check dynamic decorators no longer throwing warnings
+    warnings.splice(0, warnings.length);
+    verifyDecoratorUsage((msg: any) => warnings.push(msg));
+    noTimestampedWarnings = warnings.filter(w => w.message.includes('_Timestamped'));
+
     // Check if dynamic decorators throwing warnings when parent class not EnTTified
     it('Dynamic decorators are registered as such and will report if parent class is not EnTTified', () => {
-      let timestampedWarnings: Array<Error | Warning | Info> = [];
-
-      // Check dynamic decorators throwing warnings when parent class not EnTTified
-      warnings.splice(0, warnings.length);
-      verifyDecoratorUsage((msg: any) => warnings.push(msg));
-      timestampedWarnings = warnings.filter(w => w.message.includes('_Timestamped'));
       assert(timestampedWarnings.length === 2);
       assert(timestampedWarnings[0] !== timestampedWarnings[1]);
-
-      // EnTTify parent class
-      const Timestamped = enttify(_Timestamped);
-
-      // Check dynamic decorators no longer throwing warnings
-      warnings.splice(0, warnings.length);
-      verifyDecoratorUsage((msg: any) => warnings.push(msg));
-      timestampedWarnings = warnings.filter(w => w.message.includes('_Timestamped'));
-      assert(timestampedWarnings.length === 0);
+      assert(noTimestampedWarnings.length === 0);
     });
 
     // Check if using EnTTified classes is performant
-    it('Enttitified class with dynamic decorators is performant', () => {
+    describe('Enttitified class with dynamic decorators is performant', () => {
       // Perform as many instantiations as possible in 100ms
       let countPlain = 0;
-      const startEnttified = Date.now();
-      while (!(countPlain % 1000 === 0 && Date.now() - startEnttified >= 100)) {
+      const startEnttified = performance.now();
+      while (!(countPlain % 1000 === 0 && performance.now() - startEnttified >= 100)) {
         const timestamped = new _Timestamped();
         countPlain++;
       }
-      const plainInstantiationsPerSecond = (1000 * countPlain) / (Date.now() - startEnttified);
+      const plainInstantiationsPerSecond = (1000 * countPlain) / (performance.now() - startEnttified);
 
       // EnTTify parent class
       const Timestamped = enttify(_Timestamped);
 
       // Perform as many instantiations as possible in 100ms
       let countEnttified = 0;
-      const startPlain = Date.now();
-      while (!(countEnttified % 1000 === 0 && Date.now() - startPlain >= 100)) {
+      const startPlain = performance.now();
+      while (!(countEnttified % 1000 === 0 && performance.now() - startPlain >= 100)) {
         const timestamped = new Timestamped();
         countEnttified++;
       }
-      const enttifiedInstantiationsPerSecond = (1000 * countEnttified) / (Date.now() - startPlain);
+      const enttifiedInstantiationsPerSecond = (1000 * countEnttified) / (performance.now() - startPlain);
+
+      // Claculate slowdown factor
+      const slowdown = plainInstantiationsPerSecond / enttifiedInstantiationsPerSecond;
 
       // Check number of instantiations per second
-      assert(plainInstantiationsPerSecond > INSTANTIATIONS_PER_SECOND);
-      assert(enttifiedInstantiationsPerSecond > INSTANTIATIONS_PER_SECOND);
-      assert(plainInstantiationsPerSecond / enttifiedInstantiationsPerSecond < ENTTITIFICATION_SLOWDOWN_FACTOR);
+      it(`Can perform >${INSTANTIATIONS_PER_SECOND} non-enttified instantiations/sec (${Math.round(plainInstantiationsPerSecond)})`, () => {
+        assert(plainInstantiationsPerSecond > INSTANTIATIONS_PER_SECOND);
+      });
+      it(`Can perform >${INSTANTIATIONS_PER_SECOND} enttified instantiations/sec (${Math.round(enttifiedInstantiationsPerSecond)})`, () => {
+        assert(enttifiedInstantiationsPerSecond > INSTANTIATIONS_PER_SECOND);
+      });
+      it(`Enttification slowdown factor is <${ENTTITIFICATION_SLOWDOWN_FACTOR}X (${Math.round((100 * slowdown) / 100)})`, () => {
+        assert(slowdown < ENTTITIFICATION_SLOWDOWN_FACTOR);
+      });
     });
 
     // Check if decorator definitions are set correctly

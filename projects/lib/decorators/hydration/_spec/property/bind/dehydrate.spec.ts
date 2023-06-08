@@ -142,15 +142,15 @@ export function testHydrationBindPropertyDecoratorDehydrate() {
   describe('Dehydrating a class instance is performant', () => {
     // Perform as many dehydrations as possible in 100ms
     let count = 0;
-    const start = Date.now();
-    while (!(count % 1000 === 0 && Date.now() - start >= 100)) {
+    const start = performance.now();
+    while (!(count % 1000 === 0 && performance.now() - start >= 100)) {
       dehydrate(instance, HydrationStrategy.AllClassProperties);
       count++;
     }
-    const dehydrationsPerSecond = (1000 * count) / (Date.now() - start);
+    const dehydrationsPerSecond = (1000 * count) / (performance.now() - start);
 
     // Check number of dehydrations per second
-    it(`Can perform >${HYDRATIONS_PER_SECOND} dehydrations/sec `, () => {
+    it(`Can perform >${HYDRATIONS_PER_SECOND} dehydrations/sec (${Math.round(dehydrationsPerSecond)})`, () => {
       assert(dehydrationsPerSecond > HYDRATIONS_PER_SECOND);
     });
   });
